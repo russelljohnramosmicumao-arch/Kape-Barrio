@@ -11,3 +11,6 @@ Changes:
 - Offline/localStorage behavior remains.
 
 IMPORTANT: Verify all menu names and prices before live use.
+
+
+Version 10 adds Transaction History. Completed orders are stored locally on this iPad using localStorage. The History button on the right opens saved transactions, and each transaction has a Save picture button.

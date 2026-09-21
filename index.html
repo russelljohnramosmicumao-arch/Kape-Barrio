@@ -28,7 +28,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .product-img{width:100%;height:150px;object-fit:contain;background:#fff;border-radius:14px;margin-bottom:10px;display:block}
 .card{overflow:hidden}
 .card{background:var(--card);border:1px solid #eee3d7;border-radius:18px;padding:12px;box-shadow:var(--shadow);min-height:140px;display:flex;flex-direction:column;justify-content:space-between}
-.card h3{font-size:18px;line-height:1.15;margin:0 0 8px}
+.card h3{font-size:18px;line-height:1.15;margin:0 0 8px;text-align:center}
 .price{color:var(--brown);font-weight:800;font-size:15px}
 .card button{margin-top:14px;border:0;border-radius:13px;background:#f0e3d5;color:#5b3825;font-weight:800;padding:12px;min-height:46px;font-size:16px}
 .card button:active{transform:scale(.98)}
@@ -41,7 +41,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 @media(max-width:699px){.menu-toast{font-size:28px;padding:20px 26px;max-width:82vw;white-space:normal}}
 @media(max-width:699px){.swipe-hint{display:block}}
 .sectionTitle{font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px}
-.floating-cart{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:40;width:66px;height:66px;border:0;border-radius:50%;background:var(--brown);color:#fff;box-shadow:0 8px 25px rgba(60,40,25,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.floating-history{position:fixed;right:18px;top:calc(50% - 86px);transform:translateY(-50%);z-index:40;width:66px;height:66px;border:0;border-radius:50%;background:#8a674a;color:#fff;box-shadow:0 8px 25px rgba(60,40,25,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}.floating-history:active{transform:translateY(-50%) scale(.96)}.history-icon{font-size:29px;line-height:1}.history-badge{position:absolute;right:-3px;top:-3px;min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:#d9483e;color:#fff;border:3px solid var(--cream);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center}.floating-cart{position:fixed;right:18px;top:calc(50% + 1px);transform:translateY(-50%);z-index:40;width:66px;height:66px;border:0;border-radius:50%;background:var(--brown);color:#fff;box-shadow:0 8px 25px rgba(60,40,25,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .floating-cart:active{transform:translateY(-50%) scale(.96)}
 .cart-icon{font-size:29px;line-height:1}
 .cart-badge{position:absolute;right:-3px;top:-3px;min-width:26px;height:26px;padding:0 7px;border-radius:999px;background:#d9483e;color:#fff;border:3px solid var(--cream);font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
@@ -50,12 +50,12 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .drawer{position:fixed;inset:0;background:rgba(24,17,12,.45);z-index:50;display:none;align-items:flex-end}
 .drawer.open{display:flex}
 .panel{background:var(--cream);width:100%;max-height:88vh;border-radius:24px 24px 0 0;padding:20px;overflow:auto}
-.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}
+.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}.selector-image{display:block;width:180px;height:180px;object-fit:contain;background:#fff;border-radius:18px;margin:10px auto 14px;border:1px solid #eadfd4}
 .muted{color:#7a6b60}
-.options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
-.opt{border:2px solid #dfd1c2;background:#fff;border-radius:14px;padding:15px 8px;text-align:center;font-weight:800}
+.options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.opt{border:2px solid #dfd1c2;background:#fff;border-radius:14px;padding:17px 8px;text-align:center;font-weight:800;font-size:20px;line-height:1.15}
 .opt.selected{border-color:var(--brown);background:#f2e6d9}
-.opt span{display:block;color:var(--brown);margin-top:4px}
+.opt span{display:block;color:var(--brown);margin-top:7px;font-size:19px;font-weight:900}
 .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
 .qty{display:flex;align-items:center;justify-content:center;gap:15px}
 .qty button{width:44px;height:44px;border-radius:50%;border:1px solid #d7c6b5;background:#fff;font-size:22px}
@@ -70,8 +70,9 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .receipt-actions{display:flex;gap:10px;max-width:480px;margin:14px auto 0}.receipt-actions button{flex:1;min-height:46px}
 .notice{background:#edf5e6;color:#45652b;border:1px solid #cfe0be;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}.panel{max-width:760px;margin:auto;border-radius:24px}.drawer{align-items:center;padding:20px}}
-@media(max-width:699px){.floating-cart{right:14px;width:60px;height:60px}.cart-icon{font-size:27px}.cart-badge{min-width:24px;height:24px;font-size:12px}}
+@media(max-width:699px){.floating-history{right:14px;top:calc(50% - 76px);width:60px;height:60px}.history-icon{font-size:25px}.history-badge{min-width:22px;height:22px;font-size:11px}.floating-cart{right:14px;top:calc(50% + 1px);width:60px;height:60px}.cart-icon{font-size:27px}.cart-badge{min-width:24px;height:24px;font-size:12px}}
 
+.history-list{display:flex;flex-direction:column;gap:12px;margin-top:14px}.history-item{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px}.history-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.history-head b{color:var(--brown);font-size:17px}.history-meta{color:#7a6b60;font-size:13px;margin-top:3px}.history-total{font-weight:900;color:var(--brown);font-size:18px;white-space:nowrap}.history-items{margin:10px 0;color:#4e4137;font-size:14px;line-height:1.45}.history-actions{display:flex;gap:8px}.history-actions button{flex:1;min-height:44px}.history-empty{padding:50px 12px;text-align:center;color:#857568}.history-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.history-title-row h2{margin:0}.history-clear{font-size:13px;padding:9px 11px}
 /* Cart opens only when the floating cart button is pressed. */
 @media(min-width:700px){#orderDrawer{align-items:stretch;justify-content:flex-end;padding:0}#orderDrawer .panel{width:390px;max-width:390px;height:100%;max-height:none;border-radius:24px 0 0 24px;margin:0;padding:22px;box-shadow:-12px 0 30px rgba(0,0,0,.16)}}
 </style>
@@ -91,15 +92,30 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 <div id="menuToast" class="menu-toast" aria-live="polite"></div>
 </main>
 
+<button class="floating-history" aria-label="Open transaction history" onclick="openHistory()">
+  <span class="history-icon" aria-hidden="true">🧾</span>
+  <span id="historyBadge" class="history-badge">0</span>
+</button>
 <button class="floating-cart" aria-label="Open cart" onclick="openOrder()">
   <span class="cart-icon" aria-hidden="true">🛒</span>
   <span id="cartBadge" class="cart-badge">0</span>
 </button>
 
+<div id="historyDrawer" class="drawer" onclick="if(event.target===this)closeHistory()">
+  <div class="panel">
+    <div class="history-title-row">
+      <h2>Transaction History</h2>
+      <button class="secondary history-clear" onclick="clearHistory()">Clear history</button>
+    </div>
+    <div class="muted" style="margin:4px 0 12px">Saved on this iPad. Tap “Save picture” for any transaction.</div>
+    <div id="historyList" class="history-list"></div>
+    <button class="secondary" style="width:100%;margin-top:12px" onclick="closeHistory()">Close</button>
+  </div>
+</div>
 
 <div id="selector" class="drawer" onclick="if(event.target===this)closeSelector()">
   <div class="panel">
-    <h2 id="selName"></h2><div id="selType" class="muted"></div>
+    <h2 id="selName" style="text-align:center"></h2><img id="selImage" class="selector-image" alt=""><div id="selType" class="muted" style="text-align:center"></div>
     <div id="premiumWrap" style="display:none">
       <p><b>Choose type</b></p><div id="typeOptions" class="options"></div>
     </div>
@@ -138,13 +154,14 @@ const PRODUCTS = [{"category": "Milk Tea Series", "name": "Matcha Milk Tea", "pr
 const IMAGE_MAP={
   "Matcha Milk Tea":"images/matcha-milk-tea.jpg", "Blueberry Milk Tea":"images/blueberry-milk-tea.jpg", "Taro Milk Tea":"images/taro-milk-tea.jpg", "Caramel Brown Sugar":"images/caramel-brown-sugar.jpg", "Strawberry Milk Tea":"images/strawberry-milk-tea.jpg", "Okinawa Milk Tea":"images/okinawa-milk-tea.jpg", "Wintermelon Milk Tea":"images/wintermelon-milk-tea.jpg", "Black Forest Choco":"images/black-forest-choco.jpg", "Cookies and Cream":"images/cookies-and-cream.jpg", "White Bunny Milk Tea":"images/white-bunny-milk-tea.jpg", "Red Matcha Milk Tea":"images/red-matcha-milk-tea.jpg", "Dirty Matcha Milk Tea":"images/dirty-matcha-milk-tea.jpg", "Green Taro MilkTea":"images/green-taro-milktea.jpg", "Blue-ish Red MilkTea":"images/blue-ish-red-milktea.jpg", "Dirty Taro MilkTea":"images/dirty-taro-milktea.jpg",
   "Caramel Macchiato":"images/caramel-macchiato.jpg", "Vanilla Latte":"images/vanilla-latte.jpg", "Caramel Latte":"images/caramel-latte.jpg", "Iced Mocha Latte":"images/iced-mocha-latte.jpg", "Dirty Matcha":"images/dirty-matcha.jpg", "Spanish Latte":"images/spanish-latte.jpg", "Dirty Taro":"images/dirty-taro.jpg", "Americano":"images/americano.jpg", "Cappuccino":"images/cappuccino.jpg", "Oreo Coffee":"images/oreo-coffee.jpg", "Frappuccino":"images/frappuccino.jpg", "FrapMacchiato":"images/frapmacchiato.jpg",
-  "Matcha Latte":"images/matcha-latte.jpg", "Green Taro":"images/green-taro.jpg", "Red Matcha":"images/red-matcha.jpg", "Familia De Verde":"images/familia-de-verde.jpg", "Matcha Frappe":"images/matcha-frappe.jpg", "Matcha Latte (PREMIUM)":"images/matcha-latte--premium.jpg", "Dirty Matcha (PREMIUM)":"images/dirty-matcha--premium.jpg", "Cracking Matcha":"images/cracking-matcha.jpg", "Nutella Matcha":"images/nutella-matcha.jpg", "Mango Matcha":"images/mango-matcha.jpg", "Oreo Matcha":"images/oreo-matcha.jpg",
+  "Matcha Latte":"images/matcha-latte.jpg", "Green Taro":"images/green-taro.jpg", "Red Matcha":"images/red-matcha.jpg", "Familia De Verde":"images/familia-de-verde.jpg", "Matcha Frappe":"images/matcha-frappe.jpg", "Matcha Latte (PREMIUM)":"images/matcha-latte--premium.jpg", "Matcha Latte (Premium)":"images/matcha-latte--premium.jpg", "Dirty Matcha (PREMIUM)":"images/dirty-matcha--premium.jpg", "Dirty Matcha (Premium)":"images/dirty-matcha--premium.jpg", "Cracking Matcha":"images/cracking-matcha.jpg", "Nutella Matcha":"images/nutella-matcha.jpg", "Mango Matcha":"images/mango-matcha.jpg", "Oreo Matcha":"images/oreo-matcha.jpg",
   "Four Seasons":"images/four-seasons.jpg", "Green Apple":"images/green-apple.jpg", "Blue Lemonade":"images/blue-lemonade.jpg", "Blueberry":"images/blueberry.jpg", "Strawberry":"images/strawberry.jpg", "Lychee":"images/lychee.jpg", "Coke Float":"images/coke-float.jpg", "Dutchmill Float":"images/dutchmill-float.jpg", "Chuckie Float":"images/chuckie-float.jpg", "Frappe Macchiato":"images/frappe-macchiato.jpg", "Cookies de Crema":"images/cookies-de-crema.jpg", "Mekus de Berries":"images/mekus-de-berries.jpg", "Frappe de Choco":"images/frappe-de-choco.jpg", "Frappe de Taro":"images/frappe-de-taro.jpg", "Mango Smoothie":"images/mango-smoothie.jpg", "Familia de Verde":"images/familia-de-verde.jpg"
 };
 PRODUCTS.forEach(p=>p.image=IMAGE_MAP[p.name]||"");
 const SIZE_DEFAULT=["12 oz","16 oz","22 oz"];
 let category = PRODUCTS[0].category;
 let cart = JSON.parse(localStorage.getItem("kbr_cart")||"[]");
+let history = JSON.parse(localStorage.getItem("kbr_history")||"[]");
 let selected = null;
 
 const cats=[...new Set(PRODUCTS.map(p=>p.category))];
@@ -212,6 +229,9 @@ products.addEventListener('touchend',e=>{
 function chooseProduct(p){
   selected={p,type:p.premium?'budget':'standard',sizeIndex:0,qty:1};
   selName.textContent=p.name;
+  selImage.src=p.image||"";
+  selImage.alt=p.name;
+  selImage.style.display=p.image?"block":"none";
   premiumWrap.style.display=p.premium?'block':'none';
   if(p.premium) renderTypes(); else selType.textContent="Select size";
   renderSizes();
@@ -244,6 +264,33 @@ function updateCartBar(){
   const count=cart.reduce((s,x)=>s+x.qty,0);
   cartBadge.textContent=count>99?'99+':String(count);
   cartBadge.style.display=count?'flex':'none';
+  historyBadge.textContent=history.length>99?'99+':String(history.length);
+  historyBadge.style.display=history.length?'flex':'none';
+}
+
+function persistHistory(){localStorage.setItem("kbr_history",JSON.stringify(history));updateCartBar()}
+function saveTransactionToHistory(receipt){
+  history.unshift(JSON.parse(JSON.stringify(receipt)));
+  if(history.length>200) history=history.slice(0,200);
+  persistHistory();
+}
+function openHistory(){renderHistory();historyDrawer.classList.add("open")}
+function closeHistory(){historyDrawer.classList.remove("open")}
+function renderHistory(){
+  if(!history.length){historyList.innerHTML='<div class="history-empty">No transactions yet.<br>Completed orders will appear here.</div>';return}
+  historyList.innerHTML=history.map((r,i)=>{
+    const summary=r.items.map(x=>`${x.qty}× ${x.name} (${x.size})`).join('<br>');
+    return `<div class="history-item"><div class="history-head"><div><b>Order #${r.no}</b><div class="history-meta">${r.date} · ${r.time}</div></div><div class="history-total">${peso(r.total)}</div></div><div class="history-items">${summary}</div><div class="history-actions"><button class="primary" onclick="saveHistoryReceipt(${i})">Save picture</button></div></div>`;
+  }).join('');
+}
+function clearHistory(){
+  if(!history.length) return;
+  if(confirm('Clear all transaction history from this iPad?')){history=[];persistHistory();renderHistory()}
+}
+async function saveHistoryReceipt(index){
+  const r=history[index];
+  if(!r) return;
+  try{await saveReceipt(r)}catch(err){console.error('History receipt save failed',err);alert('Could not save the receipt picture. Please try again.')}
 }
 
 function changeCartQty(i,d){cart[i].qty=Math.max(0,cart[i].qty+d);if(cart[i].qty===0)cart.splice(i,1);persist();render();renderOrder()}
@@ -268,6 +315,7 @@ async function makeReceipt(){
   const date=now.toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"});
   const time=now.toLocaleTimeString("en-PH",{hour:"numeric",minute:"2-digit"});
   currentReceipt={no,date,time,total,items:JSON.parse(JSON.stringify(cart))};
+  saveTransactionToHistory(currentReceipt);
   receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt">
     <div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${no}</div><div>${date} · ${time}</div></div>
     <hr>${currentReceipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join("")}
@@ -291,13 +339,21 @@ async function makeReceipt(){
   renderOrder();
 }
 
-async function saveReceipt(){
-  if(!currentReceipt) return;
+async function saveReceipt(receipt=currentReceipt){
+  if(!receipt) return;
   const el=document.getElementById("receiptCanvas");
-  if(!el) return;
 
-  const canvas=document.createElement("canvas"), scale=2;
-  const w=Math.max(el.offsetWidth, 420), h=el.offsetHeight;
+  // Build the PNG directly from the saved transaction data. This also works
+  // when saving an older transaction from History, where no receipt drawer is open.
+  const receiptWidth=el?Math.max(el.offsetWidth,420):480;
+  const receiptHeight=el?Math.max(el.offsetHeight,260):Math.max(260,220+(receipt.items.length*55));
+
+  // Build the PNG synchronously from the receipt data so iOS keeps the
+  // original Pay button user-gesture permission for the Share sheet.
+  const scale=2;
+  const w=receiptWidth;
+  const h=receiptHeight;
+  const canvas=document.createElement("canvas");
   canvas.width=w*scale;
   canvas.height=h*scale;
   const ctx=canvas.getContext("2d");
@@ -305,12 +361,11 @@ async function saveReceipt(){
   ctx.fillStyle="#fff";
   ctx.fillRect(0,0,w,h);
 
-  // Receipt header is centered so the order number is never clipped on the left.
   const centerLines=[
     "KAPE' BAR-RIO",
     "SHOP & CAFE",
-    `Order #${currentReceipt.no}`,
-    `${currentReceipt.date} · ${currentReceipt.time}`
+    `Order #${receipt.no}`,
+    `${receipt.date} · ${receipt.time}`
   ];
   let y=42;
   ctx.fillStyle="#111";
@@ -323,80 +378,62 @@ async function saveReceipt(){
 
   y+=8;
   ctx.textAlign="left";
-  ctx.font="18px monospace";
-  currentReceipt.items.forEach(x=>{
-    const left=`${x.qty}× ${x.name}`;
-    const right=peso(x.qty*x.price);
+  receipt.items.forEach(x=>{
     ctx.font="18px monospace";
-    ctx.fillText(left,28,y);
+    ctx.fillText(`${x.qty}× ${x.name}`,28,y);
     ctx.textAlign="right";
-    ctx.fillText(right,w-28,y);
+    ctx.fillText(peso(x.qty*x.price),w-28,y);
     ctx.textAlign="left";
     y+=27;
     ctx.font="15px monospace";
     ctx.fillText(`${x.type!=='standard'?x.type+' · ':''}${x.size}`,44,y);
     y+=28;
   });
-
   ctx.font="bold 20px monospace";
   ctx.fillText("TOTAL",28,y);
   ctx.textAlign="right";
-  ctx.fillText(peso(currentReceipt.total),w-28,y);
+  ctx.fillText(peso(receipt.total),w-28,y);
   ctx.textAlign="center";
   y+=34;
   ctx.font="18px monospace";
   ctx.fillText("Thank you!",w/2,y);
 
-  canvas.height=Math.ceil((y+28)*scale);
-  // Resizing canvas resets the context, so redraw using the DOM receipt as a clean fallback-sized canvas.
-  // Use the already rendered receipt dimensions if the browser supports direct capture dimensions.
+  // Crop the PNG to the actual content height while keeping generous side space.
   const finalCanvas=document.createElement("canvas");
   finalCanvas.width=w*scale;
   finalCanvas.height=Math.ceil((y+28)*scale);
   const fctx=finalCanvas.getContext("2d");
-  fctx.scale(scale,scale);
-  fctx.fillStyle="#fff";
-  fctx.fillRect(0,0,w,y+28);
+  fctx.drawImage(canvas,0,0);
 
-  let fy=42;
-  fctx.fillStyle="#111";
-  fctx.textAlign="center";
-  centerLines.forEach((line,i)=>{
-    fctx.font=i===0?"bold 28px monospace":(i===2?"bold 20px monospace":"18px monospace");
-    fctx.fillText(line,w/2,fy);
-    fy+=30;
-  });
-  fy+=8;
-  fctx.textAlign="left";
-  currentReceipt.items.forEach(x=>{
-    fctx.font="18px monospace";
-    fctx.fillText(`${x.qty}× ${x.name}`,28,fy);
-    fctx.textAlign="right";
-    fctx.fillText(peso(x.qty*x.price),w-28,fy);
-    fctx.textAlign="left";
-    fy+=27;
-    fctx.font="15px monospace";
-    fctx.fillText(`${x.type!=='standard'?x.type+' · ':''}${x.size}`,44,fy);
-    fy+=28;
-  });
-  fctx.font="bold 20px monospace";
-  fctx.fillText("TOTAL",28,fy);
-  fctx.textAlign="right";
-  fctx.fillText(peso(currentReceipt.total),w-28,fy);
-  fctx.textAlign="center";
-  fy+=34;
-  fctx.font="18px monospace";
-  fctx.fillText("Thank you!",w/2,fy);
+  const dataUrl=finalCanvas.toDataURL("image/png");
+  const byteString=atob(dataUrl.split(",")[1]);
+  const bytes=new Uint8Array(byteString.length);
+  for(let i=0;i<byteString.length;i++) bytes[i]=byteString.charCodeAt(i);
+  const file=new File([bytes],`Kape-Bar-Rio-Receipt-${receipt.no}.png`,{type:"image/png"});
 
-  const blob=await new Promise((resolve,reject)=>finalCanvas.toBlob(b=>b?resolve(b):reject(new Error("PNG creation failed")),"image/png"));
-  const url=URL.createObjectURL(blob);
+  const isStandalone=window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
+  if(isStandalone && navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+    // iPad/iPhone Home Screen apps cannot reliably use <a download>.
+    // Use the native Share sheet instead; the customer can choose Save Image
+    // or Save to Files. This is the supported way to export a PNG from a PWA.
+    try{
+      await navigator.share({title:`Kape' Bar-Rio Receipt #${receipt.no}`,files:[file]});
+      return;
+    }catch(err){
+      // If the customer closes the Share sheet, fall back to a normal download.
+      if(err && err.name==='AbortError') return;
+    }
+  }
+
+  // Normal Safari/desktop browser: direct PNG download.
+  const url=URL.createObjectURL(file);
   const a=document.createElement("a");
   a.href=url;
-  a.download=`Kape-Bar-Rio-Receipt-${currentReceipt.no}.png`;
+  a.download=file.name;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 
 function payAtCounter(){
