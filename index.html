@@ -41,7 +41,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 @media(max-width:699px){.menu-toast{font-size:28px;padding:20px 26px;max-width:82vw;white-space:normal}}
 @media(max-width:699px){.swipe-hint{display:block}}
 .sectionTitle{font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px;background:none;border:0;padding:0;text-align:left;font-weight:800;cursor:pointer}.sectionTitle:active{opacity:.7}
-.sectionTitleButton{display:block;width:100%}
+.sectionTitleButton{display:block;width:100%;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none}.sectionTitleButton:active{transform:scale(.98);opacity:.7}
 .floating-history{position:fixed;right:18px;top:18px;transform:none;z-index:40;width:66px;height:66px;border:0;border-radius:50%;background:#8a674a;color:#fff;box-shadow:0 8px 25px rgba(60,40,25,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}.floating-history:active{transform:scale(.96)}.history-icon{font-size:29px;line-height:1}.history-badge{position:absolute;right:-3px;top:-3px;min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:#d9483e;color:#fff;border:3px solid var(--cream);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center}.floating-cart{position:fixed;right:18px;top:calc(50% + 1px);transform:translateY(-50%);z-index:40;width:66px;height:66px;border:0;border-radius:50%;background:var(--brown);color:#fff;box-shadow:0 8px 25px rgba(60,40,25,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .floating-cart:active{transform:translateY(-50%) scale(.96)}
 .cart-icon{font-size:29px;line-height:1}
@@ -76,7 +76,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}.panel{max-width:760px;margin:auto;border-radius:24px}.drawer{align-items:center;padding:20px}}
 @media(max-width:699px){.floating-history{right:14px;top:14px;width:60px;height:60px}.history-icon{font-size:25px}.history-badge{min-width:22px;height:22px;font-size:11px}.floating-cart{right:14px;top:calc(50% + 1px);width:60px;height:60px}.cart-icon{font-size:27px}.cart-badge{min-width:24px;height:24px;font-size:12px}}
 
-.history-list{display:flex;flex-direction:column;gap:12px;margin-top:14px}.history-item{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px}.history-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.history-head b{color:var(--brown);font-size:17px}.history-meta{color:#7a6b60;font-size:13px;margin-top:3px}.history-total{font-weight:900;color:var(--brown);font-size:18px;white-space:nowrap}.history-items{margin:10px 0;color:#4e4137;font-size:14px;line-height:1.45}.history-actions{display:flex;gap:8px}.history-actions button{flex:1;min-height:44px}.history-empty{padding:50px 12px;text-align:center;color:#857568}.history-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.history-title-row h2{margin:0}.history-clear{font-size:22px!important;padding:12px 16px!important;min-height:58px;background:#f8dede!important;border-color:#e6aaaa!important;color:#8b2e2e!important;font-weight:900!important}
+.history-list{display:flex;flex-direction:column;gap:12px;margin-top:14px}.history-item{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px}.history-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.history-head b{color:var(--brown);font-size:17px}.history-meta{color:#7a6b60;font-size:13px;margin-top:3px}.history-total{font-weight:900;color:var(--brown);font-size:18px;white-space:nowrap}.history-items{margin:10px 0;color:#4e4137;font-size:14px;line-height:1.45}.history-actions{display:flex;gap:8px}.history-actions button{flex:1;min-height:44px}.history-empty{padding:50px 12px;text-align:center;color:#857568}.history-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.history-title-row h2{margin:0}.history-clear,.clear-order-btn,.cancel-btn{font-size:22px!important;padding:14px 16px!important;min-height:58px;background:#f7caca!important;border:2px solid #e7a0a0!important;color:#8b2e2e!important;font-weight:900!important}.history-clear:active,.clear-order-btn:active,.cancel-btn:active{background:#efb5b5!important;transform:scale(.98)}
 /* Cart opens only when the floating cart button is pressed. */
 @media(min-width:700px){#orderDrawer{align-items:stretch;justify-content:flex-end;padding:0}#orderDrawer .panel{width:390px;max-width:390px;height:100%;max-height:none;border-radius:24px 0 0 24px;margin:0;padding:22px;box-shadow:-12px 0 30px rgba(0,0,0,.16)}}
 </style>
@@ -109,7 +109,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
   <div class="panel">
     <div class="history-title-row">
       <h2>Transaction History</h2>
-      <button class="secondary history-clear" onclick="clearHistory()">Clear history</button>
+      <button id="clearHistoryBtn" class="secondary history-clear" onclick="clearHistory()">Clear history</button>
     </div>
     <div class="muted" style="margin:4px 0 12px">Saved on this iPad. Tap “Save picture” for any transaction.</div>
     <div id="historyList" class="history-list"></div>
@@ -128,7 +128,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
       <div class="qty"><button onclick="changeQty(-1)">−</button><b id="selQty">1</b><button onclick="changeQty(1)">+</button></div>
       <button class="primary" onclick="addSelected()">Add to order</button>
     </div>
-    <button class="secondary" style="width:100%;margin-top:10px" onclick="closeSelector()">Cancel</button>
+    <button id="cancelSelectorBtn" class="secondary cancel-btn" style="width:100%;margin-top:10px" onclick="closeSelector()">Cancel</button>
   </div>
 </div>
 
@@ -138,7 +138,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div class="muted" style="margin:4px 0 12px">Review your drinks before checkout.</div>
     <div id="orderList" class="order-list"></div>
     <div id="cartDrawerTotal" class="cart-drawer-total"><span>Total</span><b>₱0</b></div>
-    <div class="row"><button class="secondary" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Pay</button></div>
+    <div class="row"><button id="clearOrderBtn" class="secondary clear-order-btn" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Pay</button></div>
     <button class="secondary" style="width:100%;margin-top:10px" onclick="closeOrder()">Continue ordering</button>
   </div>
 </div>
@@ -163,7 +163,7 @@ const IMAGE_MAP={
 };
 PRODUCTS.forEach(p=>p.image=IMAGE_MAP[p.name]||"");
 const SIZE_DEFAULT=["12 oz","16 oz","22 oz"];
-let category = PRODUCTS[0].category;
+let category = "Best Sellers";
 let cart = JSON.parse(localStorage.getItem("kbr_cart")||"[]");
 let history = JSON.parse(localStorage.getItem("kbr_history")||"[]");
 let selected = null;
@@ -182,8 +182,17 @@ function specialItems(name){
   if(name==='Budget Friendly') return PRODUCTS.filter(p=>!p.food && Math.min(...p.prices)<70);
   return PRODUCTS.filter(p=>p.category===name);
 }
+function setCategory(name){
+  if(!cats.includes(name)) return;
+  category=name;
+  render();
+  const idx=cats.indexOf(name);
+  const activeTab=[...tabs.querySelectorAll('button')][idx];
+  activeTab?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
 function renderTabs(){
-  tabs.innerHTML=cats.map(c=>`<button class="${c===category?'active':''}" onclick="category=${JSON.stringify(c)};render()">${c}</button>`).join("");
+  tabs.innerHTML=cats.map(c=>`<button type="button" class="${c===category?'active':''}" data-category="${c.replace(/"/g,'&quot;')}">${c}</button>`).join("");
+  tabs.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>setCategory(btn.dataset.category)));
 }
 function render(){
   renderTabs();
