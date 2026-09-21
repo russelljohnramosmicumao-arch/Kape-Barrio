@@ -24,12 +24,19 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .tabs{display:flex;gap:8px;overflow:auto;padding:2px 0 14px;scrollbar-width:none}
 .tabs button{white-space:nowrap;border:1px solid #d8c7b5;background:#fff;border-radius:999px;padding:11px 16px;font-weight:700;color:#654a36}
 .tabs button.active{background:var(--brown);color:#fff;border-color:var(--brown)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
-.card{background:var(--card);border:1px solid #eee3d7;border-radius:18px;padding:16px;box-shadow:var(--shadow);min-height:140px;display:flex;flex-direction:column;justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.product-img{width:100%;height:150px;object-fit:contain;background:#fff;border-radius:14px;margin-bottom:10px;display:block}
+.card{overflow:hidden}
+.card{background:var(--card);border:1px solid #eee3d7;border-radius:18px;padding:12px;box-shadow:var(--shadow);min-height:140px;display:flex;flex-direction:column;justify-content:space-between}
 .card h3{font-size:18px;line-height:1.15;margin:0 0 8px}
 .price{color:var(--brown);font-weight:800;font-size:15px}
 .card button{margin-top:14px;border:0;border-radius:13px;background:#f0e3d5;color:#5b3825;font-weight:800;padding:12px;min-height:46px;font-size:16px}
 .card button:active{transform:scale(.98)}
+#products{touch-action:pan-y;transition:opacity .14s ease,transform .14s ease}
+#products.swipe-out-left{opacity:.15;transform:translateX(-28px)}
+#products.swipe-out-right{opacity:.15;transform:translateX(28px)}
+.swipe-hint{display:none;text-align:center;color:#8a7868;font-size:13px;margin:-4px 0 12px}
+@media(max-width:699px){.swipe-hint{display:block}}
 .sectionTitle{font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px}
 .cartbar{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid #e6d8ca;padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 25px rgba(0,0,0,.10)}
 .cartbar-inner{max-width:1500px;margin:auto;display:flex;align-items:center;gap:12px}
@@ -51,13 +58,15 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .order-list{display:flex;flex-direction:column;gap:10px;margin:10px 0 18px}
 .order-item{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center}
 .order-item .desc{flex:1}.order-item strong{color:var(--brown)}
+.cartSidebar{display:none}.cart-head{padding:18px 18px 12px;border-bottom:1px solid #eadfd4}.cart-head h2{margin:0;color:var(--brown);font-family:Georgia,serif}.cart-items{flex:1;overflow:auto;padding:12px}.cart-side-item{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:11px;margin-bottom:10px}.cart-side-top{display:flex;gap:10px}.cart-side-name{font-weight:800;flex:1}.cart-side-sub{font-size:13px;color:#7a6b60;margin-top:3px}.cart-side-controls{display:flex;align-items:center;justify-content:space-between;margin-top:8px}.mini-qty{display:flex;align-items:center;gap:8px}.mini-qty button{width:30px;height:30px;border-radius:9px;border:1px solid #d9c7b5;background:#fff;font-weight:800}.cart-footer{border-top:1px solid #eadfd4;padding:14px 14px calc(14px + env(safe-area-inset-bottom));background:#fff}.cart-total-line{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.cart-total-line b:last-child{font-size:22px;color:var(--brown)}
 .empty{padding:40px 10px;text-align:center;color:#857568}
 .receipt{background:#fff;max-width:480px;margin:0 auto;padding:26px;font-family:"Courier New",monospace;color:#111}
 .receipt .center{text-align:center}.receipt h3{margin:0 0 5px;font-size:21px}.receipt hr{border:0;border-top:1px dashed #777;margin:14px 0}
 .receipt-line{display:flex;justify-content:space-between;gap:10px;margin:7px 0}.receipt .item{flex:1}
 .receipt-actions{display:flex;gap:10px;max-width:480px;margin:14px auto 0}.receipt-actions button{flex:1}
 .notice{background:#edf5e6;color:#45652b;border:1px solid #cfe0be;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
-@media(min-width:900px){.panel{max-width:760px;margin:auto;border-radius:24px;margin-bottom:20px}.drawer{align-items:center;padding:20px}.cartbar{padding-left:30px;padding-right:30px}}
+@media(min-width:700px){body{padding-right:320px}.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}.cartSidebar{display:flex;position:fixed;top:0;right:0;bottom:0;width:320px;z-index:45;background:var(--cream);flex-direction:column;border-left:1px solid #e6d8ca;box-shadow:-8px 0 25px rgba(0,0,0,.08)}.cartbar{display:none}.panel{max-width:760px;margin:auto;border-radius:24px;margin-bottom:20px}.drawer{align-items:center;padding:20px}}
+@media(max-width:699px){.cartSidebar{display:none}}
 </style>
 </head>
 <body>
@@ -71,6 +80,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
   <div id="tabs" class="tabs"></div>
   <h2 id="sectionTitle" class="sectionTitle"></h2>
   <div id="products" class="grid"></div>
+  <div class="swipe-hint">Swipe left or right to change menu</div>
 </main>
 
 <div class="cartbar">
@@ -80,6 +90,16 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <button class="primary" onclick="openOrder()">Checkout</button>
   </div>
 </div>
+
+<aside class="cartSidebar">
+  <div class="cart-head"><h2>Your Order</h2><div class="muted" id="sideItemCount">0 items</div></div>
+  <div id="sideCartItems" class="cart-items"></div>
+  <div class="cart-footer">
+    <div class="cart-total-line"><span>Total</span><b id="sideGrandTotal">₱0</b></div>
+    <button class="primary" style="width:100%" onclick="makeReceipt()">Generate Receipt</button>
+    <button class="secondary" style="width:100%;margin-top:8px" onclick="clearOrder()">Clear Order</button>
+  </div>
+</aside>
 
 <div id="selector" class="drawer" onclick="if(event.target===this)closeSelector()">
   <div class="panel">
@@ -117,6 +137,13 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 
 <script>
 const PRODUCTS = [{"category": "Milk Tea Series", "name": "Matcha Milk Tea", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Blueberry Milk Tea", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Taro Milk Tea", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Caramel Brown Sugar", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Strawberry Milk Tea", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Okinawa Milk Tea", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Wintermelon Milk Tea", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Black Forest Choco", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Cookies and Cream", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "White Bunny Milk Tea", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Red Matcha Milk Tea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Dirty Matcha Milk Tea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Green Taro MilkTea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Blue-ish Red MilkTea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Dirty Taro MilkTea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Caramel Macchiato", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [119, 139], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Vanilla Latte", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [109, 129], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Caramel Latte", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [109, 129], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Iced Mocha Latte", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [109, 129], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Dirty Matcha", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [119, 139], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Spanish Latte", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [119, 139], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Dirty Taro", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Americano", "prices": [89, 109], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Cappuccino", "prices": [99, 119], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Oreo Coffee", "prices": [79, 89, 109], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Frappuccino", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "FrapMacchiato", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Matcha Milk Tea", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Matcha Latte", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Green Taro", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Red Matcha", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Dirty Matcha", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Familia De Verde", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Matcha Frappe", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Matcha Latte (Premium)", "prices": [109, 129], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Dirty Matcha (Premium)", "prices": [119, 139], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Cracking Matcha", "prices": [129, 159], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Nutella Matcha", "prices": [129, 159], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Mango Matcha", "prices": [129, 159], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Oreo Matcha", "prices": [79, 89, 109], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Four Seasons", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Green Apple", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Blue Lemonade", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Blueberry", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Strawberry", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Lychee", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Floats", "name": "Coke Float", "prices": [49, 59, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Floats", "name": "Dutchmill Float", "prices": [69, 79, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Floats", "name": "Chuckie Float", "prices": [69, 79, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Frappe Macchiato", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Frappuccino", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Cookies de Crema", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Mekus de Berries", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Frappe de Choco", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Frappe de Taro", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Matcha Frappe", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Mango Smoothie", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Familia de Verde", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}];
+const IMAGE_MAP={
+  "Matcha Milk Tea":"images/matcha-milk-tea.jpg", "Blueberry Milk Tea":"images/blueberry-milk-tea.jpg", "Taro Milk Tea":"images/taro-milk-tea.jpg", "Caramel Brown Sugar":"images/caramel-brown-sugar.jpg", "Strawberry Milk Tea":"images/strawberry-milk-tea.jpg", "Okinawa Milk Tea":"images/okinawa-milk-tea.jpg", "Wintermelon Milk Tea":"images/wintermelon-milk-tea.jpg", "Black Forest Choco":"images/black-forest-choco.jpg", "Cookies and Cream":"images/cookies-and-cream.jpg", "White Bunny Milk Tea":"images/white-bunny-milk-tea.jpg", "Red Matcha Milk Tea":"images/red-matcha-milk-tea.jpg", "Dirty Matcha Milk Tea":"images/dirty-matcha-milk-tea.jpg", "Green Taro MilkTea":"images/green-taro-milktea.jpg", "Blue-ish Red MilkTea":"images/blue-ish-red-milktea.jpg", "Dirty Taro MilkTea":"images/dirty-taro-milktea.jpg",
+  "Caramel Macchiato":"images/caramel-macchiato.jpg", "Vanilla Latte":"images/vanilla-latte.jpg", "Caramel Latte":"images/caramel-latte.jpg", "Iced Mocha Latte":"images/iced-mocha-latte.jpg", "Dirty Matcha":"images/dirty-matcha.jpg", "Spanish Latte":"images/spanish-latte.jpg", "Dirty Taro":"images/dirty-taro.jpg", "Americano":"images/americano.jpg", "Cappuccino":"images/cappuccino.jpg", "Oreo Coffee":"images/oreo-coffee.jpg", "Frappuccino":"images/frappuccino.jpg", "FrapMacchiato":"images/frapmacchiato.jpg",
+  "Matcha Latte":"images/matcha-latte.jpg", "Green Taro":"images/green-taro.jpg", "Red Matcha":"images/red-matcha.jpg", "Familia De Verde":"images/familia-de-verde.jpg", "Matcha Frappe":"images/matcha-frappe.jpg", "Matcha Latte (PREMIUM)":"images/matcha-latte--premium.jpg", "Dirty Matcha (PREMIUM)":"images/dirty-matcha--premium.jpg", "Cracking Matcha":"images/cracking-matcha.jpg", "Nutella Matcha":"images/nutella-matcha.jpg", "Mango Matcha":"images/mango-matcha.jpg", "Oreo Matcha":"images/oreo-matcha.jpg",
+  "Four Seasons":"images/four-seasons.jpg", "Green Apple":"images/green-apple.jpg", "Blue Lemonade":"images/blue-lemonade.jpg", "Blueberry":"images/blueberry.jpg", "Strawberry":"images/strawberry.jpg", "Lychee":"images/lychee.jpg", "Coke Float":"images/coke-float.jpg", "Dutchmill Float":"images/dutchmill-float.jpg", "Chuckie Float":"images/chuckie-float.jpg", "Frappe Macchiato":"images/frappe-macchiato.jpg", "Cookies de Crema":"images/cookies-de-crema.jpg", "Mekus de Berries":"images/mekus-de-berries.jpg", "Frappe de Choco":"images/frappe-de-choco.jpg", "Frappe de Taro":"images/frappe-de-taro.jpg", "Mango Smoothie":"images/mango-smoothie.jpg", "Familia de Verde":"images/familia-de-verde.jpg"
+};
+PRODUCTS.forEach(p=>p.image=IMAGE_MAP[p.name]||"");
 const SIZE_DEFAULT=["12 oz","16 oz","22 oz"];
 let category = PRODUCTS[0].category;
 let cart = JSON.parse(localStorage.getItem("kbr_cart")||"[]");
@@ -135,10 +162,42 @@ function render(){
     const all=[...p.prices,...(p.premium||[])];
     const min=Math.min(...all), max=Math.max(...all);
     const priceText=min===max?peso(min):`${peso(min)} – ${peso(max)}`;
-    return `<div class="card"><div><h3>${p.name}</h3><div class="price">${p.premium?'Budget '+priceText+' · Premium available':priceText}</div></div><button onclick='chooseProduct(${JSON.stringify(p)})'>Add</button></div>`
+    return `<div class="card"><div>${p.image?`<img class="product-img" src="${p.image}" alt="${p.name}" loading="lazy">`:''}<h3>${p.name}</h3><div class="price">${p.premium?'Budget '+priceText+' · Premium available':priceText}</div></div><button onclick='chooseProduct(${JSON.stringify(p)})'>Add</button></div>`
   }).join("");
   updateCartBar();
 }
+let swipeStartX=0, swipeStartY=0, swipeStartTime=0;
+function goToCategory(direction){
+  const current=cats.indexOf(category);
+  if(current<0) return;
+  const next=(current+direction+cats.length)%cats.length;
+  if(next===current) return;
+  const cls=direction>0?'swipe-out-left':'swipe-out-right';
+  products.classList.add(cls);
+  setTimeout(()=>{
+    category=cats[next];
+    render();
+    products.classList.remove(cls);
+    const activeTab=[...tabs.querySelectorAll('button')][next];
+    activeTab?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  },120);
+}
+products.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1) return;
+  swipeStartX=e.touches[0].clientX;
+  swipeStartY=e.touches[0].clientY;
+  swipeStartTime=Date.now();
+},{passive:true});
+products.addEventListener('touchend',e=>{
+  if(!swipeStartTime || e.changedTouches.length!==1) return;
+  const dx=e.changedTouches[0].clientX-swipeStartX;
+  const dy=e.changedTouches[0].clientY-swipeStartY;
+  const dt=Date.now()-swipeStartTime;
+  swipeStartTime=0;
+  if(dt>700 || Math.abs(dx)<70 || Math.abs(dx)<Math.abs(dy)*1.35) return;
+  goToCategory(dx<0?1:-1);
+},{passive:true});
+
 function chooseProduct(p){
   selected={p,type:p.premium?'budget':'standard',sizeIndex:0,qty:1};
   selName.textContent=p.name;
@@ -173,7 +232,11 @@ function persist(){localStorage.setItem("kbr_cart",JSON.stringify(cart))}
 function updateCartBar(){
   const count=cart.reduce((s,x)=>s+x.qty,0), total=cart.reduce((s,x)=>s+x.qty*x.price,0);
   itemCount.textContent=`${count} item${count===1?'':'s'}`;grandTotal.textContent=peso(total);
+  sideItemCount.textContent=`${count} item${count===1?'':'s'}`;sideGrandTotal.textContent=peso(total);
+  if(!cart.length){sideCartItems.innerHTML='<div class="empty">Your order is empty.<br>Add a drink to get started.</div>';return}
+  sideCartItems.innerHTML=cart.map((x,i)=>`<div class="cart-side-item"><div class="cart-side-top"><div class="cart-side-name">${x.name}<div class="cart-side-sub">${x.type!=='standard'?x.type+' · ':''}${x.size}</div></div><b>${peso(x.price*x.qty)}</b></div><div class="cart-side-controls"><div class="mini-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button></div><button class="secondary" onclick="removeItem(${i})">Remove</button></div></div>`).join('');
 }
+function changeCartQty(i,d){cart[i].qty=Math.max(0,cart[i].qty+d);if(cart[i].qty===0)cart.splice(i,1);persist();render()}
 function openOrder(){renderOrder();orderDrawer.classList.add("open")}
 function closeOrder(){orderDrawer.classList.remove("open")}
 function renderOrder(){
