@@ -47,6 +47,9 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .cart-badge{position:absolute;right:-3px;top:-3px;min-width:26px;height:26px;padding:0 7px;border-radius:999px;background:#d9483e;color:#fff;border:3px solid var(--cream);font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
 .primary{border:0;border-radius:14px;background:var(--brown);color:#fff;padding:14px 20px;font-size:16px;font-weight:800;min-height:52px}
 .secondary{border:1px solid #d9c7b5;background:#fff;border-radius:12px;padding:11px 14px;font-weight:700}
+#selectorDrawer .secondary{font-size:20px;background:#fff1f1;border-color:#e2b8b8;color:#8b2e2e;padding:14px 16px;min-height:54px}
+#orderDrawer .primary{background:#2f8f4e}
+#orderDrawer .primary:active{background:#267a41}
 .drawer{position:fixed;inset:0;background:rgba(24,17,12,.45);z-index:50;display:none;align-items:flex-end}
 .drawer.open{display:flex}
 .panel{background:var(--cream);width:100%;max-height:88vh;border-radius:24px 24px 0 0;padding:20px;overflow:auto}
@@ -335,13 +338,6 @@ async function makeReceipt(){
 
   closeOrder();
   receiptDrawer.classList.add("open");
-
-  // Automatically download the receipt as PNG as soon as Pay is pressed.
-  try {
-    await saveReceipt();
-  } catch (err) {
-    console.error("Receipt PNG save failed", err);
-  }
 
   // Checkout is complete: clear the cart so the next customer starts fresh.
   cart=[];
