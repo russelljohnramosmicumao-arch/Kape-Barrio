@@ -36,6 +36,9 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 #products.swipe-out-left{opacity:.15;transform:translateX(-28px)}
 #products.swipe-out-right{opacity:.15;transform:translateX(28px)}
 .swipe-hint{display:none;text-align:center;color:#8a7868;font-size:13px;margin:-4px 0 12px}
+.menu-toast{position:fixed;left:50%;top:96px;transform:translateX(-50%) translateY(-8px);z-index:60;pointer-events:none;opacity:0;background:rgba(33,27,23,.94);color:#fff;padding:13px 22px;border-radius:999px;font-family:Georgia,serif;font-size:22px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.22);white-space:nowrap;transition:opacity .18s ease,transform .18s ease}
+.menu-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:699px){.menu-toast{top:86px;font-size:20px;padding:11px 19px}}
 @media(max-width:699px){.swipe-hint{display:block}}
 .sectionTitle{font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px}
 .floating-cart{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:40;width:66px;height:66px;border:0;border-radius:50%;background:var(--brown);color:#fff;box-shadow:0 8px 25px rgba(60,40,25,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -85,6 +88,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
   <h2 id="sectionTitle" class="sectionTitle"></h2>
   <div id="products" class="grid"></div>
   <div class="swipe-hint">Swipe left or right to browse menus</div>
+<div id="menuToast" class="menu-toast" aria-live="polite"></div>
 </main>
 
 <button class="floating-cart" aria-label="Open cart" onclick="openOrder()">
@@ -161,6 +165,21 @@ function render(){
   updateCartBar();
 }
 let swipeStartX=0, swipeStartY=0, swipeStartTime=0;
+const CATEGORY_LABELS={
+  "Milk Tea Series":"Milk Tea",
+  "Coffee Series":"Coffee Drinks",
+  "Matcha Series":"Matcha Drinks",
+  "Soda":"Soda",
+  "Floats":"Floats",
+  "Frappe & Smoothies":"Frappe & Smoothies"
+};
+let toastTimer=null;
+function showMenuToast(name){
+  menuToast.textContent=CATEGORY_LABELS[name]||name;
+  menuToast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>menuToast.classList.remove("show"),1200);
+}
 function goToCategory(direction){
   const current=cats.indexOf(category);
   if(current<0) return;
@@ -172,6 +191,7 @@ function goToCategory(direction){
     category=cats[next];
     render();
     products.classList.remove(cls);
+    showMenuToast(category);
     const activeTab=[...tabs.querySelectorAll('button')][next];
     activeTab?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   },120);
