@@ -32,15 +32,16 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .price{color:var(--brown);font-weight:800;font-size:15px}
 .card button{margin-top:14px;border:0;border-radius:13px;background:#f0e3d5;color:#5b3825;font-weight:800;padding:12px;min-height:46px;font-size:16px}
 .card button:active{transform:scale(.98)}
-#products{touch-action:pan-y;transition:opacity .14s ease,transform .14s ease}
+#products{touch-action:pan-y;transition:opacity .14s ease,transform .14s ease;overscroll-behavior-x:contain}
 #products.swipe-out-left{opacity:.15;transform:translateX(-28px)}
 #products.swipe-out-right{opacity:.15;transform:translateX(28px)}
 .swipe-hint{display:none;text-align:center;color:#8a7868;font-size:13px;margin:-4px 0 12px}
 @media(max-width:699px){.swipe-hint{display:block}}
 .sectionTitle{font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px}
-.cartbar{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid #e6d8ca;padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 25px rgba(0,0,0,.10)}
-.cartbar-inner{max-width:1500px;margin:auto;display:flex;align-items:center;gap:12px}
-.total{flex:1}.total b{font-size:22px;color:var(--brown)}.total small{display:block;color:#7a6b60}
+.floating-cart{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:40;width:66px;height:66px;border:0;border-radius:50%;background:var(--brown);color:#fff;box-shadow:0 8px 25px rgba(60,40,25,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.floating-cart:active{transform:translateY(-50%) scale(.96)}
+.cart-icon{font-size:29px;line-height:1}
+.cart-badge{position:absolute;right:-3px;top:-3px;min-width:26px;height:26px;padding:0 7px;border-radius:999px;background:#d9483e;color:#fff;border:3px solid var(--cream);font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
 .primary{border:0;border-radius:14px;background:var(--brown);color:#fff;padding:14px 20px;font-size:16px;font-weight:800;min-height:52px}
 .secondary{border:1px solid #d9c7b5;background:#fff;border-radius:12px;padding:11px 14px;font-weight:700}
 .drawer{position:fixed;inset:0;background:rgba(24,17,12,.45);z-index:50;display:none;align-items:flex-end}
@@ -57,16 +58,19 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .qty button{width:44px;height:44px;border-radius:50%;border:1px solid #d7c6b5;background:#fff;font-size:22px}
 .order-list{display:flex;flex-direction:column;gap:10px;margin:10px 0 18px}
 .order-item{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center}
-.order-item .desc{flex:1}.order-item strong{color:var(--brown)}
-.cartSidebar{display:none}.cart-head{padding:18px 18px 12px;border-bottom:1px solid #eadfd4}.cart-head h2{margin:0;color:var(--brown);font-family:Georgia,serif}.cart-items{flex:1;overflow:auto;padding:12px}.cart-side-item{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:11px;margin-bottom:10px}.cart-side-top{display:flex;gap:10px}.cart-side-name{font-weight:800;flex:1}.cart-side-sub{font-size:13px;color:#7a6b60;margin-top:3px}.cart-side-controls{display:flex;align-items:center;justify-content:space-between;margin-top:8px}.mini-qty{display:flex;align-items:center;gap:8px}.mini-qty button{width:30px;height:30px;border-radius:9px;border:1px solid #d9c7b5;background:#fff;font-weight:800}.cart-footer{border-top:1px solid #eadfd4;padding:14px 14px calc(14px + env(safe-area-inset-bottom));background:#fff}.cart-total-line{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.cart-total-line b:last-child{font-size:22px;color:var(--brown)}
+.order-item .desc{flex:1}.order-item strong{color:var(--brown)}.cart-drawer-total{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;padding-top:14px;border-top:1px solid #eadfd4}.cart-drawer-total b:last-child{font-size:22px;color:var(--brown)}.order-qty{display:flex;align-items:center;gap:7px;margin-top:8px}.order-qty button{width:30px;height:30px;border-radius:9px;border:1px solid #d9c7b5;background:#fff;font-weight:800}
+
 .empty{padding:40px 10px;text-align:center;color:#857568}
 .receipt{background:#fff;max-width:480px;margin:0 auto;padding:26px;font-family:"Courier New",monospace;color:#111}
 .receipt .center{text-align:center}.receipt h3{margin:0 0 5px;font-size:21px}.receipt hr{border:0;border-top:1px dashed #777;margin:14px 0}
 .receipt-line{display:flex;justify-content:space-between;gap:10px;margin:7px 0}.receipt .item{flex:1}
 .receipt-actions{display:flex;gap:10px;max-width:480px;margin:14px auto 0}.receipt-actions button{flex:1}
 .notice{background:#edf5e6;color:#45652b;border:1px solid #cfe0be;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
-@media(min-width:700px){body{padding-right:320px}.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}.cartSidebar{display:flex;position:fixed;top:0;right:0;bottom:0;width:320px;z-index:45;background:var(--cream);flex-direction:column;border-left:1px solid #e6d8ca;box-shadow:-8px 0 25px rgba(0,0,0,.08)}.cartbar{display:none}.panel{max-width:760px;margin:auto;border-radius:24px;margin-bottom:20px}.drawer{align-items:center;padding:20px}}
-@media(max-width:699px){.cartSidebar{display:none}}
+@media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}.panel{max-width:760px;margin:auto;border-radius:24px}.drawer{align-items:center;padding:20px}}
+@media(max-width:699px){.floating-cart{right:14px;width:60px;height:60px}.cart-icon{font-size:27px}.cart-badge{min-width:24px;height:24px;font-size:12px}}
+
+/* Cart opens only when the floating cart button is pressed. */
+@media(min-width:700px){#orderDrawer{align-items:stretch;justify-content:flex-end;padding:0}#orderDrawer .panel{width:390px;max-width:390px;height:100%;max-height:none;border-radius:24px 0 0 24px;margin:0;padding:22px;box-shadow:-12px 0 30px rgba(0,0,0,.16)}}
 </style>
 </head>
 <body>
@@ -80,26 +84,14 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
   <div id="tabs" class="tabs"></div>
   <h2 id="sectionTitle" class="sectionTitle"></h2>
   <div id="products" class="grid"></div>
-  <div class="swipe-hint">Swipe left or right to change menu</div>
+  <div class="swipe-hint">Swipe left or right to browse menus</div>
 </main>
 
-<div class="cartbar">
-  <div class="cartbar-inner">
-    <div class="total"><small id="itemCount">0 items</small><b id="grandTotal">₱0</b></div>
-    <button class="secondary" onclick="openOrder()">View Order</button>
-    <button class="primary" onclick="openOrder()">Checkout</button>
-  </div>
-</div>
+<button class="floating-cart" aria-label="Open cart" onclick="openOrder()">
+  <span class="cart-icon" aria-hidden="true">🛒</span>
+  <span id="cartBadge" class="cart-badge">0</span>
+</button>
 
-<aside class="cartSidebar">
-  <div class="cart-head"><h2>Your Order</h2><div class="muted" id="sideItemCount">0 items</div></div>
-  <div id="sideCartItems" class="cart-items"></div>
-  <div class="cart-footer">
-    <div class="cart-total-line"><span>Total</span><b id="sideGrandTotal">₱0</b></div>
-    <button class="primary" style="width:100%" onclick="makeReceipt()">Generate Receipt</button>
-    <button class="secondary" style="width:100%;margin-top:8px" onclick="clearOrder()">Clear Order</button>
-  </div>
-</aside>
 
 <div id="selector" class="drawer" onclick="if(event.target===this)closeSelector()">
   <div class="panel">
@@ -118,8 +110,10 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 
 <div id="orderDrawer" class="drawer" onclick="if(event.target===this)closeOrder()">
   <div class="panel">
-    <h2>Your Order</h2>
+    <h2>Your Cart</h2>
+    <div class="muted" style="margin:4px 0 12px">Review your drinks before checkout.</div>
     <div id="orderList" class="order-list"></div>
+    <div id="cartDrawerTotal" class="cart-drawer-total"><span>Total</span><b>₱0</b></div>
     <div class="row"><button class="secondary" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Generate Receipt</button></div>
     <button class="secondary" style="width:100%;margin-top:10px" onclick="closeOrder()">Continue ordering</button>
   </div>
@@ -230,18 +224,19 @@ function addSelected(){
 }
 function persist(){localStorage.setItem("kbr_cart",JSON.stringify(cart))}
 function updateCartBar(){
-  const count=cart.reduce((s,x)=>s+x.qty,0), total=cart.reduce((s,x)=>s+x.qty*x.price,0);
-  itemCount.textContent=`${count} item${count===1?'':'s'}`;grandTotal.textContent=peso(total);
-  sideItemCount.textContent=`${count} item${count===1?'':'s'}`;sideGrandTotal.textContent=peso(total);
-  if(!cart.length){sideCartItems.innerHTML='<div class="empty">Your order is empty.<br>Add a drink to get started.</div>';return}
-  sideCartItems.innerHTML=cart.map((x,i)=>`<div class="cart-side-item"><div class="cart-side-top"><div class="cart-side-name">${x.name}<div class="cart-side-sub">${x.type!=='standard'?x.type+' · ':''}${x.size}</div></div><b>${peso(x.price*x.qty)}</b></div><div class="cart-side-controls"><div class="mini-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button></div><button class="secondary" onclick="removeItem(${i})">Remove</button></div></div>`).join('');
+  const count=cart.reduce((s,x)=>s+x.qty,0);
+  cartBadge.textContent=count>99?'99+':String(count);
+  cartBadge.style.display=count?'flex':'none';
 }
-function changeCartQty(i,d){cart[i].qty=Math.max(0,cart[i].qty+d);if(cart[i].qty===0)cart.splice(i,1);persist();render()}
+
+function changeCartQty(i,d){cart[i].qty=Math.max(0,cart[i].qty+d);if(cart[i].qty===0)cart.splice(i,1);persist();render();renderOrder()}
 function openOrder(){renderOrder();orderDrawer.classList.add("open")}
 function closeOrder(){orderDrawer.classList.remove("open")}
 function renderOrder(){
-  if(!cart.length){orderList.innerHTML='<div class="empty">Your order is empty.<br>Add a drink to get started.</div>';return}
-  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${x.name}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size} · ${peso(x.price)} each</small></div><strong>${peso(x.price*x.qty)}</strong><button class="secondary" onclick="removeItem(${i})">×</button></div>`).join("");
+  const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+  cartDrawerTotal.innerHTML=`<span>Total</span><b>${peso(total)}</b>`;
+  if(!cart.length){orderList.innerHTML='<div class="empty">Your cart is empty.<br>Add a drink to get started.</div>';return}
+  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${x.name}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size} · ${peso(x.price)} each</small><div class="order-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button><button class="secondary" style="margin-left:4px" onclick="removeItem(${i})">Remove</button></div></div><strong>${peso(x.price*x.qty)}</strong></div>`).join("");
 }
 function removeItem(i){cart.splice(i,1);persist();render();renderOrder()}
 function clearOrder(){if(confirm("Clear this order?")){cart=[];persist();render();renderOrder()}}

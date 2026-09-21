@@ -1,11 +1,13 @@
-Kape' Bar-Rio POS – Version 2
+Kape' Bar-Rio POS – Version 5
 
 Changes:
-- Added drink photos cropped from the supplied menu artwork.
-- Added a visible order/cart sidebar on iPad/tablet/desktop screens.
-- Cart shows every selected item, size/type, quantity, line total, and grand total.
-- Quantity +/- controls are available directly in the sidebar.
-- On smaller phones, the bottom cart bar and order drawer remain available.
-- Offline/localStorage behavior remains from Version 1.
+- Drink photos cropped from the supplied menu artwork.
+- Menu prices are hidden until the customer chooses a size (and Budget/Premium where applicable).
+- Swipe left/right across the drink grid to move between menu categories.
+- Removed the always-visible order panel.
+- Added a floating cart button on the right side with a live item-count badge.
+- Tap the cart button to open the order cart. On iPad/desktop the cart opens as a right-side drawer; on smaller screens it opens as a drawer.
+- Cart includes quantity +/- controls, remove, total, and receipt generation.
+- Offline/localStorage behavior remains.
 
 IMPORTANT: Verify all menu names and prices before live use.
