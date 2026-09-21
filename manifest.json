@@ -1,0 +1,16 @@
+{
+  "name": "Kape' Bar-Rio POS",
+  "short_name": "Kape' Bar-Rio",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fbf7f0",
+  "theme_color": "#6b4328",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

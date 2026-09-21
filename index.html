@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5b3825">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kape' Bar-Rio POS">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="logo.png">
+<title>Kape' Bar-Rio POS</title>
+<style>
+:root{--brown:#6b4328;--cream:#fbf7f0;--ink:#211b17;--tan:#d9c1a6;--green:#6e8b48;--card:#fff;--shadow:0 8px 25px rgba(60,40,25,.10)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+header{position:sticky;top:0;z-index:20;background:rgba(251,247,240,.96);backdrop-filter:blur(12px);border-bottom:1px solid #eadfD2;padding:14px 18px 10px}
+.brand{display:flex;align-items:center;gap:12px;max-width:1500px;margin:auto}
+.brand img{width:58px;height:58px;object-fit:cover;border-radius:14px;border:1px solid #eadfd2}
+.brand h1{font-family:Georgia,serif;margin:0;color:var(--brown);font-size:24px}
+.brand small{color:#7e6a59}
+main{max-width:1500px;margin:auto;padding:16px 18px 150px}
+.tabs{display:flex;gap:8px;overflow:auto;padding:2px 0 14px;scrollbar-width:none}
+.tabs button{white-space:nowrap;border:1px solid #d8c7b5;background:#fff;border-radius:999px;padding:11px 16px;font-weight:700;color:#654a36}
+.tabs button.active{background:var(--brown);color:#fff;border-color:var(--brown)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid #eee3d7;border-radius:18px;padding:16px;box-shadow:var(--shadow);min-height:140px;display:flex;flex-direction:column;justify-content:space-between}
+.card h3{font-size:18px;line-height:1.15;margin:0 0 8px}
+.price{color:var(--brown);font-weight:800;font-size:15px}
+.card button{margin-top:14px;border:0;border-radius:13px;background:#f0e3d5;color:#5b3825;font-weight:800;padding:12px;min-height:46px;font-size:16px}
+.card button:active{transform:scale(.98)}
+.sectionTitle{font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px}
+.cartbar{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid #e6d8ca;padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 25px rgba(0,0,0,.10)}
+.cartbar-inner{max-width:1500px;margin:auto;display:flex;align-items:center;gap:12px}
+.total{flex:1}.total b{font-size:22px;color:var(--brown)}.total small{display:block;color:#7a6b60}
+.primary{border:0;border-radius:14px;background:var(--brown);color:#fff;padding:14px 20px;font-size:16px;font-weight:800;min-height:52px}
+.secondary{border:1px solid #d9c7b5;background:#fff;border-radius:12px;padding:11px 14px;font-weight:700}
+.drawer{position:fixed;inset:0;background:rgba(24,17,12,.45);z-index:50;display:none;align-items:flex-end}
+.drawer.open{display:flex}
+.panel{background:var(--cream);width:100%;max-height:88vh;border-radius:24px 24px 0 0;padding:20px;overflow:auto}
+.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}
+.muted{color:#7a6b60}
+.options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.opt{border:2px solid #dfd1c2;background:#fff;border-radius:14px;padding:15px 8px;text-align:center;font-weight:800}
+.opt.selected{border-color:var(--brown);background:#f2e6d9}
+.opt span{display:block;color:var(--brown);margin-top:4px}
+.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
+.qty{display:flex;align-items:center;justify-content:center;gap:15px}
+.qty button{width:44px;height:44px;border-radius:50%;border:1px solid #d7c6b5;background:#fff;font-size:22px}
+.order-list{display:flex;flex-direction:column;gap:10px;margin:10px 0 18px}
+.order-item{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center}
+.order-item .desc{flex:1}.order-item strong{color:var(--brown)}
+.empty{padding:40px 10px;text-align:center;color:#857568}
+.receipt{background:#fff;max-width:480px;margin:0 auto;padding:26px;font-family:"Courier New",monospace;color:#111}
+.receipt .center{text-align:center}.receipt h3{margin:0 0 5px;font-size:21px}.receipt hr{border:0;border-top:1px dashed #777;margin:14px 0}
+.receipt-line{display:flex;justify-content:space-between;gap:10px;margin:7px 0}.receipt .item{flex:1}
+.receipt-actions{display:flex;gap:10px;max-width:480px;margin:14px auto 0}.receipt-actions button{flex:1}
+.notice{background:#edf5e6;color:#45652b;border:1px solid #cfe0be;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
+@media(min-width:900px){.panel{max-width:760px;margin:auto;border-radius:24px;margin-bottom:20px}.drawer{align-items:center;padding:20px}.cartbar{padding-left:30px;padding-right:30px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="logo.png" alt="Kape' Bar-Rio">
+    <div><h1>Kape' Bar-Rio</h1><small>Shop & Cafe · POS</small></div>
+  </div>
+</header>
+<main>
+  <div id="tabs" class="tabs"></div>
+  <h2 id="sectionTitle" class="sectionTitle"></h2>
+  <div id="products" class="grid"></div>
+</main>
+
+<div class="cartbar">
+  <div class="cartbar-inner">
+    <div class="total"><small id="itemCount">0 items</small><b id="grandTotal">₱0</b></div>
+    <button class="secondary" onclick="openOrder()">View Order</button>
+    <button class="primary" onclick="openOrder()">Checkout</button>
+  </div>
+</div>
+
+<div id="selector" class="drawer" onclick="if(event.target===this)closeSelector()">
+  <div class="panel">
+    <h2 id="selName"></h2><div id="selType" class="muted"></div>
+    <div id="premiumWrap" style="display:none">
+      <p><b>Choose type</b></p><div id="typeOptions" class="options"></div>
+    </div>
+    <p><b>Choose size</b></p><div id="sizeOptions" class="options"></div>
+    <div class="row">
+      <div class="qty"><button onclick="changeQty(-1)">−</button><b id="selQty">1</b><button onclick="changeQty(1)">+</button></div>
+      <button class="primary" onclick="addSelected()">Add to order</button>
+    </div>
+    <button class="secondary" style="width:100%;margin-top:10px" onclick="closeSelector()">Cancel</button>
+  </div>
+</div>
+
+<div id="orderDrawer" class="drawer" onclick="if(event.target===this)closeOrder()">
+  <div class="panel">
+    <h2>Your Order</h2>
+    <div id="orderList" class="order-list"></div>
+    <div class="row"><button class="secondary" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Generate Receipt</button></div>
+    <button class="secondary" style="width:100%;margin-top:10px" onclick="closeOrder()">Continue ordering</button>
+  </div>
+</div>
+
+<div id="receiptDrawer" class="drawer" onclick="if(event.target===this)closeReceipt()">
+  <div class="panel">
+    <div id="receiptArea"></div>
+    <div class="receipt-actions">
+      <button class="secondary" onclick="closeReceipt()">Close</button>
+      <button class="primary" onclick="saveReceipt()">Save PNG</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = [{"category": "Milk Tea Series", "name": "Matcha Milk Tea", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Blueberry Milk Tea", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Taro Milk Tea", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Caramel Brown Sugar", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Strawberry Milk Tea", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Okinawa Milk Tea", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Wintermelon Milk Tea", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Black Forest Choco", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Cookies and Cream", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "White Bunny Milk Tea", "prices": [49, 59, 79], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Red Matcha Milk Tea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Dirty Matcha Milk Tea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Green Taro MilkTea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Blue-ish Red MilkTea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Milk Tea Series", "name": "Dirty Taro MilkTea", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Caramel Macchiato", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [119, 139], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Vanilla Latte", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [109, 129], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Caramel Latte", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [109, 129], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Iced Mocha Latte", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [109, 129], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Dirty Matcha", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [119, 139], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Spanish Latte", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": [119, 139], "premiumSizes": ["16 oz", "22 oz"]}, {"category": "Coffee Series", "name": "Dirty Taro", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Americano", "prices": [89, 109], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Cappuccino", "prices": [99, 119], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Oreo Coffee", "prices": [79, 89, 109], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "Frappuccino", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Coffee Series", "name": "FrapMacchiato", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Matcha Milk Tea", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Matcha Latte", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Green Taro", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Red Matcha", "prices": [69, 79, 99], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Dirty Matcha", "prices": [59, 69, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Familia De Verde", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Matcha Frappe", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Matcha Latte (Premium)", "prices": [109, 129], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Dirty Matcha (Premium)", "prices": [119, 139], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Cracking Matcha", "prices": [129, 159], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Nutella Matcha", "prices": [129, 159], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Mango Matcha", "prices": [129, 159], "sizes": ["16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Matcha Series", "name": "Oreo Matcha", "prices": [79, 89, 109], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Four Seasons", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Green Apple", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Blue Lemonade", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Blueberry", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Strawberry", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Soda", "name": "Lychee", "prices": [39, 49, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Floats", "name": "Coke Float", "prices": [49, 59, 69], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Floats", "name": "Dutchmill Float", "prices": [69, 79, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Floats", "name": "Chuckie Float", "prices": [69, 79, 89], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Frappe Macchiato", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Frappuccino", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Cookies de Crema", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Mekus de Berries", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Frappe de Choco", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Frappe de Taro", "prices": [89, 99, 119], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Matcha Frappe", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Mango Smoothie", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}, {"category": "Frappe & Smoothies", "name": "Familia de Verde", "prices": [99, 109, 129], "sizes": ["12 oz", "16 oz", "22 oz"], "premium": null, "premiumSizes": null}];
+const SIZE_DEFAULT=["12 oz","16 oz","22 oz"];
+let category = PRODUCTS[0].category;
+let cart = JSON.parse(localStorage.getItem("kbr_cart")||"[]");
+let selected = null;
+
+const cats=[...new Set(PRODUCTS.map(p=>p.category))];
+function peso(n){return "₱"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:0})}
+function renderTabs(){
+  tabs.innerHTML=cats.map(c=>`<button class="${c===category?'active':''}" onclick="category=${JSON.stringify(c)};render()">${c}</button>`).join("");
+}
+function render(){
+  renderTabs();
+  sectionTitle.textContent=category;
+  const items=PRODUCTS.filter(p=>p.category===category);
+  products.innerHTML=items.map((p,i)=>{
+    const all=[...p.prices,...(p.premium||[])];
+    const min=Math.min(...all), max=Math.max(...all);
+    const priceText=min===max?peso(min):`${peso(min)} – ${peso(max)}`;
+    return `<div class="card"><div><h3>${p.name}</h3><div class="price">${p.premium?'Budget '+priceText+' · Premium available':priceText}</div></div><button onclick='chooseProduct(${JSON.stringify(p)})'>Add</button></div>`
+  }).join("");
+  updateCartBar();
+}
+function chooseProduct(p){
+  selected={p,type:p.premium?'budget':'standard',sizeIndex:0,qty:1};
+  selName.textContent=p.name;
+  premiumWrap.style.display=p.premium?'block':'none';
+  if(p.premium) renderTypes(); else selType.textContent="Select size";
+  renderSizes();
+  selQty.textContent=1;
+  selector.classList.add("open");
+}
+function renderTypes(){
+  typeOptions.innerHTML=`<button class="opt ${selected.type==='budget'?'selected':''}" onclick="selected.type='budget';renderTypes();renderSizes()">Budget</button>
+  <button class="opt ${selected.type==='premium'?'selected':''}" onclick="selected.type='premium';renderTypes();renderSizes()">Premium</button>`;
+}
+function renderSizes(){
+  const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
+  const prices=selected.type==='premium'?p.premium:p.prices;
+  selected.sizeIndex=Math.min(selected.sizeIndex,prices.length-1);
+  sizeOptions.innerHTML=sizes.map((s,i)=>`<button class="opt ${i===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${i};renderSizes()">${s}<span>${peso(prices[i])}</span></button>`).join("");
+  selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
+}
+function changeQty(d){selected.qty=Math.max(1,selected.qty+d);selQty.textContent=selected.qty}
+function addSelected(){
+  const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
+  const prices=selected.type==='premium'?p.premium:p.prices;
+  const item={name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty};
+  const key=JSON.stringify([item.name,item.type,item.size,item.price]);
+  const old=cart.find(x=>x.key===key);
+  if(old) old.qty+=item.qty; else {item.key=key;cart.push(item)}
+  persist();closeSelector();render();
+}
+function persist(){localStorage.setItem("kbr_cart",JSON.stringify(cart))}
+function updateCartBar(){
+  const count=cart.reduce((s,x)=>s+x.qty,0), total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+  itemCount.textContent=`${count} item${count===1?'':'s'}`;grandTotal.textContent=peso(total);
+}
+function openOrder(){renderOrder();orderDrawer.classList.add("open")}
+function closeOrder(){orderDrawer.classList.remove("open")}
+function renderOrder(){
+  if(!cart.length){orderList.innerHTML='<div class="empty">Your order is empty.<br>Add a drink to get started.</div>';return}
+  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${x.name}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size} · ${peso(x.price)} each</small></div><strong>${peso(x.price*x.qty)}</strong><button class="secondary" onclick="removeItem(${i})">×</button></div>`).join("");
+}
+function removeItem(i){cart.splice(i,1);persist();render();renderOrder()}
+function clearOrder(){if(confirm("Clear this order?")){cart=[];persist();render();renderOrder()}}
+function closeSelector(){selector.classList.remove("open")}
+function closeReceipt(){receiptDrawer.classList.remove("open")}
+function orderNumber(){
+  let n=Number(localStorage.getItem("kbr_order_no")||0)+1;localStorage.setItem("kbr_order_no",String(n));return String(n).padStart(5,"0")
+}
+let currentReceipt=null;
+function makeReceipt(){
+  if(!cart.length){alert("Add at least one item.");return}
+  const no=orderNumber(), now=new Date(), total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+  const date=now.toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"});
+  const time=now.toLocaleTimeString("en-PH",{hour:"numeric",minute:"2-digit"});
+  currentReceipt={no,date,time,total,items:JSON.parse(JSON.stringify(cart))};
+  receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt">
+    <div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div>Order #${no}</div><div>${date} · ${time}</div></div>
+    <hr>${currentReceipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join("")}
+    <hr><div class="receipt-line"><b>TOTAL</b><b>${peso(total)}</b></div><hr><div class="center">Thank you!</div>
+  </div>`;
+  closeOrder();receiptDrawer.classList.add("open");
+}
+async function saveReceipt(){
+  const el=document.getElementById("receiptCanvas");
+  const canvas=document.createElement("canvas"), scale=2;
+  const w=el.offsetWidth, h=el.offsetHeight; canvas.width=w*scale;canvas.height=h*scale;
+  const ctx=canvas.getContext("2d");ctx.scale(scale,scale);ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);
+  // Draw text using a simple DOM-to-canvas routine tailored to this receipt.
+  const lines=[
+    "KAPE' BAR-RIO","SHOP & CAFE",`Order #${currentReceipt.no}`,`${currentReceipt.date} · ${currentReceipt.time}`,"",
+    ...currentReceipt.items.flatMap(x=>[`${x.qty}× ${x.name}`,`   ${x.type!=='standard'?x.type+' · ':''}${x.size}     ${peso(x.qty*x.price)}`]),
+    "",`TOTAL                         ${peso(currentReceipt.total)}`,"","Thank you!"
+  ];
+  ctx.fillStyle="#111";ctx.textAlign="left";ctx.font="bold 24px monospace";
+  let y=38; for(let i=0;i<lines.length;i++){ if(i===0)ctx.font="bold 28px monospace"; else if(i===1)ctx.font="18px monospace"; else ctx.font="18px monospace"; ctx.fillText(lines[i],18,y);y+=30; }
+  const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`Kape-Bar-Rio-Receipt-${currentReceipt.no}.png`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+render();
+</script>
+</body></html>
