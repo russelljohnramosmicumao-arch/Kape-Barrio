@@ -36,9 +36,9 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 #products.swipe-out-left{opacity:.15;transform:translateX(-28px)}
 #products.swipe-out-right{opacity:.15;transform:translateX(28px)}
 .swipe-hint{display:none;text-align:center;color:#8a7868;font-size:13px;margin:-4px 0 12px}
-.menu-toast{position:fixed;left:50%;top:96px;transform:translateX(-50%) translateY(-8px);z-index:60;pointer-events:none;opacity:0;background:rgba(33,27,23,.94);color:#fff;padding:13px 22px;border-radius:999px;font-family:Georgia,serif;font-size:22px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.22);white-space:nowrap;transition:opacity .18s ease,transform .18s ease}
-.menu-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:699px){.menu-toast{top:86px;font-size:20px;padding:11px 19px}}
+.menu-toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);z-index:60;pointer-events:none;opacity:0;background:rgba(33,27,23,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;padding:24px 34px;border-radius:24px;font-family:Georgia,serif;font-size:34px;font-weight:700;box-shadow:0 18px 55px rgba(0,0,0,.28);white-space:nowrap;transition:opacity .2s ease,transform .2s ease;text-align:center}
+.menu-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+@media(max-width:699px){.menu-toast{font-size:28px;padding:20px 26px;max-width:82vw;white-space:normal}}
 @media(max-width:699px){.swipe-hint{display:block}}
 .sectionTitle{font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px}
 .floating-cart{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:40;width:66px;height:66px;border:0;border-radius:50%;background:var(--brown);color:#fff;box-shadow:0 8px 25px rgba(60,40,25,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -64,10 +64,10 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .order-item .desc{flex:1}.order-item strong{color:var(--brown)}.cart-drawer-total{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;padding-top:14px;border-top:1px solid #eadfd4}.cart-drawer-total b:last-child{font-size:22px;color:var(--brown)}.order-qty{display:flex;align-items:center;gap:7px;margin-top:8px}.order-qty button{width:30px;height:30px;border-radius:9px;border:1px solid #d9c7b5;background:#fff;font-weight:800}
 
 .empty{padding:40px 10px;text-align:center;color:#857568}
-.receipt{background:#fff;max-width:480px;margin:0 auto;padding:26px;font-family:"Courier New",monospace;color:#111}
-.receipt .center{text-align:center}.receipt h3{margin:0 0 5px;font-size:21px}.receipt hr{border:0;border-top:1px dashed #777;margin:14px 0}
+.receipt{background:#fff;max-width:480px;margin:0 auto;padding:30px 44px;font-family:"Courier New",monospace;color:#111;box-sizing:border-box}
+.receipt .center{text-align:center}.receipt h3{margin:0 0 5px;font-size:21px}.receipt .receipt-number{display:block;text-align:center;font-weight:700;letter-spacing:.5px;margin-top:4px}.receipt hr{border:0;border-top:1px dashed #777;margin:14px 0}
 .receipt-line{display:flex;justify-content:space-between;gap:10px;margin:7px 0}.receipt .item{flex:1}
-.receipt-actions{display:flex;gap:10px;max-width:480px;margin:14px auto 0}.receipt-actions button{flex:1}
+.receipt-actions{display:flex;gap:10px;max-width:480px;margin:14px auto 0}.receipt-actions button{flex:1;min-height:46px}
 .notice{background:#edf5e6;color:#45652b;border:1px solid #cfe0be;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}.panel{max-width:760px;margin:auto;border-radius:24px}.drawer{align-items:center;padding:20px}}
 @media(max-width:699px){.floating-cart{right:14px;width:60px;height:60px}.cart-icon{font-size:27px}.cart-badge{min-width:24px;height:24px;font-size:12px}}
@@ -118,7 +118,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div class="muted" style="margin:4px 0 12px">Review your drinks before checkout.</div>
     <div id="orderList" class="order-list"></div>
     <div id="cartDrawerTotal" class="cart-drawer-total"><span>Total</span><b>₱0</b></div>
-    <div class="row"><button class="secondary" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Generate Receipt</button></div>
+    <div class="row"><button class="secondary" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Pay</button></div>
     <button class="secondary" style="width:100%;margin-top:10px" onclick="closeOrder()">Continue ordering</button>
   </div>
 </div>
@@ -128,7 +128,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div id="receiptArea"></div>
     <div class="receipt-actions">
       <button class="secondary" onclick="closeReceipt()">Close</button>
-      <button class="primary" onclick="saveReceipt()">Save PNG</button>
+      <button class="primary" onclick="payAtCounter()">Pay at the counter</button>
     </div>
   </div>
 </div>
@@ -157,10 +157,7 @@ function render(){
   sectionTitle.textContent=category;
   const items=PRODUCTS.filter(p=>p.category===category);
   products.innerHTML=items.map((p,i)=>{
-    const all=[...p.prices,...(p.premium||[])];
-    const min=Math.min(...all), max=Math.max(...all);
-    const priceText=min===max?peso(min):`${peso(min)} – ${peso(max)}`;
-    return `<div class="card"><div>${p.image?`<img class="product-img" src="${p.image}" alt="${p.name}" loading="lazy">`:''}<h3>${p.name}</h3><div class="price">${p.premium?'Budget '+priceText+' · Premium available':priceText}</div></div><button onclick='chooseProduct(${JSON.stringify(p)})'>Add</button></div>`
+    return `<div class="card"><div>${p.image?`<img class="product-img" src="${p.image}" alt="${p.name}" loading="lazy">`:''}<h3>${p.name}</h3></div><button onclick='chooseProduct(${JSON.stringify(p)})'>Add</button></div>`
   }).join("");
   updateCartBar();
 }
@@ -169,7 +166,7 @@ const CATEGORY_LABELS={
   "Milk Tea Series":"Milk Tea",
   "Coffee Series":"Coffee Drinks",
   "Matcha Series":"Matcha Drinks",
-  "Soda":"Soda",
+  "Soda":"Fruit Soda Series",
   "Floats":"Floats",
   "Frappe & Smoothies":"Frappe & Smoothies"
 };
@@ -256,9 +253,8 @@ function renderOrder(){
   const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
   cartDrawerTotal.innerHTML=`<span>Total</span><b>${peso(total)}</b>`;
   if(!cart.length){orderList.innerHTML='<div class="empty">Your cart is empty.<br>Add a drink to get started.</div>';return}
-  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${x.name}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size} · ${peso(x.price)} each</small><div class="order-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button><button class="secondary" style="margin-left:4px" onclick="removeItem(${i})">Remove</button></div></div><strong>${peso(x.price*x.qty)}</strong></div>`).join("");
+  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${x.name}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size} · ${peso(x.price)} each</small><div class="order-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button></div></div><strong>${peso(x.price*x.qty)}</strong></div>`).join("");
 }
-function removeItem(i){cart.splice(i,1);persist();render();renderOrder()}
 function clearOrder(){if(confirm("Clear this order?")){cart=[];persist();render();renderOrder()}}
 function closeSelector(){selector.classList.remove("open")}
 function closeReceipt(){receiptDrawer.classList.remove("open")}
@@ -266,36 +262,147 @@ function orderNumber(){
   let n=Number(localStorage.getItem("kbr_order_no")||0)+1;localStorage.setItem("kbr_order_no",String(n));return String(n).padStart(5,"0")
 }
 let currentReceipt=null;
-function makeReceipt(){
+async function makeReceipt(){
   if(!cart.length){alert("Add at least one item.");return}
   const no=orderNumber(), now=new Date(), total=cart.reduce((s,x)=>s+x.qty*x.price,0);
   const date=now.toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"});
   const time=now.toLocaleTimeString("en-PH",{hour:"numeric",minute:"2-digit"});
   currentReceipt={no,date,time,total,items:JSON.parse(JSON.stringify(cart))};
   receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt">
-    <div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div>Order #${no}</div><div>${date} · ${time}</div></div>
+    <div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${no}</div><div>${date} · ${time}</div></div>
     <hr>${currentReceipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join("")}
     <hr><div class="receipt-line"><b>TOTAL</b><b>${peso(total)}</b></div><hr><div class="center">Thank you!</div>
   </div>`;
-  closeOrder();receiptDrawer.classList.add("open");
+
+  closeOrder();
+  receiptDrawer.classList.add("open");
+
+  // Automatically download the receipt as PNG as soon as Pay is pressed.
+  try {
+    await saveReceipt();
+  } catch (err) {
+    console.error("Receipt PNG save failed", err);
+  }
+
+  // Checkout is complete: clear the cart so the next customer starts fresh.
+  cart=[];
+  persist();
+  render();
+  renderOrder();
 }
+
 async function saveReceipt(){
+  if(!currentReceipt) return;
   const el=document.getElementById("receiptCanvas");
+  if(!el) return;
+
   const canvas=document.createElement("canvas"), scale=2;
-  const w=el.offsetWidth, h=el.offsetHeight; canvas.width=w*scale;canvas.height=h*scale;
-  const ctx=canvas.getContext("2d");ctx.scale(scale,scale);ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);
-  // Draw text using a simple DOM-to-canvas routine tailored to this receipt.
-  const lines=[
-    "KAPE' BAR-RIO","SHOP & CAFE",`Order #${currentReceipt.no}`,`${currentReceipt.date} · ${currentReceipt.time}`,"",
-    ...currentReceipt.items.flatMap(x=>[`${x.qty}× ${x.name}`,`   ${x.type!=='standard'?x.type+' · ':''}${x.size}     ${peso(x.qty*x.price)}`]),
-    "",`TOTAL                         ${peso(currentReceipt.total)}`,"","Thank you!"
+  const w=Math.max(el.offsetWidth, 420), h=el.offsetHeight;
+  canvas.width=w*scale;
+  canvas.height=h*scale;
+  const ctx=canvas.getContext("2d");
+  ctx.scale(scale,scale);
+  ctx.fillStyle="#fff";
+  ctx.fillRect(0,0,w,h);
+
+  // Receipt header is centered so the order number is never clipped on the left.
+  const centerLines=[
+    "KAPE' BAR-RIO",
+    "SHOP & CAFE",
+    `Order #${currentReceipt.no}`,
+    `${currentReceipt.date} · ${currentReceipt.time}`
   ];
-  ctx.fillStyle="#111";ctx.textAlign="left";ctx.font="bold 24px monospace";
-  let y=38; for(let i=0;i<lines.length;i++){ if(i===0)ctx.font="bold 28px monospace"; else if(i===1)ctx.font="18px monospace"; else ctx.font="18px monospace"; ctx.fillText(lines[i],18,y);y+=30; }
-  const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`Kape-Bar-Rio-Receipt-${currentReceipt.no}.png`;a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  let y=42;
+  ctx.fillStyle="#111";
+  ctx.textAlign="center";
+  centerLines.forEach((line,i)=>{
+    ctx.font=i===0?"bold 28px monospace":(i===2?"bold 20px monospace":"18px monospace");
+    ctx.fillText(line,w/2,y);
+    y+=30;
+  });
+
+  y+=8;
+  ctx.textAlign="left";
+  ctx.font="18px monospace";
+  currentReceipt.items.forEach(x=>{
+    const left=`${x.qty}× ${x.name}`;
+    const right=peso(x.qty*x.price);
+    ctx.font="18px monospace";
+    ctx.fillText(left,28,y);
+    ctx.textAlign="right";
+    ctx.fillText(right,w-28,y);
+    ctx.textAlign="left";
+    y+=27;
+    ctx.font="15px monospace";
+    ctx.fillText(`${x.type!=='standard'?x.type+' · ':''}${x.size}`,44,y);
+    y+=28;
+  });
+
+  ctx.font="bold 20px monospace";
+  ctx.fillText("TOTAL",28,y);
+  ctx.textAlign="right";
+  ctx.fillText(peso(currentReceipt.total),w-28,y);
+  ctx.textAlign="center";
+  y+=34;
+  ctx.font="18px monospace";
+  ctx.fillText("Thank you!",w/2,y);
+
+  canvas.height=Math.ceil((y+28)*scale);
+  // Resizing canvas resets the context, so redraw using the DOM receipt as a clean fallback-sized canvas.
+  // Use the already rendered receipt dimensions if the browser supports direct capture dimensions.
+  const finalCanvas=document.createElement("canvas");
+  finalCanvas.width=w*scale;
+  finalCanvas.height=Math.ceil((y+28)*scale);
+  const fctx=finalCanvas.getContext("2d");
+  fctx.scale(scale,scale);
+  fctx.fillStyle="#fff";
+  fctx.fillRect(0,0,w,y+28);
+
+  let fy=42;
+  fctx.fillStyle="#111";
+  fctx.textAlign="center";
+  centerLines.forEach((line,i)=>{
+    fctx.font=i===0?"bold 28px monospace":(i===2?"bold 20px monospace":"18px monospace");
+    fctx.fillText(line,w/2,fy);
+    fy+=30;
+  });
+  fy+=8;
+  fctx.textAlign="left";
+  currentReceipt.items.forEach(x=>{
+    fctx.font="18px monospace";
+    fctx.fillText(`${x.qty}× ${x.name}`,28,fy);
+    fctx.textAlign="right";
+    fctx.fillText(peso(x.qty*x.price),w-28,fy);
+    fctx.textAlign="left";
+    fy+=27;
+    fctx.font="15px monospace";
+    fctx.fillText(`${x.type!=='standard'?x.type+' · ':''}${x.size}`,44,fy);
+    fy+=28;
+  });
+  fctx.font="bold 20px monospace";
+  fctx.fillText("TOTAL",28,fy);
+  fctx.textAlign="right";
+  fctx.fillText(peso(currentReceipt.total),w-28,fy);
+  fctx.textAlign="center";
+  fy+=34;
+  fctx.font="18px monospace";
+  fctx.fillText("Thank you!",w/2,fy);
+
+  const blob=await new Promise((resolve,reject)=>finalCanvas.toBlob(b=>b?resolve(b):reject(new Error("PNG creation failed")),"image/png"));
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`Kape-Bar-Rio-Receipt-${currentReceipt.no}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+
+function payAtCounter(){
+  closeReceipt();
+}
+
 if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 render();
 </script>
