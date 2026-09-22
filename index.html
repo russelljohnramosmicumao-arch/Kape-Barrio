@@ -541,7 +541,7 @@ function showGcashPayment(){
   paymentSide.innerHTML=`
     <h2 class="payment-title">GCash Payment</h2>
     <div class="payment-total"><span>Total Amount</span><b>${peso(currentReceipt?.total||0)}</b></div>
-    <img class="gcash-card" src="images/gcash-card.png" alt="GCash QR code">
+    <img class="gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src="images/gcash-card.png";">
     <div class="gcash-number">GCash Number: 09672365176</div>
     <div class="gcash-help">Scan the QR code or send the exact total to this GCash number.</div>
     <div class="show-receipt-note">After payment, please show your GCash receipt at the counter.</div>
