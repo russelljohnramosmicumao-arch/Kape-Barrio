@@ -50,9 +50,9 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .primary{border:0;border-radius:14px;background:var(--brown);color:#fff;padding:14px 20px;font-size:14px;font-weight:800;min-height:52px}
 .secondary{border:1px solid #d9c7b5;background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;font-size:14px}
 #selectorDrawer .secondary{font-size:14px;background:#f8dede;border-color:#e6aaaa;color:#8b2e2e;padding:14px 16px;min-height:58px;font-weight:900}
-.type-option{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}.type-option small{font-size:13px;font-weight:700;opacity:.8}.type-option.premium{background:#d9f6de;color:#205c2c;border-color:#8bd79a;position:relative}.type-option.premium.selected{background:#86c992;color:#fff;border-color:#4f9e5e}.type-option.premium.selected small{color:#f1fff3}.type-option.premium small{color:#286438}.type-option.premium.selected::after{content:'✓';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:22px;font-weight:900;color:#fff}
-#orderDrawer .primary{background:#2f8f4e;font-size:14px;font-weight:900;min-height:58px}
-#orderDrawer .primary:active{background:#267a41}
+.type-option{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}.type-option small{font-size:13px;font-weight:700;opacity:.8}.type-option.premium{background:#d9f6de;color:#205c2c;border-color:#8bd79a;position:relative}.type-option.premium.selected{background:#86c992;color:#fff;border-color:#4f9e5e}.type-option.premium.selected small{color:#f1fff3}.type-option.premium small{color:#286438}.type-option.premium.selected::after{content:'✓';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:20px;font-weight:900;color:#fff}
+#orderDrawer .primary{background:#d9f6de;color:#205c2c;border:1px solid #8bd79a;font-size:14px;font-weight:900;min-height:58px}
+#orderDrawer .primary:active{background:#bce8c5}
 .drawer{position:fixed;inset:0;background:rgba(24,17,12,.45);z-index:50;display:none;align-items:flex-end}
 .drawer.open{display:flex}
 .panel{background:var(--cream);width:100%;max-height:88vh;border-radius:24px 24px 0 0;padding:20px;overflow:auto}
@@ -60,7 +60,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .muted{color:#7a6b60}
 .options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
 .opt{border:2px solid #dfd1c2;background:#fff;border-radius:14px;padding:17px 8px;text-align:center;font-weight:800;font-size:16px;line-height:1.15}
-.opt.selected{border-color:var(--brown);background:#f2e6d9}
+.opt{position:relative}.opt.selected{border-color:#4f9e5e;background:#dff4e3;color:#205c2c}.opt.selected::after{content:'✓';position:absolute;right:10px;top:8px;font-size:18px;font-weight:900;color:#2f8f4e}.opt.selected span{color:#205c2c}
 .opt span{display:block;color:var(--brown);margin-top:7px;font-size:16px;font-weight:900}
 .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
 .qty{display:flex;align-items:center;justify-content:center;gap:15px}
@@ -70,10 +70,19 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .order-item .desc{flex:1}.order-item strong{color:var(--brown)}.cart-drawer-total{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;padding-top:14px;border-top:1px solid #eadfd4}.cart-drawer-total b:last-child{font-size:22px;color:var(--brown)}.order-qty{display:flex;align-items:center;gap:7px;margin-top:8px}.order-qty button{width:30px;height:30px;border-radius:9px;border:1px solid #d9c7b5;background:#fff;font-weight:800}
 
 .empty{padding:40px 10px;text-align:center;color:#857568}
-.receipt{background:#fff;max-width:480px;margin:0 auto;padding:30px 44px;font-family:"Courier New",monospace;color:#111;box-sizing:border-box}
+.receipt-checkout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,430px);gap:20px;max-width:1100px;margin:0 auto;align-items:stretch}
+.receipt-side{min-width:0;background:#f2e9de;border:1px solid #e2d4c4;border-radius:18px;padding:10px;display:flex;flex-direction:column;max-height:70vh;overflow:hidden}
+.receipt-scroll{overflow:auto;min-height:0;padding:4px}
+.receipt{background:#fff;max-width:480px;margin:0 auto;padding:30px 44px;font-family:"Courier New",monospace;color:#111;box-sizing:border-box;min-height:100%}
 .receipt .center{text-align:center}.receipt h3{margin:0 0 5px;font-size:21px}.receipt .receipt-number{display:block;text-align:center;font-weight:700;letter-spacing:.5px;margin-top:4px}.receipt hr{border:0;border-top:1px dashed #777;margin:14px 0}
 .receipt-line{display:flex;justify-content:space-between;gap:10px;margin:7px 0}.receipt .item{flex:1}
-.receipt-actions{display:flex;gap:10px;max-width:480px;margin:14px auto 0}.receipt-actions button{flex:1;min-height:46px;font-size:14px}
+.payment-side{background:#fff;border:1px solid #eadfd4;border-radius:18px;padding:20px;display:flex;flex-direction:column;min-height:0;max-height:70vh;overflow:auto}
+.payment-title{font-family:Georgia,serif;color:var(--brown);font-size:28px;font-weight:900;margin:0 0 4px}.payment-sub{color:#7a6b60;margin-bottom:14px}
+.payment-total{display:flex;justify-content:space-between;align-items:center;background:#edf7e9;border:1px solid #c7dfbf;border-radius:14px;padding:14px 16px;margin-bottom:14px}.payment-total span{font-weight:800;color:#53634a}.payment-total b{font-size:28px;color:#2f6f3a}
+.payment-method{border:2px solid #d9e7d3;background:#f6fbf3;border-radius:16px;padding:14px;margin-bottom:12px;cursor:pointer;position:relative}.payment-method.selected{border-color:#4f9e5e;background:#edf8ea}.payment-method .method-head{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;color:#245b2f}.payment-method .method-radio{width:22px;height:22px;border:2px solid #5b8b63;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px}.payment-method.selected .method-radio::after{content:'✓';font-size:14px;font-weight:900;color:#fff;background:#4f9e5e;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;margin:-1px}
+.gcash-card{display:block;width:100%;max-width:290px;margin:12px auto 8px;border-radius:14px;border:1px solid #dfe7dd}.gcash-number{font-size:18px;font-weight:900;text-align:center;color:#245b2f;margin:4px 0 8px}.gcash-help{text-align:center;color:#6e6a64;font-size:13px}.cash-note{color:#6e6a64;font-size:14px;margin:8px 0 0 32px}.show-receipt-note{margin-top:auto;background:#edf7e9;border:1px solid #c7dfbf;border-radius:14px;padding:14px;font-weight:800;color:#315d38;text-align:center}.receipt-actions{display:flex;gap:10px;max-width:1100px;margin:14px auto 0}.receipt-actions button{flex:1;min-height:48px;font-size:14px}
+@media(max-width:900px){.receipt-checkout{grid-template-columns:1fr}.receipt-side,.payment-side{max-height:48vh}.payment-side{max-height:none}.show-receipt-note{margin-top:14px}}
+@media(max-width:599px){.receipt{padding:22px 20px}.receipt-checkout{gap:12px}.payment-title{font-size:24px}}
 .notice{background:#edf5e6;color:#45652b;border:1px solid #cfe0be;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}.panel{max-width:760px;margin:auto;border-radius:24px}.drawer{align-items:center;padding:20px}}
 @media(max-width:699px){.floating-history{right:14px;top:14px;width:60px;height:60px}.history-icon{font-size:25px}.history-badge{min-width:22px;height:22px;font-size:11px}.floating-cart{right:14px;top:82px;width:60px;height:60px}.cart-icon{font-size:27px}.cart-badge{min-width:24px;height:24px;font-size:12px}}
@@ -159,10 +168,30 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 
 <div id="receiptDrawer" class="drawer" onclick="if(event.target===this)closeReceipt()">
   <div class="panel">
-    <div id="receiptArea"></div>
+    <div class="receipt-checkout">
+      <div class="receipt-side">
+        <div id="receiptArea" class="receipt-scroll"></div>
+      </div>
+      <div class="payment-side">
+        <h2 class="payment-title">Payment</h2>
+        <div class="payment-sub">Choose your payment method.</div>
+        <div class="payment-total"><span>Total</span><b id="paymentTotal">₱0</b></div>
+        <div id="gcashMethod" class="payment-method selected" onclick="selectPayment('gcash')">
+          <div class="method-head"><span class="method-radio"></span><span>GCash</span></div>
+          <img class="gcash-card" src="images/gcash-card.jpg" alt="GCash QR code">
+          <div class="gcash-number">09672365176</div>
+          <div class="gcash-help">Scan the QR code or send the exact total to this GCash number.</div>
+        </div>
+        <div id="cashMethod" class="payment-method" onclick="selectPayment('cash')">
+          <div class="method-head"><span class="method-radio"></span><span>Cash</span></div>
+          <div class="cash-note">Pay at the counter.</div>
+        </div>
+        <div class="show-receipt-note">After payment, please show the receipt at the counter.</div>
+      </div>
+    </div>
     <div class="receipt-actions">
       <button class="secondary" onclick="closeReceipt()">Close</button>
-      <button class="primary" onclick="payAtCounter()">Pay at the counter</button>
+      <button class="primary" onclick="payAtCounter()">Show receipt at the counter</button>
     </div>
   </div>
 </div>
@@ -388,6 +417,8 @@ async function makeReceipt(){
   const orderedItems=[...cart].sort((a,b)=>(a.category==='Snackies'?1:0)-(b.category==='Snackies'?1:0));
   currentReceipt={no,date,time,total,items:JSON.parse(JSON.stringify(orderedItems))};
   saveTransactionToHistory(currentReceipt);
+  paymentTotal.textContent=peso(total);
+  selectPayment('gcash');
   receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt">
     <div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${no}</div><div>${date} · ${time}</div></div>
     <hr>${currentReceipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join("")}
@@ -501,6 +532,12 @@ async function saveReceipt(receipt=currentReceipt){
   setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 
+let selectedPayment='gcash';
+function selectPayment(method){
+  selectedPayment=method;
+  gcashMethod.classList.toggle('selected',method==='gcash');
+  cashMethod.classList.toggle('selected',method==='cash');
+}
 function payAtCounter(){
   closeReceipt();
 }
