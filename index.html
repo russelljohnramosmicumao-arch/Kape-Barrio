@@ -49,13 +49,13 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .primary{border:0;border-radius:14px;background:var(--brown);color:#fff;padding:14px 20px;font-size:14px;font-weight:800;min-height:52px}
 .secondary{border:1px solid #d9c7b5;background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;font-size:14px}
 #selectorDrawer .secondary{font-size:14px;background:#f8dede;border-color:#e6aaaa;color:#8b2e2e;padding:14px 16px;min-height:58px;font-weight:900}
-.type-option{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}.type-option small{font-size:13px;font-weight:700;opacity:.8}.type-option.premium{background:#fff;color:var(--brown);border-color:#dfd1c2;position:relative}.type-option.premium.selected{background:#fff;color:#205c2c;border-color:#4f9e5e}.type-option.premium small{color:#286438}.type-option.premium.selected::after{content:'✓';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:20px;font-weight:900;color:#2f8f4e}
+.type-option{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}.type-option small{font-size:13px;font-weight:700;opacity:.8}.type-option.premium{background:#fff;color:var(--brown);border-color:#dfd1c2;position:relative}.type-option.premium.selected{background:#2f8f4e;color:#fff;border-color:#2f8f4e}.type-option.premium small{color:#286438}.type-option.premium.selected small{color:#fff;opacity:.95}.type-option.premium.selected::after{content:'✓';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:20px;font-weight:900;color:#fff}
 #orderDrawer .primary{background:#d9f6de;color:#205c2c;border:1px solid #8bd79a;font-size:14px;font-weight:900;min-height:58px}
 #orderDrawer .primary:active{background:#bce8c5}
 .drawer{position:fixed;inset:0;background:rgba(24,17,12,.45);z-index:50;display:none;align-items:flex-end}
 .drawer.open{display:flex}
 .panel{background:var(--cream);width:100%;max-height:88vh;border-radius:24px 24px 0 0;padding:20px;overflow:auto}
-.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}.selector-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}.selector-drink{display:flex;flex-direction:column;align-items:center}.selector-image{display:block;width:210px;height:210px;object-fit:contain;background:#fff;border-radius:18px;margin:10px auto 14px;border:1px solid #eadfd4}.selector-options{min-width:0}.selector-label{font-size:18px;font-weight:900;color:var(--brown);margin:10px 0 9px}.selector-options .options{margin:0 0 16px}.selector-options .opt{min-height:72px;font-size:14px}.selector-options .opt span{font-size:14px}.selector-options .type-option{min-height:82px}.sweetness-option{min-height:64px}.history-tools{display:flex;gap:8px;flex-wrap:wrap}.history-tools button{flex:1;min-width:130px}.sales-report{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px;margin-top:14px}.sales-report h3{margin:0 0 10px;color:var(--brown);font-family:Georgia,serif}.report-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.report-card{background:#f7f1e9;border:1px solid #e4d6c6;border-radius:12px;padding:12px;text-align:center}.report-card small{display:block;color:#7a6b60;font-weight:700}.report-card b{display:block;color:var(--brown);font-size:21px;margin-top:3px}.report-table{width:100%;border-collapse:collapse;font-size:14px}.report-table th,.report-table td{padding:8px 6px;border-bottom:1px solid #eee3d7;text-align:left}.report-table th:last-child,.report-table td:last-child{text-align:right;font-weight:900}.report-section{margin-top:14px}.report-section h4{margin:0 0 6px;color:#5f4a38}.report-note{font-size:12px;color:#7a6b60;margin-top:8px}
+.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}.selector-name{font-size:22px!important;line-height:1.08}.selector-layout{display:grid;grid-template-columns:175px minmax(0,1fr);gap:18px;align-items:start}.selector-drink{display:flex;flex-direction:column;align-items:center}.selector-image{display:block;width:150px;height:150px;object-fit:contain;background:#fff;border-radius:16px;margin:8px auto 10px;border:1px solid #eadfd4}.selector-qty{margin-top:2px}.selector-qty .qty{gap:12px}.selector-options{min-width:0}.selector-label{font-size:16px;font-weight:900;color:var(--brown);margin:9px 0 7px}.selector-options .options{margin:0 0 12px}.selector-options .opt{min-height:64px;font-size:13px;padding:12px 6px}.selector-options .opt span{font-size:13px}.selector-options .type-option{min-height:74px}.sweetness-option{min-height:56px}.selector-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.selector-actions .primary,.selector-actions .secondary{width:100%;min-height:54px;font-size:14px}.history-tools{display:flex;gap:8px;flex-wrap:wrap}.history-tools button{flex:1;min-width:130px}.sales-report{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px;margin-top:14px}.sales-report h3{margin:0 0 10px;color:var(--brown);font-family:Georgia,serif}.report-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.report-card{background:#f7f1e9;border:1px solid #e4d6c6;border-radius:12px;padding:12px;text-align:center}.report-card small{display:block;color:#7a6b60;font-weight:700}.report-card b{display:block;color:var(--brown);font-size:21px;margin-top:3px}.report-table{width:100%;border-collapse:collapse;font-size:14px}.report-table th,.report-table td{padding:8px 6px;border-bottom:1px solid #eee3d7;text-align:left}.report-table th:last-child,.report-table td:last-child{text-align:right;font-weight:900}.report-section{margin-top:14px}.report-section h4{margin:0 0 6px;color:#5f4a38}.report-note{font-size:12px;color:#7a6b60;margin-top:8px}
 .muted{color:#7a6b60}
 .options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
 .opt{border:2px solid #dfd1c2;background:#fff;border-radius:14px;padding:17px 8px;text-align:center;font-weight:800;font-size:16px;line-height:1.15}
@@ -84,7 +84,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 
 .history-list{display:flex;flex-direction:column;gap:12px;margin-top:14px}.history-item{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px}.history-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.history-head b{color:var(--brown);font-size:17px}.history-meta{color:#7a6b60;font-size:13px;margin-top:3px}.history-total{font-weight:900;color:var(--brown);font-size:18px;white-space:nowrap}.history-items{margin:10px 0;color:#4e4137;font-size:14px;line-height:1.45}.history-actions{display:flex;gap:8px}.history-actions button{flex:1;min-height:44px}.history-empty{padding:50px 12px;text-align:center;color:#857568}.history-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.history-title-row h2{margin:0}.history-clear,.clear-order-btn,.cancel-btn{font-size:17px!important;padding:14px 16px!important;min-height:58px;background:#f7caca!important;border:2px solid #e7a0a0!important;color:#8b2e2e!important;font-weight:900!important}.history-clear:active,.clear-order-btn:active,.cancel-btn:active{background:#efb5b5!important;transform:scale(.98)}
 /* Cart opens only when the floating cart button is pressed. */
-@media(max-width:599px){.selector-layout{grid-template-columns:1fr;gap:4px}.selector-image{width:180px;height:180px}.selector-options .options{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:599px){.selector-layout{grid-template-columns:1fr;gap:4px}.selector-image{width:135px;height:135px}.selector-options .options{grid-template-columns:repeat(2,1fr)}.selector-actions{grid-template-columns:1fr 1fr}.selector-name{font-size:20px!important}}
 @media(min-width:700px){#orderDrawer{align-items:stretch;justify-content:flex-end;padding:0}#orderDrawer .panel{width:390px;max-width:390px;height:100%;max-height:none;border-radius:24px 0 0 24px;margin:0;padding:22px;box-shadow:-12px 0 30px rgba(0,0,0,.16)}}
 </style>
 </head>
@@ -131,11 +131,14 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 
 <div id="selector" class="drawer" onclick="if(event.target===this)closeSelector()">
   <div class="panel">
-    <h2 id="selName" style="text-align:center"></h2>
+    <h2 id="selName" class="selector-name" style="text-align:center"></h2>
     <div class="selector-layout">
       <div class="selector-drink">
         <img id="selImage" class="selector-image" alt="">
-        <div id="selType" class="muted" style="text-align:center"></div>
+        <div id="selQtyWrap" class="selector-qty">
+          <div class="qty"><button onclick="changeQty(-1)" aria-label="Decrease quantity">−</button><b id="selQty">1</b><button onclick="changeQty(1)" aria-label="Increase quantity">+</button></div>
+        </div>
+        <div id="selType" class="muted" style="text-align:center;margin-top:7px;font-size:12px"></div>
       </div>
       <div class="selector-options">
         <div id="premiumWrap" style="display:none">
@@ -148,14 +151,12 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
           <div class="selector-label">Level of sweetness</div>
           <div id="sweetnessOptions" class="options"></div>
         </div>
-        <div class="selector-label">Quantity</div>
-        <div class="row">
-          <div class="qty"><button onclick="changeQty(-1)">−</button><b id="selQty">1</b><button onclick="changeQty(1)">+</button></div>
-          <button class="primary" onclick="addSelected()">Add to order</button>
-        </div>
       </div>
     </div>
-    <button id="cancelSelectorBtn" class="secondary cancel-btn" style="width:100%;margin-top:16px" onclick="closeSelector()">Cancel</button>
+    <div class="selector-actions">
+      <button class="primary" onclick="addSelected()">Add to order</button>
+      <button id="cancelSelectorBtn" class="secondary cancel-btn" onclick="closeSelector()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -199,7 +200,9 @@ const IMAGE_MAP={
 };
 PRODUCTS.forEach(p=>p.image=IMAGE_MAP[p.name]||"");
 const SIZE_DEFAULT=["12 oz","16 oz","22 oz"];
-let category = "Frappe & Smoothies";
+const FRAPPE_SIZES=["16 oz w/o ice cream","16 oz w/ ice cream","22 oz w/ ice cream"];
+PRODUCTS.filter(p=>p.category==='Frappe & Smoothies').forEach(p=>{p.sizes=FRAPPE_SIZES.slice()});
+let category = "__BEST_SELLERS__"
 let cart = JSON.parse(localStorage.getItem("kbr_cart")||"[]");
 let history = JSON.parse(localStorage.getItem("kbr_history")||"[]");
 let selected = null;
@@ -211,10 +214,11 @@ const BEST_SELLERS=[
   ["Soda","Green Apple"],["Soda","Strawberry"],["Floats","Chuckie Float"],["Floats","Dutchmill Float"]
 ];
 const BEST_SELLER_KEYS=new Set(BEST_SELLERS.map(([cat,nm])=>`${cat}||${nm}`));
-const CATEGORY_ORDER=["Frappe & Smoothies","Coffee Series","Matcha Series","Milk Tea Series","Soda","Floats","Budget Friendly","Snackies"];
+const CATEGORY_ORDER=["__BEST_SELLERS__","Frappe & Smoothies","Coffee Series","Matcha Series","Milk Tea Series","Soda","Floats","Budget Friendly","Snackies"];
 const cats=CATEGORY_ORDER.filter((c,i,a)=>c==='Budget Friendly'||a.indexOf(c)===i);
 function peso(n){return "₱"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:0})}
 function specialItems(name){
+  if(name==='__BEST_SELLERS__') return BEST_SELLERS.map(([cat,nm])=>PRODUCTS.find(p=>p.category===cat&&p.name===nm)).filter(Boolean);
   if(name==='Budget Friendly') return PRODUCTS.filter(p=>!p.food && Math.min(...p.prices)<70);
   return PRODUCTS.filter(p=>p.category===name);
 }
@@ -252,7 +256,8 @@ const CATEGORY_LABELS={
   "Soda":"Fruit Soda Series",
   "Floats":"Floats",
   "Frappe & Smoothies":"Frappe & Smoothies",
-  "Snackies":"Snackies"
+  "Snackies":"Snackies",
+  "__BEST_SELLERS__":"Best Sellers"
 };
 let toastTimer=null;
 function showMenuToast(name){
@@ -294,7 +299,7 @@ products.addEventListener('touchend',e=>{
 },{passive:true});
 
 function chooseProduct(p){
-  selected={p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1,sweetness:'Normal'};
+  selected={p,type:p.premium?'premium':'standard',sizeIndex:p.category==='Frappe & Smoothies'?1:0,qty:1,sweetness:'Normal'};
   selName.textContent=p.name;
   selImage.src=p.image||"";
   selImage.alt=p.name;
@@ -322,6 +327,7 @@ function renderSizes(){
   const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
   const prices=selected.type==='premium'?p.premium:p.prices;
   selected.sizeIndex=Math.min(selected.sizeIndex,prices.length-1);
+  if(p.category==='Frappe & Smoothies' && selected.sizeIndex<0) selected.sizeIndex=1;
   sizeOptions.innerHTML=sizes.map((s,i)=>`<button class="opt ${i===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${i};renderSizes()">${s}<span>${peso(prices[i])}</span></button>`).join("");
   selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
 }
