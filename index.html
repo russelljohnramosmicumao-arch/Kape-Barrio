@@ -24,21 +24,20 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .tabs{display:flex;gap:8px;overflow:auto;padding:8px 0 2px;scrollbar-width:none;max-width:1500px;margin:auto;scroll-behavior:smooth}.tabs::-webkit-scrollbar{display:none}
 .tabs button{white-space:nowrap;border:1px solid #d8c7b5;background:#fff;border-radius:999px;padding:8px 13px;font-weight:700;color:#654a36;font-size:14px}
 .tabs button.active{background:var(--brown);color:#fff;border-color:var(--brown)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
-.product-img{width:100%;height:150px;object-fit:contain;background:#fff;border-radius:14px;margin-bottom:10px;display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.product-img{width:100%;height:112px;object-fit:contain;background:#fff;border-radius:12px;margin-bottom:7px;display:block;cursor:pointer}.product-img:active{transform:scale(.97)}
 .card{overflow:hidden}
-.card{background:var(--card);border:1px solid #eee3d7;border-radius:18px;padding:12px;box-shadow:var(--shadow);min-height:140px;display:flex;flex-direction:column;justify-content:space-between}
-.card h3{font-size:18px;line-height:1.15;margin:0 0 8px;text-align:center}
+.card{background:var(--card);border:1px solid #eee3d7;border-radius:15px;padding:8px;box-shadow:var(--shadow);min-height:0;display:flex;flex-direction:column;justify-content:space-between;position:relative}
+.card h3{font-size:14px;line-height:1.12;margin:0 0 2px;text-align:center;font-weight:800}
 .price{color:var(--brown);font-weight:800;font-size:15px}
-.card button{margin-top:14px;border:0;border-radius:13px;background:#f0e3d5;color:#5b3825;font-weight:800;padding:12px;min-height:46px;font-size:16px}
-.card button:active{transform:scale(.98)}
+.best-seller-badge{position:absolute;left:7px;top:7px;z-index:2;background:#d9a441;color:#fff;border-radius:999px;padding:4px 7px;font-size:10px;line-height:1;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.14)}
 #products{touch-action:pan-y;transition:opacity .14s ease,transform .14s ease;overscroll-behavior-x:contain}
 #products.swipe-out-left{opacity:.15;transform:translateX(-28px)}
 #products.swipe-out-right{opacity:.15;transform:translateX(28px)}
 .swipe-hint{display:none;text-align:center;color:#8a7868;font-size:13px;margin:-4px 0 12px}
 .menu-toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);z-index:60;pointer-events:none;opacity:0;background:rgba(33,27,23,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;padding:24px 34px;border-radius:24px;font-family:Georgia,serif;font-size:34px;font-weight:700;box-shadow:0 18px 55px rgba(0,0,0,.28);white-space:nowrap;transition:opacity .2s ease,transform .2s ease;text-align:center}
 .menu-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-@media(max-width:699px){.header-category{font-size:17px;max-width:34vw;overflow:hidden;text-overflow:ellipsis}.brand h1{font-size:20px}.brand small{font-size:11px}.bean-logo{font-size:25px}.header-history{width:34px;height:34px;font-size:17px}.menu-toast{font-size:28px;padding:20px 26px;max-width:82vw;white-space:normal}}
+@media(max-width:699px){.header-category{font-size:17px;max-width:34vw;overflow:hidden;text-overflow:ellipsis}.brand h1{font-size:20px}.brand small{font-size:11px}.bean-logo{font-size:25px}.header-history{width:34px;height:34px;font-size:17px}.menu-toast{font-size:28px;padding:20px 26px;max-width:82vw;white-space:normal}.grid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}.product-img{height:100px}.card h3{font-size:13px}.best-seller-badge{font-size:9px;padding:3px 6px;left:5px;top:5px}}
 @media(max-width:699px){.swipe-hint{display:block}}
 .sectionTitle{display:none;font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px;background:none;border:0;padding:0;text-align:left;font-weight:800;cursor:pointer}.sectionTitle:active{opacity:.7}
 .sectionTitleButton{display:block;width:100%;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none}.sectionTitleButton:active{transform:scale(.98);opacity:.7}
@@ -56,7 +55,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .drawer{position:fixed;inset:0;background:rgba(24,17,12,.45);z-index:50;display:none;align-items:flex-end}
 .drawer.open{display:flex}
 .panel{background:var(--cream);width:100%;max-height:88vh;border-radius:24px 24px 0 0;padding:20px;overflow:auto}
-.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}.selector-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}.selector-drink{display:flex;flex-direction:column;align-items:center}.selector-image{display:block;width:210px;height:210px;object-fit:contain;background:#fff;border-radius:18px;margin:10px auto 14px;border:1px solid #eadfd4}.selector-options{min-width:0}.selector-label{font-size:18px;font-weight:900;color:var(--brown);margin:10px 0 9px}.selector-options .options{margin:0 0 16px}.selector-options .opt{min-height:72px;font-size:14px}.selector-options .opt span{font-size:14px}.selector-options .type-option{min-height:82px}
+.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}.selector-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}.selector-drink{display:flex;flex-direction:column;align-items:center}.selector-image{display:block;width:210px;height:210px;object-fit:contain;background:#fff;border-radius:18px;margin:10px auto 14px;border:1px solid #eadfd4}.selector-options{min-width:0}.selector-label{font-size:18px;font-weight:900;color:var(--brown);margin:10px 0 9px}.selector-options .options{margin:0 0 16px}.selector-options .opt{min-height:72px;font-size:14px}.selector-options .opt span{font-size:14px}.selector-options .type-option{min-height:82px}.sweetness-option{min-height:64px}.history-tools{display:flex;gap:8px;flex-wrap:wrap}.history-tools button{flex:1;min-width:130px}.sales-report{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px;margin-top:14px}.sales-report h3{margin:0 0 10px;color:var(--brown);font-family:Georgia,serif}.report-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.report-card{background:#f7f1e9;border:1px solid #e4d6c6;border-radius:12px;padding:12px;text-align:center}.report-card small{display:block;color:#7a6b60;font-weight:700}.report-card b{display:block;color:var(--brown);font-size:21px;margin-top:3px}.report-table{width:100%;border-collapse:collapse;font-size:14px}.report-table th,.report-table td{padding:8px 6px;border-bottom:1px solid #eee3d7;text-align:left}.report-table th:last-child,.report-table td:last-child{text-align:right;font-weight:900}.report-section{margin-top:14px}.report-section h4{margin:0 0 6px;color:#5f4a38}.report-note{font-size:12px;color:#7a6b60;margin-top:8px}
 .muted{color:#7a6b60}
 .options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
 .opt{border:2px solid #dfd1c2;background:#fff;border-radius:14px;padding:17px 8px;text-align:center;font-weight:800;font-size:16px;line-height:1.15}
@@ -80,7 +79,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 @media(max-width:900px){.receipt-checkout{grid-template-columns:1fr}.receipt-side,.payment-side{max-height:48vh}.payment-side{max-height:none}.show-receipt-note{margin-top:14px}}
 @media(max-width:599px){.receipt{padding:22px 20px}.receipt-checkout{gap:12px}.payment-title{font-size:24px}}
 .notice{background:#edf5e6;color:#45652b;border:1px solid #cfe0be;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
-@media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}.panel{max-width:760px;margin:auto;border-radius:24px}.drawer{align-items:center;padding:20px}}
+@media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(125px,1fr))}.panel{max-width:760px;margin:auto;border-radius:24px}.drawer{align-items:center;padding:20px}}
 @media(max-width:699px){.floating-history{right:14px;top:14px;width:60px;height:60px}.history-icon{font-size:25px}.history-badge{min-width:22px;height:22px;font-size:11px}.floating-cart{right:14px;top:82px;width:60px;height:60px}.cart-icon{font-size:27px}.cart-badge{min-width:24px;height:24px;font-size:12px}}
 
 .history-list{display:flex;flex-direction:column;gap:12px;margin-top:14px}.history-item{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px}.history-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.history-head b{color:var(--brown);font-size:17px}.history-meta{color:#7a6b60;font-size:13px;margin-top:3px}.history-total{font-weight:900;color:var(--brown);font-size:18px;white-space:nowrap}.history-items{margin:10px 0;color:#4e4137;font-size:14px;line-height:1.45}.history-actions{display:flex;gap:8px}.history-actions button{flex:1;min-height:44px}.history-empty{padding:50px 12px;text-align:center;color:#857568}.history-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.history-title-row h2{margin:0}.history-clear,.clear-order-btn,.cancel-btn{font-size:17px!important;padding:14px 16px!important;min-height:58px;background:#f7caca!important;border:2px solid #e7a0a0!important;color:#8b2e2e!important;font-weight:900!important}.history-clear:active,.clear-order-btn:active,.cancel-btn:active{background:#efb5b5!important;transform:scale(.98)}
@@ -97,7 +96,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
       <div><h1>Kape' Bar-Rio</h1><small>Shop & Cafe · POS</small></div>
       <button class="header-history" aria-label="Open transaction history" onclick="openHistory()">🧾<span id="historyBadge" class="history-badge">0</span></button>
     </div>
-    <div id="headerCategory" class="header-category">Best Sellers</div>
+    <div id="headerCategory" class="header-category">Frappe &amp; Smoothies</div>
   </div>
   <div id="tabs" class="tabs"></div>
 </header>
@@ -119,7 +118,12 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
       <h2>Transaction History</h2>
       <button id="clearHistoryBtn" class="secondary history-clear" onclick="clearHistory()">Clear history</button>
     </div>
-    <div class="muted" style="margin:4px 0 12px">Saved on this iPad. Tap “Save picture” for any transaction.</div>
+    <div class="muted" style="margin:4px 0 12px">Saved on this iPad. Tap “Save picture” for a receipt, or use the sales tools below.</div>
+    <div class="history-tools">
+      <button class="primary" onclick="showSalesReport()">📊 Sales report</button>
+      <button class="secondary" onclick="exportSalesCSV()">⬇️ Export CSV</button>
+    </div>
+    <div id="salesReport" class="sales-report" style="display:none"></div>
     <div id="historyList" class="history-list"></div>
     <button class="secondary" style="width:100%;margin-top:12px" onclick="closeHistory()">Close</button>
   </div>
@@ -140,6 +144,10 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
         </div>
         <div class="selector-label">Select size</div>
         <div id="sizeOptions" class="options"></div>
+        <div id="sweetnessWrap">
+          <div class="selector-label">Level of sweetness</div>
+          <div id="sweetnessOptions" class="options"></div>
+        </div>
         <div class="selector-label">Quantity</div>
         <div class="row">
           <div class="qty"><button onclick="changeQty(-1)">−</button><b id="selQty">1</b><button onclick="changeQty(1)">+</button></div>
@@ -191,7 +199,7 @@ const IMAGE_MAP={
 };
 PRODUCTS.forEach(p=>p.image=IMAGE_MAP[p.name]||"");
 const SIZE_DEFAULT=["12 oz","16 oz","22 oz"];
-let category = "Best Sellers";
+let category = "Frappe & Smoothies";
 let cart = JSON.parse(localStorage.getItem("kbr_cart")||"[]");
 let history = JSON.parse(localStorage.getItem("kbr_history")||"[]");
 let selected = null;
@@ -202,14 +210,15 @@ const BEST_SELLERS=[
   ["Coffee Series","Caramel Macchiato"],["Matcha Series","Matcha Latte"],["Coffee Series","Dirty Matcha"],["Coffee Series","Vanilla Latte"],
   ["Soda","Green Apple"],["Soda","Strawberry"],["Floats","Chuckie Float"],["Floats","Dutchmill Float"]
 ];
-const SPECIAL_CATEGORIES=["Best Sellers","Budget Friendly"];
-const cats=[...SPECIAL_CATEGORIES,...[...new Set(PRODUCTS.map(p=>p.category))]];
+const BEST_SELLER_KEYS=new Set(BEST_SELLERS.map(([cat,nm])=>`${cat}||${nm}`));
+const CATEGORY_ORDER=["Frappe & Smoothies","Coffee Series","Matcha Series","Milk Tea Series","Soda","Floats","Budget Friendly","Snackies"];
+const cats=CATEGORY_ORDER.filter((c,i,a)=>c==='Budget Friendly'||a.indexOf(c)===i);
 function peso(n){return "₱"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:0})}
 function specialItems(name){
-  if(name==='Best Sellers') return BEST_SELLERS.map(([cat,nm])=>PRODUCTS.find(p=>p.category===cat&&p.name===nm)).filter(Boolean);
   if(name==='Budget Friendly') return PRODUCTS.filter(p=>!p.food && Math.min(...p.prices)<70);
   return PRODUCTS.filter(p=>p.category===name);
 }
+function isBestSeller(p){return BEST_SELLER_KEYS.has(`${p.category}||${p.name}`)}
 function setCategory(name){
   if(!cats.includes(name)) return;
   category=name;
@@ -227,12 +236,15 @@ function render(){
   headerCategory.textContent=CATEGORY_LABELS[category]||category;
   sectionTitle.innerHTML=`<button class="sectionTitle sectionTitleButton" onclick="document.getElementById('tabs').scrollIntoView({behavior:'smooth',block:'start'})">${CATEGORY_LABELS[category]||category}</button>`;
   const items=specialItems(category);
-  products.innerHTML=items.map(p=>`<div class="card"><div>${p.image?`<img class="product-img" src="${p.image}" alt="${p.name}" loading="lazy">`:''}<h3>${p.name}</h3></div><button onclick='chooseProduct(${JSON.stringify(p)})'>Add</button></div>`).join("");
+  products.innerHTML=items.map(p=>{
+    const badge=isBestSeller(p)?'<span class="best-seller-badge">Best Seller</span>':'';
+    const safeProduct=JSON.stringify(p).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&/g,'&amp;');
+    return `<div class="card">${badge}<div>${p.image?`<img class="product-img" src="${p.image}" alt="${p.name}" loading="lazy" onclick='chooseProduct(${safeProduct})' role="button" aria-label="Add ${p.name}">`:''}<h3>${p.name}</h3></div></div>`;
+  }).join("");
   updateCartBar();
 }
 let swipeStartX=0, swipeStartY=0, swipeStartTime=0;
 const CATEGORY_LABELS={
-  "Best Sellers":"Best Sellers",
   "Budget Friendly":"Budget Friendly",
   "Milk Tea Series":"Milk Tea",
   "Coffee Series":"Coffee Drinks",
@@ -282,7 +294,7 @@ products.addEventListener('touchend',e=>{
 },{passive:true});
 
 function chooseProduct(p){
-  selected={p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1};
+  selected={p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1,sweetness:'Normal'};
   selName.textContent=p.name;
   selImage.src=p.image||"";
   selImage.alt=p.name;
@@ -290,6 +302,7 @@ function chooseProduct(p){
   premiumWrap.style.display=p.premium?'block':'none';
   if(p.premium) renderTypes(); else selType.textContent="Select size";
   renderSizes();
+  renderSweetness();
   selQty.textContent=1;
   selector.classList.add("open");
 }
@@ -312,12 +325,19 @@ function renderSizes(){
   sizeOptions.innerHTML=sizes.map((s,i)=>`<button class="opt ${i===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${i};renderSizes()">${s}<span>${peso(prices[i])}</span></button>`).join("");
   selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
 }
+function renderSweetness(){
+  const show=!selected.p.food;
+  sweetnessWrap.style.display=show?'block':'none';
+  if(!show){sweetnessOptions.innerHTML='';return}
+  const levels=['Less sugar','Normal','Diabeties'];
+  sweetnessOptions.innerHTML=levels.map(level=>`<button class="opt sweetness-option ${selected.sweetness===level?'selected':''}" onclick="selected.sweetness='${level}';renderSweetness()">${level}</button>`).join('');
+}
 function changeQty(d){selected.qty=Math.max(1,selected.qty+d);selQty.textContent=selected.qty}
 function addSelected(){
   const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
   const prices=selected.type==='premium'?p.premium:p.prices;
-  const item={name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty};
-  const key=JSON.stringify([item.name,item.type,item.size,item.price]);
+  const item={name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness};
+  const key=JSON.stringify([item.name,item.type,item.size,item.price,item.sweetness]);
   const old=cart.find(x=>x.key===key);
   if(old) old.qty+=item.qty; else {item.key=key;cart.push(item)}
   persist();closeSelector();render();
@@ -345,10 +365,13 @@ function updateCartBar(){
 }
 
 function persistHistory(){localStorage.setItem("kbr_history",JSON.stringify(history));updateCartBar()}
+function isFoodItem(x){return !!x?.food || PRODUCTS.some(p=>p.food&&p.name===x?.name)}
 function saveTransactionToHistory(receipt){
   history.unshift(JSON.parse(JSON.stringify(receipt)));
-  if(history.length>200) history=history.slice(0,200);
-  persistHistory();
+  try{persistHistory()}catch(err){
+    history.shift();
+    alert('Storage is full. Please export your CSV and clear older history before saving more transactions.');
+  }
 }
 const HISTORY_PASSCODE="0628";
 const CLEAR_HISTORY_PASSCODE="2012";
@@ -363,9 +386,70 @@ function closeHistory(){historyDrawer.classList.remove("open")}
 function renderHistory(){
   if(!history.length){historyList.innerHTML='<div class="history-empty">No transactions yet.<br>Completed orders will appear here.</div>';return}
   historyList.innerHTML=history.map((r,i)=>{
-    const summary=r.items.map(x=>`${x.qty}× ${x.name} (${x.size})`).join('<br>');
+    const summary=r.items.map(x=>`${x.qty}× ${x.name} (${x.size}${x.sweetness?` · ${x.sweetness}`:''})`).join('<br>');
     return `<div class="history-item"><div class="history-head"><div><b>Order #${r.no}</b><div class="history-meta">${r.date} · ${r.time}</div></div><div class="history-total">${peso(r.total)}</div></div><div class="history-items">${summary}</div><div class="history-actions"><button class="primary" onclick="saveHistoryReceipt(${i})">Save picture</button></div></div>`;
   }).join('');
+}
+function getSalesStats(){
+  const stats={transactions:history.length,totalSales:0,totalDrinkCups:0,totalFoodQty:0,byDrink:{},bySize:{},byGroup:{},bySweetness:{}};
+  history.forEach(r=>{
+    stats.totalSales+=Number(r.total)||0;
+    (r.items||[]).forEach(x=>{
+      const qty=Number(x.qty)||0;
+      const food=isFoodItem(x);
+      const key=x.name||'Unknown';
+      if(food){stats.totalFoodQty+=qty}else{
+        stats.totalDrinkCups+=qty;
+        stats.bySize[x.size||'Not recorded']=(stats.bySize[x.size||'Not recorded']||0)+qty;
+        const group=x.category||'Not recorded';
+        stats.byGroup[group]=(stats.byGroup[group]||0)+qty;
+        const sw=x.sweetness||'Not recorded';
+        stats.bySweetness[sw]=(stats.bySweetness[sw]||0)+qty;
+      }
+      stats.byDrink[key]=(stats.byDrink[key]||0)+qty;
+    });
+  });
+  return stats;
+}
+function sortedEntries(obj){return Object.entries(obj).sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]));}
+function reportTable(title,entries,label){
+  const rows=entries.length?entries.map(([name,count])=>`<tr><td>${name}</td><td>${count}</td></tr>`).join(''):`<tr><td colspan="2">No data yet.</td></tr>`;
+  return `<div class="report-section"><h4>${title}</h4><table class="report-table"><thead><tr><th>${label}</th><th>Qty</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function showSalesReport(){
+  if(!history.length){salesReport.style.display='block';salesReport.innerHTML='<h3>Sales Report</h3><div class="history-empty">No completed sales yet.</div>';return}
+  const s=getSalesStats();
+  const drinks=sortedEntries(s.byDrink).filter(([name])=>!PRODUCTS.some(p=>p.food&&p.name===name));
+  const foods=sortedEntries(s.byDrink).filter(([name])=>PRODUCTS.some(p=>p.food&&p.name===name));
+  const topDrink=drinks[0];
+  const topGroup=sortedEntries(s.byGroup)[0];
+  salesReport.style.display='block';
+  salesReport.innerHTML=`<h3>Sales Report</h3>
+    <div class="report-cards">
+      <div class="report-card"><small>Total sales</small><b>${peso(s.totalSales)}</b></div>
+      <div class="report-card"><small>Drink cups sold</small><b>${s.totalDrinkCups}</b></div>
+      <div class="report-card"><small>Transactions</small><b>${s.transactions}</b></div>
+    </div>
+    <div class="report-note">Food quantities are tracked separately because they are not cups. Tables are sorted from highest quantity sold to lowest.</div>
+    ${reportTable('Drinks',drinks,'Drink')}
+    ${reportTable('Drink groups / categories',sortedEntries(s.byGroup).map(([k,v])=>[CATEGORY_LABELS[k]||k,v]),'Category')}
+    ${reportTable('Drink sizes',sortedEntries(s.bySize),'Size')}
+    ${reportTable('Sweetness',sortedEntries(s.bySweetness),'Sweetness')}
+    ${reportTable('Food items / orders',foods,'Food')}
+    <div class="report-note">Most sold drink: <b>${topDrink?topDrink[0]+' ('+topDrink[1]+' cups)':'—'}</b><br>Most sold drink group: <b>${topGroup?(CATEGORY_LABELS[topGroup[0]]||topGroup[0])+' ('+topGroup[1]+' cups)':'—'}</b></div>`;
+}
+function csvEscape(value){const text=String(value??'');return /[",\n]/.test(text)?`"${text.replace(/"/g,'""')}"`:text}
+async function exportSalesCSV(){
+  if(!history.length){alert('No completed sales to export yet.');return}
+  const rows=[['Order #','Date','Time','Payment','Category','Item','Type','Size','Sweetness','Quantity','Unit Price','Line Total']];
+  history.slice().reverse().forEach(r=>{(r.items||[]).forEach(x=>rows.push([r.no,r.date,r.time,r.payment||'Not recorded',CATEGORY_LABELS[x.category]||x.category||'',x.name||'',x.type||'',x.size||'',x.sweetness||'',x.qty||0,x.price||0,(Number(x.qty)||0)*(Number(x.price)||0)]))});
+  const csv='\ufeff'+rows.map(row=>row.map(csvEscape).join(',')).join('\r\n');
+  const file=new File([csv],`Kape-Bar-Rio-Sales-${new Date().toISOString().slice(0,10)}.csv`,{type:'text/csv;charset=utf-8'});
+  const standalone=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+  if(standalone && navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+    try{await navigator.share({title:"Kape' Bar-Rio Sales CSV",files:[file]});return}catch(err){if(err&&err.name==='AbortError')return}
+  }
+  const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 function clearHistory(){
   if(!history.length) return;
@@ -385,7 +469,7 @@ function renderOrder(){
   const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
   cartDrawerTotal.innerHTML=`<span>Total</span><b>${peso(total)}</b>`;
   if(!cart.length){orderList.innerHTML='<div class="empty">Your cart is empty.<br>Add a drink to get started.</div>';return}
-  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${x.name}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size} · ${peso(x.price)} each</small><div class="order-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button></div></div><strong>${peso(x.price*x.qty)}</strong></div>`).join("");
+  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${x.name}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.sweetness?` · ${x.sweetness}`:''} · ${peso(x.price)} each</small><div class="order-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button></div></div><strong>${peso(x.price*x.qty)}</strong></div>`).join("");
 }
 function clearOrder(){if(confirm("Clear this order?")){cart=[];persist();render();renderOrder()}}
 function closeSelector(){selector.classList.remove("open")}
@@ -405,7 +489,7 @@ async function makeReceipt(){
   renderPaymentOptions();
   receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt">
     <div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${no}</div><div>${date} · ${time}</div></div>
-    <hr>${currentReceipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join("")}
+    <hr>${currentReceipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.sweetness?` · ${x.sweetness}`:''}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join("")}
     <hr><div class="receipt-line"><b>TOTAL</b><b>${peso(total)}</b></div><hr><div class="center">Thank you!</div>
   </div>`;
 
@@ -541,7 +625,7 @@ function showGcashPayment(){
   paymentSide.innerHTML=`
     <h2 class="payment-title">GCash Payment</h2>
     <div class="payment-total"><span>Total Amount</span><b>${peso(currentReceipt?.total||0)}</b></div>
-    <img class="gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src="images/gcash-card.png";">
+    <img class="gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src='images/gcash-card.png';">
     <div class="gcash-number">GCash Number: 09672365176</div>
     <div class="gcash-help">Scan the QR code or send the exact total to this GCash number.</div>
     <div class="show-receipt-note">After payment, please show your GCash receipt at the counter.</div>
