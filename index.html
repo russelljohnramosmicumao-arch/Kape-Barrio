@@ -55,7 +55,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .drawer{position:fixed;inset:0;background:rgba(24,17,12,.45);z-index:50;display:none;align-items:flex-end}
 .drawer.open{display:flex}
 .panel{background:var(--cream);width:100%;max-height:88vh;border-radius:24px 24px 0 0;padding:20px;overflow:auto}
-.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}.selector-name{font-size:22px!important;line-height:1.08}.selector-layout{display:grid;grid-template-columns:175px minmax(0,1fr);gap:18px;align-items:start}.selector-drink{display:flex;flex-direction:column;align-items:center}.selector-image{display:block;width:150px;height:150px;object-fit:contain;background:#fff;border-radius:16px;margin:8px auto 10px;border:1px solid #eadfd4}.selector-qty{margin-top:2px}.selector-qty .qty{gap:12px}.selector-options{min-width:0}.selector-label{font-size:16px;font-weight:900;color:var(--brown);margin:9px 0 7px}.selector-options .options{margin:0 0 12px}.selector-options .opt{min-height:64px;font-size:13px;padding:12px 6px}.selector-options .opt span{font-size:13px}.selector-options .type-option{min-height:74px}.sweetness-option{min-height:56px}.selector-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.selector-actions .primary,.selector-actions .secondary{width:100%;min-height:54px;font-size:14px}.history-tools{display:flex;gap:8px;flex-wrap:wrap}.history-tools button{flex:1;min-width:130px}.sales-report{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px;margin-top:14px}.sales-report h3{margin:0 0 10px;color:var(--brown);font-family:Georgia,serif}.report-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.report-card{background:#f7f1e9;border:1px solid #e4d6c6;border-radius:12px;padding:12px;text-align:center}.report-card small{display:block;color:#7a6b60;font-weight:700}.report-card b{display:block;color:var(--brown);font-size:21px;margin-top:3px}.report-table{width:100%;border-collapse:collapse;font-size:14px}.report-table th,.report-table td{padding:8px 6px;border-bottom:1px solid #eee3d7;text-align:left}.report-table th:last-child,.report-table td:last-child{text-align:right;font-weight:900}.report-section{margin-top:14px}.report-section h4{margin:0 0 6px;color:#5f4a38}.report-note{font-size:12px;color:#7a6b60;margin-top:8px}
+.panel h2{margin:0 0 4px;color:var(--brown);font-family:Georgia,serif}.selector-name{font-size:22px!important;line-height:1.08}.selector-layout{display:grid;grid-template-columns:175px minmax(0,1fr);gap:18px;align-items:start}.selector-drink{display:flex;flex-direction:column;align-items:center}.selector-image{display:block;width:150px;height:150px;object-fit:contain;background:#fff;border-radius:16px;margin:8px auto 10px;border:1px solid #eadfd4}.selector-qty{margin-top:2px}.selector-qty .qty{gap:12px}.selector-options{min-width:0}.selector-label{font-size:16px;font-weight:900;color:var(--brown);margin:9px 0 7px}.selector-options .options{margin:0 0 12px}.selector-options .opt{min-height:64px;font-size:13px;padding:12px 6px}.selector-options .opt span{font-size:13px}.selector-options .type-option{min-height:74px}.sweetness-option{min-height:56px}.selector-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.selector-actions .primary,.selector-actions .secondary{width:100%;min-height:54px;font-size:14px}.selector-actions .add-order-btn{background:#2f8f4e;color:#fff;border:1px solid #2f8f4e;box-shadow:0 4px 10px rgba(47,143,78,.18)}.selector-actions .add-order-btn:active{background:#267840;transform:scale(.98)}.history-tools{display:flex;gap:8px;flex-wrap:wrap}.history-tools button{flex:1;min-width:130px}.sales-report{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px;margin-top:14px}.sales-report h3{margin:0 0 10px;color:var(--brown);font-family:Georgia,serif}.report-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.report-card{background:#f7f1e9;border:1px solid #e4d6c6;border-radius:12px;padding:12px;text-align:center}.report-card small{display:block;color:#7a6b60;font-weight:700}.report-card b{display:block;color:var(--brown);font-size:21px;margin-top:3px}.report-table{width:100%;border-collapse:collapse;font-size:14px}.report-table th,.report-table td{padding:8px 6px;border-bottom:1px solid #eee3d7;text-align:left}.report-table th:last-child,.report-table td:last-child{text-align:right;font-weight:900}.report-section{margin-top:14px}.report-section h4{margin:0 0 6px;color:#5f4a38}.report-note{font-size:12px;color:#7a6b60;margin-top:8px}
 .muted{color:#7a6b60}
 .options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
 .opt{border:2px solid #dfd1c2;background:#fff;border-radius:14px;padding:17px 8px;text-align:center;font-weight:800;font-size:16px;line-height:1.15}
@@ -158,8 +158,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
       </div>
     </div>
     <div class="selector-actions">
-      <button class="primary" onclick="addSelected()">Add to order</button>
       <button id="cancelSelectorBtn" class="secondary cancel-btn" onclick="closeSelector()">Cancel</button>
+      <button class="primary add-order-btn" onclick="addSelected()">Add to order</button>
     </div>
   </div>
 </div>
@@ -218,8 +218,8 @@ const BEST_SELLERS=[
   ["Soda","Green Apple"],["Soda","Strawberry"],["Floats","Chuckie Float"],["Floats","Dutchmill Float"]
 ];
 const BEST_SELLER_KEYS=new Set(BEST_SELLERS.map(([cat,nm])=>`${cat}||${nm}`));
-const CATEGORY_ORDER=["Frappe & Smoothies","Coffee Series","Matcha Series","Milk Tea Series","Soda","Floats","Budget Friendly","Snackies"];
-const cats=CATEGORY_ORDER.filter((c,i,a)=>c==='Budget Friendly'||a.indexOf(c)===i);
+const CATEGORY_ORDER=["Frappe & Smoothies","Coffee Series","Matcha Series","Milk Tea Series","Soda","Floats","Specials","Snackies"];
+const cats=CATEGORY_ORDER.slice();
 function peso(n){return "₱"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:0})}
 function orderBestSellersFirst(items){
   return [...items].sort((a,b)=>{
@@ -229,7 +229,7 @@ function orderBestSellersFirst(items){
   });
 }
 function specialItems(name){
-  if(name==='Budget Friendly') return orderBestSellersFirst(PRODUCTS.filter(p=>!p.food && Math.min(...p.prices)<70));
+  if(name==='Specials') return [];
   return orderBestSellersFirst(PRODUCTS.filter(p=>p.category===name));
 }
 function isBestSeller(p){return BEST_SELLER_KEYS.has(`${p.category}||${p.name}`)}
@@ -259,7 +259,7 @@ function render(){
 }
 let swipeStartX=0, swipeStartY=0, swipeStartTime=0;
 const CATEGORY_LABELS={
-  "Budget Friendly":"Budget Friendly",
+  "Specials":"Specials",
   "Milk Tea Series":"Milk Tea",
   "Coffee Series":"Coffee Drinks",
   "Matcha Series":"Matcha Drinks",
@@ -349,7 +349,7 @@ function renderFlavor(){
   flavorOptions.innerHTML=flavors.map(flavor=>`<button class="opt sweetness-option ${selected.flavor===flavor?'selected':''}" onclick="selected.flavor='${flavor}';renderFlavor()">${flavor}</button>`).join('');
 }
 function renderSweetness(){
-  const show=!selected.p.food;
+  const show=!selected.p.food && selected.p.category!=='Soda' && selected.p.category!=='Floats';
   sweetnessWrap.style.display=show?'block':'none';
   if(!show){sweetnessOptions.innerHTML='';return}
   const levels=['Less sugar','Normal','Diabeties'];
