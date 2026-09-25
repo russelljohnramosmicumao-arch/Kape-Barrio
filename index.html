@@ -19,7 +19,8 @@ header{position:sticky;top:0;z-index:20;background:rgba(251,247,240,.96);backdro
 .brand{display:flex;align-items:center;gap:14px;max-width:1500px;margin:auto;padding-right:78px}.brand-main{display:flex;align-items:center;gap:10px;min-width:0}.header-category{margin-left:2px;font-family:Georgia,serif;color:var(--brown);font-size:21px;font-weight:800;white-space:nowrap}
 .brand img{width:34px;height:34px;object-fit:contain;border:0;border-radius:0}.bean-logo{font-size:30px;line-height:1;display:inline-block}
 .brand h1{font-family:Georgia,serif;margin:0;color:var(--brown);font-size:24px}
-.brand small{color:#7e6a59}.header-history{position:relative;border:1px solid #d9c7b5;background:#fff;color:var(--brown);border-radius:999px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-left:4px}.header-history:active{transform:scale(.96)}.header-history .history-badge{right:-7px;top:-7px;min-width:20px;height:20px;font-size:10px;border-width:2px}
+.brand small{color:#7e6a59}.header-history{position:relative;border:1px solid #d9c7b5;background:#fff;color:var(--brown);border-radius:999px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-left:4px}.header-history:active{transform:scale(.96)} .header-history{}
+.header-barista{border:1px solid #d9c7b5;background:#2f8f4e;color:#fff;border-radius:999px;min-height:38px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:14px;font-weight:900;cursor:pointer;margin-left:4px;box-shadow:0 4px 10px rgba(47,143,78,.16)}.header-barista:active{transform:scale(.96)}.header-history .history-badge{right:-7px;top:-7px;min-width:20px;height:20px;font-size:10px;border-width:2px}
 main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .tabs{display:flex;gap:8px;overflow:auto;padding:8px 0 2px;scrollbar-width:none;max-width:1500px;margin:auto;scroll-behavior:smooth}.tabs::-webkit-scrollbar{display:none}
 .tabs button{white-space:nowrap;border:1px solid #d8c7b5;background:#fff;border-radius:999px;padding:8px 13px;font-weight:700;color:#654a36;font-size:14px}
@@ -37,7 +38,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .swipe-hint{display:none;text-align:center;color:#8a7868;font-size:13px;margin:-4px 0 12px}
 .menu-toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%) scale(.96);z-index:60;pointer-events:none;opacity:0;background:rgba(33,27,23,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;padding:24px 34px;border-radius:24px;font-family:Georgia,serif;font-size:34px;font-weight:700;box-shadow:0 18px 55px rgba(0,0,0,.28);white-space:nowrap;transition:opacity .2s ease,transform .2s ease;text-align:center}
 .menu-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-@media(max-width:699px){.header-category{font-size:17px;max-width:34vw;overflow:hidden;text-overflow:ellipsis}.brand h1{font-size:20px}.brand small{font-size:11px}.bean-logo{font-size:25px}.header-history{width:34px;height:34px;font-size:17px}.menu-toast{font-size:28px;padding:20px 26px;max-width:82vw;white-space:normal}.grid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}.product-img{height:100px}.card h3{font-size:13px}.best-seller-badge{font-size:9px;padding:3px 6px;left:5px;top:5px}}
+@media(max-width:699px){.header-category{font-size:17px;max-width:34vw;overflow:hidden;text-overflow:ellipsis}.brand h1{font-size:20px}.brand small{font-size:11px}.bean-logo{font-size:25px}.header-history{width:34px;height:34px;font-size:17px}.header-barista{min-height:34px;padding:0 9px;font-size:12px}.menu-toast{font-size:28px;padding:20px 26px;max-width:82vw;white-space:normal}.grid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}.product-img{height:100px}.card h3{font-size:13px}.best-seller-badge{font-size:9px;padding:3px 6px;left:5px;top:5px}}
 @media(max-width:699px){.swipe-hint{display:block}}
 .sectionTitle{display:none;font-family:Georgia,serif;color:var(--brown);font-size:24px;margin:10px 0 14px;background:none;border:0;padding:0;text-align:left;font-weight:800;cursor:pointer}.sectionTitle:active{opacity:.7}
 .sectionTitleButton{display:block;width:100%;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none}.sectionTitleButton:active{transform:scale(.98);opacity:.7}
@@ -86,6 +87,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 /* Cart opens only when the floating cart button is pressed. */
 @media(max-width:599px){.selector-layout{grid-template-columns:1fr;gap:4px}.selector-image{width:135px;height:135px}.selector-options .options{grid-template-columns:repeat(2,1fr)}.selector-actions{grid-template-columns:1fr 1fr}.selector-name{font-size:20px!important}}
 @media(min-width:700px){#orderDrawer{align-items:stretch;justify-content:flex-end;padding:0}#orderDrawer .panel{width:390px;max-width:390px;height:100%;max-height:none;border-radius:24px 0 0 24px;margin:0;padding:22px;box-shadow:-12px 0 30px rgba(0,0,0,.16)}}
+
+.barista-drawer .panel{max-width:1100px}.barista-login{text-align:center;max-width:420px;margin:0 auto}.barista-login h2{margin-bottom:4px}.pin-display{display:flex;justify-content:center;gap:10px;margin:16px 0 18px}.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid #cdbdab;background:#fff}.pin-dot.filled{background:var(--brown);border-color:var(--brown)}.pin-error{min-height:20px;color:#b52e2e;font-weight:800;font-size:13px;margin-bottom:8px}.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:320px;margin:0 auto}.keypad button{min-height:64px;border:1px solid #d9c7b5;background:#fff;border-radius:15px;font-size:22px;font-weight:900;color:var(--brown);cursor:pointer;box-shadow:0 3px 8px rgba(60,40,25,.07)}.keypad button:active{transform:scale(.97);background:#f7f1e9}.keypad .key-action{font-size:14px;background:#f7f1e9}.barista-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.barista-top h2{margin:0}.barista-actions{display:flex;gap:8px;flex-wrap:wrap}.barista-actions button{min-height:44px}.barista-tabs{display:flex;gap:8px;margin:10px 0 14px;overflow:auto}.barista-tab{border:1px solid #d9c7b5;background:#fff;color:var(--brown);border-radius:999px;padding:10px 14px;font-weight:900;white-space:nowrap}.barista-tab.active{background:#2f8f4e;color:#fff;border-color:#2f8f4e}.barista-order-card{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px;margin-bottom:12px}.barista-order-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.barista-order-head b{color:var(--brown);font-size:18px}.barista-order-meta{color:#7a6b60;font-size:13px;margin-top:3px}.barista-order-total{font-weight:900;color:var(--brown);font-size:20px;text-align:right;white-space:nowrap}.barista-group{border:1px solid #eadfd4;border-radius:13px;margin-top:10px;overflow:hidden}.barista-group-toggle{width:100%;border:0;background:#fbf8f4;padding:12px 13px;display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;cursor:pointer;font-weight:900;color:#4e4137}.barista-group-toggle small{display:block;color:#7a6b60;font-weight:700;margin-top:3px}.barista-group-body{display:none;padding:10px;border-top:1px solid #eee3d7;background:#fff}.barista-group.open .barista-group-body{display:block}.barista-unit{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid #f0e7de}.barista-unit:last-child{border-bottom:0}.barista-unit-name{flex:1}.barista-unit-name b{display:block;color:var(--brown)}.barista-unit-name small{color:#7a6b60}.discount-buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.discount-btn{border:1px solid #d9c7b5;background:#fff;border-radius:9px;padding:8px 9px;font-weight:900;color:var(--brown)}.discount-btn.active{background:#2f8f4e;border-color:#2f8f4e;color:#fff}.discount-btn.none.active{background:#7a6b60;border-color:#7a6b60}.discount-price{font-size:12px;color:#6e6a64;margin-top:2px}.barista-payment{background:#f7fbf6;border:1px solid #cfe5c7;border-radius:16px;padding:14px;margin-top:14px}.barista-payment-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.barista-payment-title h3{margin:0;color:var(--brown)}.barista-payment-total{font-size:24px;font-weight:900;color:#2f6f3a}.barista-payment-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.barista-pay-btn{min-height:58px;border:2px solid #d9c7b5;background:#fff;border-radius:14px;font-size:16px;font-weight:900;color:var(--brown);cursor:pointer}.barista-pay-btn.cash{border-color:#c6b39f}.barista-pay-btn.gcash{border-color:#4f9e5e;background:#edf8ea;color:#245b2f}.barista-pay-btn.selected{box-shadow:0 0 0 3px rgba(47,143,78,.14)}.barista-pay-panel{margin-top:12px;background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:14px}.barista-gcash-card{display:block;width:100%;max-width:300px;max-height:38vh;object-fit:contain;margin:6px auto 10px;border-radius:14px;border:1px solid #dfe7dd}.barista-close-pay{width:100%;min-height:54px;margin-top:12px;background:#2f8f4e;color:#fff;border:1px solid #2f8f4e;border-radius:13px;font-weight:900;font-size:16px}.barista-empty{padding:35px 10px;text-align:center;color:#857568}.barista-receipt{margin-top:14px;background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px}.barista-history{margin-top:12px}.barista-history .history-list{margin-top:8px}@media(max-width:599px){.barista-payment-options{grid-template-columns:1fr}.barista-unit{align-items:flex-start;flex-direction:column}.discount-buttons{justify-content:flex-start}.keypad button{min-height:58px}}
 </style>
 </head>
 <body>
@@ -94,7 +97,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div class="brand-main">
       <span class="bean-logo" aria-hidden="true">🫘</span>
       <div><h1>Kape' Bar-Rio</h1><small>Shop & Cafe · POS</small></div>
-      <button class="header-history" aria-label="Open transaction history" onclick="openHistory()">🧾<span id="historyBadge" class="history-badge">0</span></button>
+      <button class="header-barista" aria-label="Open barista page" onclick="openBaristaPage()">☕<span>Barista</span></button>
     </div>
     <div id="headerCategory" class="header-category">Frappe &amp; Smoothies</div>
   </div>
@@ -112,20 +115,44 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
   <span id="cartBadge" class="cart-badge">0</span>
 </button>
 
-<div id="historyDrawer" class="drawer" onclick="if(event.target===this)closeHistory()">
+<div id="baristaDrawer" class="drawer barista-drawer" onclick="if(event.target===this)closeBaristaPage()">
   <div class="panel">
-    <div class="history-title-row">
-      <h2>Transaction History</h2>
-      <button id="clearHistoryBtn" class="secondary history-clear" onclick="clearHistory()">Clear history</button>
+    <div id="baristaLoginView" class="barista-login">
+      <h2>Barista Page</h2>
+      <div class="muted">Enter the 4-digit barista passcode.</div>
+      <div id="baristaPinDisplay" class="pin-display"></div>
+      <div id="baristaPinError" class="pin-error"></div>
+      <div class="keypad">
+        <button onclick="pressBaristaKey('1')">1</button><button onclick="pressBaristaKey('2')">2</button><button onclick="pressBaristaKey('3')">3</button>
+        <button onclick="pressBaristaKey('4')">4</button><button onclick="pressBaristaKey('5')">5</button><button onclick="pressBaristaKey('6')">6</button>
+        <button onclick="pressBaristaKey('7')">7</button><button onclick="pressBaristaKey('8')">8</button><button onclick="pressBaristaKey('9')">9</button>
+        <button class="key-action" onclick="baristaClear()">Clear</button><button onclick="pressBaristaKey('0')">0</button><button class="key-action" onclick="baristaBackspace()">⌫</button>
+      </div>
+      <button class="secondary" style="width:100%;margin-top:14px" onclick="closeBaristaPage()">Cancel</button>
     </div>
-    <div class="muted" style="margin:4px 0 12px">Saved on this iPad. Tap “Save picture” for a receipt, or use the sales tools below.</div>
-    <div class="history-tools">
-      <button class="primary" onclick="showSalesReport()">📊 Sales report</button>
-      <button class="secondary" onclick="exportSalesCSV()">⬇️ Export CSV</button>
+    <div id="baristaAppView" style="display:none">
+      <div class="barista-top">
+        <div><h2>Barista Page</h2><div class="muted">Orders, discounts, payment and sales history</div></div>
+        <div class="barista-actions"><button class="secondary" onclick="logoutBarista()">Log out</button><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
+      </div>
+      <div class="barista-tabs">
+        <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Current Order</button>
+        <button id="baristaHistoryTab" class="barista-tab" onclick="setBaristaView('history')">Transaction History</button>
+      </div>
+      <div id="baristaOrdersView"></div>
+      <div id="baristaHistoryView" style="display:none">
+        <div class="history-title-row">
+          <h3 style="margin:0;color:var(--brown);font-family:Georgia,serif">Sales History</h3>
+          <button class="secondary history-clear" onclick="clearHistory()">Clear history</button>
+        </div>
+        <div class="history-tools" style="margin-top:10px">
+          <button class="primary" onclick="showSalesReport()">📊 Sales report</button>
+          <button class="secondary" onclick="exportSalesCSV()">⬇️ Export CSV</button>
+        </div>
+        <div id="baristaSalesReport" class="sales-report" style="display:none"></div>
+        <div id="baristaHistoryList" class="history-list"></div>
+      </div>
     </div>
-    <div id="salesReport" class="sales-report" style="display:none"></div>
-    <div id="historyList" class="history-list"></div>
-    <button class="secondary" style="width:100%;margin-top:12px" onclick="closeHistory()">Close</button>
   </div>
 </div>
 
@@ -177,19 +204,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 
 <div id="receiptDrawer" class="drawer" onclick="if(event.target===this)closeReceipt()">
   <div class="panel">
-    <div class="receipt-checkout">
-      <div class="receipt-side">
-        <div id="receiptArea" class="receipt-scroll"></div>
-      </div>
-      <div id="paymentSide" class="payment-side">
-        <h2 class="payment-title">Payment</h2>
-        <div class="payment-sub">Choose how you would like to pay.</div>
-        <div class="payment-options">
-          <button class="payment-choice" onclick="showCashPayment()">💵 Pay cash at the counter</button>
-          <button class="payment-choice gcash-choice" onclick="showGcashPayment()">📱 Pay thru GCash</button>
-        </div>
-      </div>
-    </div>
+    <div id="receiptArea" class="receipt-scroll"></div>
+    <div class="receipt-actions"><button class="secondary" onclick="closeReceipt()">Close</button><button class="primary" onclick="saveReceipt()">Save picture</button></div>
   </div>
 </div>
 
@@ -220,7 +236,7 @@ const BEST_SELLERS=[
 const BEST_SELLER_KEYS=new Set(BEST_SELLERS.map(([cat,nm])=>`${cat}||${nm}`));
 const CATEGORY_ORDER=["Frappe & Smoothies","Coffee Series","Matcha Series","Milk Tea Series","Soda","Floats","Specials","Snackies"];
 const cats=CATEGORY_ORDER.slice();
-function peso(n){return "₱"+Number(n).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:0})}
+function peso(n){const num=Number(n)||0;return "₱"+num.toLocaleString("en-PH",{minimumFractionDigits:Number.isInteger(num)?0:2,maximumFractionDigits:2})}
 function orderBestSellersFirst(items){
   return [...items].sort((a,b)=>{
     const ab=isBestSeller(a)?1:0;
@@ -383,8 +399,6 @@ function updateCartBar(){
   const count=cart.reduce((s,x)=>s+x.qty,0);
   cartBadge.textContent=count>99?'99+':String(count);
   cartBadge.style.display=count?'flex':'none';
-  historyBadge.textContent=history.length>99?'99+':String(history.length);
-  historyBadge.style.display=history.length?'flex':'none';
 }
 
 function persistHistory(){localStorage.setItem("kbr_history",JSON.stringify(history));updateCartBar()}
@@ -396,22 +410,66 @@ function saveTransactionToHistory(receipt){
     alert('Storage is full. Please export your CSV and clear older history before saving more transactions.');
   }
 }
-const HISTORY_PASSCODE="0628";
-const CLEAR_HISTORY_PASSCODE="2012";
-function requestPasscode(label,expected){
-  const value=prompt(label+"\nEnter 4-digit passcode:");
-  if(value===null) return false;
-  if(value.trim()!==expected){alert("Incorrect passcode.");return false;}
-  return true;
-}
-function openHistory(){if(!requestPasscode("Transaction History",HISTORY_PASSCODE)) return;renderHistory();historyDrawer.classList.add("open")}
-function closeHistory(){historyDrawer.classList.remove("open")}
-function renderHistory(){
-  if(!history.length){historyList.innerHTML='<div class="history-empty">No transactions yet.<br>Completed orders will appear here.</div>';return}
-  historyList.innerHTML=history.map((r,i)=>{
-    const summary=r.items.map(x=>`${x.qty}× ${x.name} (${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''})`).join('<br>');
-    return `<div class="history-item"><div class="history-head"><div><b>Order #${r.no}</b><div class="history-meta">${r.date} · ${r.time}</div></div><div class="history-total">${peso(r.total)}</div></div><div class="history-items">${summary}</div><div class="history-actions"><button class="primary" onclick="saveHistoryReceipt(${i})">Save picture</button></div></div>`;
+function closeBaristaPage(){baristaDrawer.classList.remove("open")}
+function updateBaristaPinDisplay(){baristaPinDisplay.innerHTML=Array.from({length:4},(_,i)=>`<span class="pin-dot ${i<baristaPin.length?'filled':''}"></span>`).join('')}
+function openBaristaPage(){baristaDrawer.classList.add('open');baristaPin='';baristaUnlocked=false;baristaPinError.textContent='';baristaAppView.style.display='none';baristaLoginView.style.display='block';updateBaristaPinDisplay()}
+function pressBaristaKey(key){if(baristaPin.length>=4)return;baristaPin+=key;baristaPinError.textContent='';updateBaristaPinDisplay();if(baristaPin.length===4)setTimeout(submitBaristaLogin,120)}
+function baristaBackspace(){baristaPin=baristaPin.slice(0,-1);baristaPinError.textContent='';updateBaristaPinDisplay()}
+function baristaClear(){baristaPin='';baristaPinError.textContent='';updateBaristaPinDisplay()}
+function submitBaristaLogin(){if(baristaPin==='0628'){baristaUnlocked=true;baristaLoginView.style.display='none';baristaAppView.style.display='block';setBaristaView('orders')}else{baristaPinError.textContent='Incorrect passcode.';baristaPin='';updateBaristaPinDisplay()}}
+function logoutBarista(){baristaUnlocked=false;baristaPin='';baristaAppView.style.display='none';baristaLoginView.style.display='block';updateBaristaPinDisplay()}
+function setBaristaView(view){if(!baristaUnlocked)return;baristaView=view;baristaOrdersTab.classList.toggle('active',view==='orders');baristaHistoryTab.classList.toggle('active',view==='history');baristaOrdersView.style.display=view==='orders'?'block':'none';baristaHistoryView.style.display=view==='history'?'block':'none';if(view==='orders')renderBaristaOrders();else renderHistory()}
+function persistPendingOrder(){localStorage.setItem('kbr_pending_order',JSON.stringify(pendingOrder))}
+function clearPendingOrder(){pendingOrder=null;localStorage.removeItem('kbr_pending_order')}
+function orderUnitTotal(unit){const pct=Number(unit.discountPercent)||0;return Number(unit.originalPrice||unit.price||0)*(1-pct/100)}
+function pendingOrderTotal(){if(!pendingOrder)return 0;ensurePendingUnits();return pendingOrder.units.reduce((sum,u)=>sum+orderUnitTotal(u),0)}
+function ensurePendingUnits(){if(!pendingOrder||pendingOrder.units)return;pendingOrder.units=[];(pendingOrder.items||[]).forEach((x,itemIndex)=>{for(let i=0;i<(Number(x.qty)||0);i++) pendingOrder.units.push({uid:`${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:itemIndex,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food})});persistPendingOrder()}
+function buildHistoryItemsFromPending(){if(!pendingOrder)return[];ensurePendingUnits();return pendingOrder.units.map(u=>({name:u.name,category:u.category,type:u.type,size:u.size,flavor:u.flavor||'',sweetness:u.sweetness||'',qty:1,price:Math.round(orderUnitTotal(u)*100)/100,originalPrice:Number(u.originalPrice)||0,discountPercent:Number(u.discountPercent)||0,discountAmount:Math.round((u.originalPrice-orderUnitTotal(u))*100)/100,food:!!u.food}));}
+function baristaDiscount(uid,pct){if(!pendingOrder)return;ensurePendingUnits();const u=pendingOrder.units.find(x=>x.uid===uid);if(!u)return;u.discountPercent=Number(pct)||0;persistPendingOrder();renderBaristaOrders()}
+function toggleBaristaGroup(i){const el=document.getElementById('barista-group-'+i);if(el)el.classList.toggle('open')}
+function renderBaristaOrders(){
+  if(!pendingOrder){baristaOrdersView.innerHTML='<div class="barista-empty">No order is waiting for the barista.<br>When the customer taps Pay, the order will appear here.</div>';return}
+  ensurePendingUnits();
+  const originalTotal=pendingOrder.items.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0);
+  const total=pendingOrderTotal();
+  const groups=pendingOrder.items.map((x,gi)=>{
+    const units=pendingOrder.units.filter(u=>u.sourceIndex===gi);
+    const lineTotal=units.reduce((s,u)=>s+orderUnitTotal(u),0);
+    const details=[x.type&&x.type!=='standard'?x.type:'',x.size,x.flavor,x.sweetness].filter(Boolean).join(' · ');
+    const unitRows=units.map((u,ui)=>{const pct=Number(u.discountPercent)||0;const net=orderUnitTotal(u);return `<div class="barista-unit"><div class="barista-unit-name"><b>1× ${u.name}</b><small>${details}</small><div class="discount-price">${pct?`₱${u.originalPrice} − ${pct}% = <b>₱${peso(net).replace('₱','')}</b>`:peso(u.originalPrice)}</div></div><div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="baristaDiscount('${u.uid}',20)">20%</button></div></div>`}).join('');
+    return `<div class="barista-group" id="barista-group-${gi}"><button class="barista-group-toggle" onclick="toggleBaristaGroup(${gi})"><span>${x.qty}× ${x.name}<small>${details}</small></span><span>${peso(lineTotal)} ▾</span></button><div class="barista-group-body">${unitRows}</div></div>`;
   }).join('');
+  baristaOrdersView.innerHTML=`<div class="barista-order-card"><div class="barista-order-head"><div><b>Order #${pendingOrder.no}</b><div class="barista-order-meta">${pendingOrder.date} · ${pendingOrder.time}</div></div><div class="barista-order-total">${peso(total)}</div></div><div class="report-note">Original total: ${peso(originalTotal)}. Discounts are applied per individual drink.</div>${groups}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">💵 Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">📱 GCash</button></div><div id="baristaPaymentPanel"></div></div></div>`;
+  renderBaristaPaymentPanel();
+}
+function selectBaristaPayment(method){selectedBaristaPayment=method;renderBaristaOrders()}
+function renderBaristaPaymentPanel(){
+  const host=document.getElementById('baristaPaymentPanel');if(!host)return;
+  if(!selectedBaristaPayment){host.innerHTML='<div class="muted" style="margin-top:10px;text-align:center">Select a payment method when the customer is ready to pay.</div>';return}
+  if(selectedBaristaPayment==='cash'){host.innerHTML=`<div class="barista-pay-panel"><div class="cash-note">Collect the payment at the counter. When payment is received, press Close to complete the transaction.</div><button class="barista-close-pay" onclick="completePendingPayment('cash')">Close</button></div>`;return}
+  host.innerHTML=`<div class="barista-pay-panel"><img class="barista-gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src='images/gcash-card.png';"><div class="gcash-number">GCash Number: 09672365176</div><div class="gcash-help">Confirm the customer has completed the GCash payment before pressing Close.</div><button class="barista-close-pay" onclick="completePendingPayment('gcash')">Close</button></div>`;
+}
+function completePendingPayment(method){
+  if(!pendingOrder)return;
+  ensurePendingUnits();
+  const items=buildHistoryItemsFromPending();
+  const total=Math.round(items.reduce((s,x)=>s+(Number(x.price)||0),0)*100)/100;
+  const receipt={no:pendingOrder.no,date:pendingOrder.date,time:pendingOrder.time,total,payment:method,items};
+  saveTransactionToHistory(receipt);
+  currentReceipt=receipt;
+  clearPendingOrder();
+  selectedBaristaPayment='';
+  renderBaristaOrders();
+  render();
+  showCompletedReceipt(receipt);
+}
+function showCompletedReceipt(receipt){
+  receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt"><div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${receipt.no}</div><div>${receipt.date} · ${receipt.time}</div></div><hr>${receipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''}${x.discountPercent?` · ${x.discountPercent}% off`:''}</small></div><div>${peso(x.price)}</div></div>`).join('')}<hr><div class="receipt-line"><b>TOTAL</b><b>${peso(receipt.total)}</b></div><hr><div class="center">Paid ${receipt.payment==='gcash'?'via GCash':'in Cash'}. Thank you!</div></div>`;
+  receiptDrawer.classList.add('open');
+}
+function renderHistory(){
+  if(!history.length){baristaHistoryList.innerHTML='<div class="history-empty">No transactions yet.<br>Completed orders will appear here.</div>';baristaSalesReport.style.display='none';return}
+  baristaHistoryList.innerHTML=history.map((r,i)=>{const summary=r.items.map(x=>`${x.qty}× ${x.name} (${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''}${x.discountPercent?` · ${x.discountPercent}% off`:''})`).join('<br>');return `<div class="history-item"><div class="history-head"><div><b>Order #${r.no}</b><div class="history-meta">${r.date} · ${r.time} · ${(r.payment||'').toUpperCase()}</div></div><div class="history-total">${peso(r.total)}</div></div><div class="history-items">${summary}</div><div class="history-actions"><button class="primary" onclick="saveHistoryReceipt(${i})">Save picture</button></div></div>`}).join('');
 }
 function getSalesStats(){
   const stats={transactions:history.length,totalSales:0,totalDrinkCups:0,totalFoodQty:0,byDrink:{},bySize:{},byGroup:{},bySweetness:{}};
@@ -440,14 +498,14 @@ function reportTable(title,entries,label){
   return `<div class="report-section"><h4>${title}</h4><table class="report-table"><thead><tr><th>${label}</th><th>Qty</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function showSalesReport(){
-  if(!history.length){salesReport.style.display='block';salesReport.innerHTML='<h3>Sales Report</h3><div class="history-empty">No completed sales yet.</div>';return}
+  if(!history.length){baristaSalesReport.style.display='block';baristaSalesReport.innerHTML='<h3>Sales Report</h3><div class="history-empty">No completed sales yet.</div>';return}
   const s=getSalesStats();
   const drinks=sortedEntries(s.byDrink).filter(([name])=>!PRODUCTS.some(p=>p.food&&p.name===name));
   const foods=sortedEntries(s.byDrink).filter(([name])=>PRODUCTS.some(p=>p.food&&p.name===name));
   const topDrink=drinks[0];
   const topGroup=sortedEntries(s.byGroup)[0];
-  salesReport.style.display='block';
-  salesReport.innerHTML=`<h3>Sales Report</h3>
+  baristaSalesReport.style.display='block';
+  baristaSalesReport.innerHTML=`<h3>Sales Report</h3>
     <div class="report-cards">
       <div class="report-card"><small>Total sales</small><b>${peso(s.totalSales)}</b></div>
       <div class="report-card"><small>Drink cups sold</small><b>${s.totalDrinkCups}</b></div>
@@ -464,7 +522,7 @@ function showSalesReport(){
 function csvEscape(value){const text=String(value??'');return /[",\n]/.test(text)?`"${text.replace(/"/g,'""')}"`:text}
 async function exportSalesCSV(){
   if(!history.length){alert('No completed sales to export yet.');return}
-  const rows=[['Order #','Date','Time','Payment','Category','Item','Type','Size','Flavor','Sweetness','Quantity','Unit Price','Line Total']];
+  const rows=[['Order #','Date','Time','Payment','Category','Item','Type','Size','Flavor','Sweetness','Discount %','Discount Amount','Quantity','Unit Price','Line Total']];
   history.slice().reverse().forEach(r=>{(r.items||[]).forEach(x=>rows.push([r.no,r.date,r.time,r.payment||'Not recorded',CATEGORY_LABELS[x.category]||x.category||'',x.name||'',x.type||'',x.size||'',x.flavor||'',x.sweetness||'',x.qty||0,x.price||0,(Number(x.qty)||0)*(Number(x.price||0))]))});
   const csv='\ufeff'+rows.map(row=>row.map(csvEscape).join(',')).join('\r\n');
   const file=new File([csv],`Kape-Bar-Rio-Sales-${new Date().toISOString().slice(0,10)}.csv`,{type:'text/csv;charset=utf-8'});
@@ -501,31 +559,24 @@ function orderNumber(){
   let n=Number(localStorage.getItem("kbr_order_no")||0)+1;localStorage.setItem("kbr_order_no",String(n));return String(n).padStart(5,"0")
 }
 let currentReceipt=null;
+let pendingOrder=JSON.parse(localStorage.getItem("kbr_pending_order")||"null");
+let baristaPin="";
+let baristaUnlocked=false;
+let baristaView="orders";
+let selectedBaristaPayment="";
 async function makeReceipt(){
   if(!cart.length){alert("Add at least one item.");return}
-  const no=orderNumber(), now=new Date(), total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+  if(pendingOrder){alert("There is already an order waiting for the barista. Please complete that payment first.");return}
+  const no=orderNumber(), now=new Date();
   const date=now.toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"});
   const time=now.toLocaleTimeString("en-PH",{hour:"numeric",minute:"2-digit"});
   const orderedItems=[...cart].sort((a,b)=>(a.category==='Snackies'?1:0)-(b.category==='Snackies'?1:0));
-  currentReceipt={no,date,time,total,items:JSON.parse(JSON.stringify(orderedItems))};
-  saveTransactionToHistory(currentReceipt);
-  renderPaymentOptions();
-  receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt">
-    <div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${no}</div><div>${date} · ${time}</div></div>
-    <hr>${currentReceipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join("")}
-    <hr><div class="receipt-line"><b>TOTAL</b><b>${peso(total)}</b></div><hr><div class="center">Thank you!</div>
-  </div>`;
-
-  closeOrder();
-  receiptDrawer.classList.add("open");
-
-  // Checkout is complete: clear the cart so the next customer starts fresh.
-  cart=[];
-  persist();
-  render();
-  renderOrder();
+  pendingOrder={no,date,time,items:JSON.parse(JSON.stringify(orderedItems)),units:null};
+  persistPendingOrder();
+  currentReceipt={no,date,time,total:orderedItems.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0),items:JSON.parse(JSON.stringify(orderedItems)),payment:''};
+  cart=[];persist();render();renderOrder();closeOrder();
+  alert(`Order #${no} is ready for the barista.`);
 }
-
 async function saveReceipt(receipt=currentReceipt){
   if(!receipt) return;
   const el=document.getElementById("receiptCanvas");
@@ -533,7 +584,7 @@ async function saveReceipt(receipt=currentReceipt){
   // Build the PNG directly from the saved transaction data. This also works
   // when saving an older transaction from History, where no receipt drawer is open.
   const receiptWidth=el?Math.max(el.offsetWidth,420):480;
-  const receiptHeight=el?Math.max(el.offsetHeight,260):Math.max(260,220+(receipt.items.length*55));
+  const receiptHeight=el?Math.max(el.offsetHeight,260):Math.max(260,220+(receipt.items.length*65));
 
   // Build the PNG synchronously from the receipt data so iOS keeps the
   // original Pay button user-gesture permission for the Share sheet.
@@ -567,13 +618,13 @@ async function saveReceipt(receipt=currentReceipt){
   ctx.textAlign="left";
   receipt.items.forEach(x=>{
     ctx.font="18px monospace";
-    ctx.fillText(`${x.qty}× ${x.name}`,28,y);
+    ctx.fillText(`${x.qty}× ${x.name}${x.discountPercent?` (${x.discountPercent}% off)`:``}`,28,y);
     ctx.textAlign="right";
     ctx.fillText(peso(x.qty*x.price),w-28,y);
     ctx.textAlign="left";
     y+=27;
     ctx.font="15px monospace";
-    ctx.fillText(`${x.type!=='standard'?x.type+' · ':''}${x.size}`,44,y);
+    ctx.fillText(`${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:``}${x.sweetness?` · ${x.sweetness}`:``}`,44,y);
     y+=28;
   });
   ctx.font="bold 20px monospace";
@@ -623,44 +674,7 @@ async function saveReceipt(receipt=currentReceipt){
   setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
 
-let selectedPayment='';
-function renderPaymentOptions(){
-  paymentSide.innerHTML=`
-    <h2 class="payment-title">Payment</h2>
-    <div class="payment-sub">Choose how you would like to pay.</div>
-    <div class="payment-options">
-      <button class="payment-choice" onclick="showCashPayment()">💵 Pay cash at the counter</button>
-      <button class="payment-choice gcash-choice" onclick="showGcashPayment()">📱 Pay thru GCash</button>
-    </div>`;
-}
-function showCashPayment(){
-  selectedPayment='cash';
-  paymentSide.innerHTML=`
-    <h2 class="payment-title">Cash Payment</h2>
-    <div class="payment-total"><span>Total</span><b>${peso(currentReceipt?.total||0)}</b></div>
-    <div class="cash-note">Please pay cash at the counter.<br>After payment, show this receipt at the counter.</div>
-    <div class="payment-options">
-      <button class="payment-choice" onclick="renderPaymentOptions()">Back to payment options</button>
-    </div>`;
-}
-function showGcashPayment(){
-  selectedPayment='gcash';
-  paymentSide.innerHTML=`
-    <h2 class="payment-title">GCash Payment</h2>
-    <div class="payment-total"><span>Total Amount</span><b>${peso(currentReceipt?.total||0)}</b></div>
-    <img class="gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src='images/gcash-card.png';">
-    <div class="gcash-number">GCash Number: 09672365176</div>
-    <div class="gcash-help">Scan the QR code or send the exact total to this GCash number.</div>
-    <div class="show-receipt-note">After payment, please show your GCash receipt at the counter.</div>
-    <button class="payment-back" onclick="renderPaymentOptions()">Back to payment options</button>`;
-}
-function selectPayment(method){
-  if(method==='gcash') showGcashPayment(); else showCashPayment();
-}
-function payAtCounter(){
-  closeReceipt();
-}
-
+function closeReceipt(){receiptDrawer.classList.remove("open")}
 if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 render();
 </script>
