@@ -434,7 +434,7 @@ function buildHistoryItemsFromPending(){if(!pendingOrder)return[];ensurePendingU
 function baristaDiscount(uid,pct){if(!pendingOrder)return;ensurePendingUnits();const u=pendingOrder.units.find(x=>x.uid===uid);if(!u)return;u.discountPercent=Number(pct)||0;persistPendingOrder();renderBaristaOrders()}
 function toggleBaristaGroup(i){const el=document.getElementById('barista-group-'+i);if(el)el.classList.toggle('open')}
 function renderBaristaOrders(){
-  if(!pendingOrder){baristaOrdersView.innerHTML='<div class="barista-empty">No order is waiting for the barista.<br>When the customer taps Pay, the order will appear here.</div>';return}
+  if(!pendingOrder){baristaOrdersView.innerHTML='<div class="barista-empty">No order is waiting for the barista.<br>When the customer taps Send order, the order will appear here.</div>';return}
   ensurePendingUnits();
   const originalTotal=pendingOrder.items.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0);
   const total=pendingOrderTotal();
@@ -709,5 +709,4 @@ function closeReceipt(){receiptDrawer.classList.remove("open")}
 if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 render();
 </script>
-<script src="payment.js"></script>
 </body></html>

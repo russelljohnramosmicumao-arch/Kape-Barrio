@@ -1,5 +1,42 @@
-const CACHE='kbr-pos-v38';
-const ASSETS=["./", "./index.html", "./payment.js", "./manifest.json", "./logo.png", "./images/americano.jpg", "./images/black-forest-choco.jpg", "./images/blue-ish-red-milktea.jpg", "./images/blue-lemonade.jpg", "./images/blueberry-milk-tea.jpg", "./images/blueberry.jpg", "./images/cappuccino.jpg", "./images/caramel-brown-sugar.jpg", "./images/caramel-latte.jpg", "./images/caramel-macchiato.jpg", "./images/chuckie-float.jpg", "./images/coke-float.jpg", "./images/cookies-and-cream.jpg", "./images/cookies-de-crema.jpg", "./images/cracking-matcha.jpg", "./images/dirty-matcha--premium.jpg", "./images/", "./images/dirty-matcha.jpg", "./images/dirty-taro-milktea.jpg", "./images/dirty-taro.jpg", "./images/dutchmill-float.jpg", "./images/familia-de-verde.jpg", "./images/four-seasons.jpg", "./images/frapmacchiato.jpg", "./images/frappe-de-choco.jpg", "./images/frappe-de-taro.jpg", "./images/frappe-macchiato.jpg", "./images/frappuccino.jpg", "./images/green-apple.jpg", "./images/green-taro-milktea.jpg", "./images/gcash-card.png", "./images/gcash-card.jpg", "./images/green-taro.jpg", "./images/iced-mocha-latte.jpg", "./images/lychee.jpg", "./images/mango-matcha.jpg", "./images/mango-smoothie.jpg", "./images/matcha-frappe.jpg", "./images/matcha-latte--premium.jpg", "./images/matcha-latte.jpg", "./images/matcha-milk-tea.jpg", "./images/mekus-de-berries.jpg", "./images/nutella-matcha.jpg", "./images/okinawa-milk-tea.jpg", "./images/oreo-coffee.jpg", "./images/oreo-matcha.jpg", "./images/red-matcha-milk-tea.jpg", "./images/red-matcha.jpg", "./images/spanish-latte.jpg", "./images/strawberry-milk-tea.jpg", "./images/strawberry.jpg", "./images/taro-milk-tea.jpg", "./images/vanilla-latte.jpg", "./images/white-bunny-milk-tea.jpg", "./images/wintermelon-milk-tea.jpg", "./images/fries.jpg", "./images/shanghai.jpg", "./images/siomai.jpg", "./images/nachos.jpg"];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(x=>{const copy=x.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return x}).catch(()=>caches.match('./')))));
+const CACHE='kbr-pos-v39';
+const ASSETS=[
+  './',
+  './index.html',
+  './sw.js',
+  './manifest.json',
+  './payment.js'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+
+      return fetch(event.request).then(response => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => {});
+        }
+        return response;
+      }).catch(() => caches.match('./index.html'));
+    })
+  );
+});
