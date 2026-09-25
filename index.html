@@ -197,7 +197,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div class="muted" style="margin:4px 0 12px">Review your drinks before checkout.</div>
     <div id="orderList" class="order-list"></div>
     <div id="cartDrawerTotal" class="cart-drawer-total"><span>Total</span><b>₱0</b></div>
-    <div class="row"><button id="clearOrderBtn" class="secondary clear-order-btn" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Pay</button></div>
+    <div class="row"><button id="clearOrderBtn" class="secondary clear-order-btn" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Send order</button></div>
     <button class="secondary" style="width:100%;margin-top:10px" onclick="closeOrder()">Continue ordering</button>
   </div>
 </div>
@@ -575,7 +575,7 @@ async function makeReceipt(){
   persistPendingOrder();
   currentReceipt={no,date,time,total:orderedItems.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0),items:JSON.parse(JSON.stringify(orderedItems)),payment:''};
   cart=[];persist();render();renderOrder();closeOrder();
-  alert(`Order #${no} is ready for the barista.`);
+  alert(`Order #${no} has been sent to the barista.`);
 }
 async function saveReceipt(receipt=currentReceipt){
   if(!receipt) return;
