@@ -102,6 +102,9 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .service-choice span{display:block;font-size:34px;margin-bottom:7px}
 .service-choice.takeout{border-color:#7fb886;background:#f1fbf0}
 .service-choice:active{transform:scale(.98)}
+.barista-tab.active{background:#1d6f3a;color:#fff;border-color:#1d6f3a;box-shadow:0 4px 12px rgba(29,111,58,.18)}
+.discount-btn.remove{background:#f7caca;border-color:#e7a0a0;color:#8b2e2e}.discount-btn.remove:active{background:#efb5b5}
+.cash-quick-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}.cash-quick-buttons button{min-height:40px;border:1px solid #c9b49d;background:#fff;border-radius:10px;font-size:14px;font-weight:900;color:#6b4328;cursor:pointer}.cash-quick-buttons button:active{transform:scale(.97);background:#f0e7dc}
 .kitchen-urgent-tab{display:none;background:#d9483e!important;color:#fff!important;border-color:#d9483e!important;box-shadow:0 4px 12px rgba(217,72,62,.20)}
 .kitchen-urgent-tab.has-alert{display:inline-block;animation:kitchenPulse 1.6s ease-in-out infinite}
 @keyframes kitchenPulse{0%,100%{box-shadow:0 4px 12px rgba(217,72,62,.20)}50%{box-shadow:0 4px 22px rgba(217,72,62,.48)}}
@@ -109,7 +112,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .kitchen-summary strong{color:#a72e27}
 .kitchen-total-row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .kitchen-total-big{font-size:24px;font-weight:900;color:#a72e27}
-.kitchen-order-card{background:#fff;border:2px solid #efc1bd;border-left:6px solid #d9483e;border-radius:16px;padding:14px;margin-bottom:12px}
+.kitchen-order-card{background:#fff;border:2px solid #efc1bd;border-left:6px solid #d9483e;border-radius:16px;padding:14px;margin-bottom:12px}.kitchen-order-card.kitchen-done{border-color:#9dd3a5;border-left-color:#2f8f4e;background:#f7fff7}.kitchen-done-btn{min-height:44px;padding:9px 14px;border-radius:11px;border:2px solid #d9483e;background:#d9483e;color:#fff;font-weight:900;font-size:14px;cursor:pointer}.kitchen-done-btn.sent{background:#2f8f4e;border-color:#2f8f4e}.kitchen-done-btn:disabled{cursor:default;opacity:1}
 .kitchen-order-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .kitchen-order-head b{color:var(--brown);font-size:18px}.kitchen-order-meta{color:#7a6b60;font-size:13px;margin-top:3px}.kitchen-order-total{font-weight:900;color:#a72e27;font-size:18px;white-space:nowrap}
 .kitchen-item{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;background:#fff8f7;border:1px solid #f0d6d2;border-radius:12px;padding:10px;margin-top:9px}.kitchen-item b{color:#4e4137}.kitchen-item small{display:block;color:#7a6b60;margin-top:3px}
@@ -545,17 +548,22 @@ function saveTransactionToHistory(receipt){
     alert('Storage is full. Please export your CSV and clear older history before saving more transactions.');
   }
 }
-function closeBaristaPage(){baristaDrawer.classList.remove("open")}
+function closeBaristaPage(){
+  baristaDrawer.classList.remove("open");
+  if(!customerServiceType) showCustomerStart();
+}
 function updateKitchenAlertTab(){
   const tab=document.getElementById('baristaKitchenTab');
   if(!tab)return;
-  const has=hasKitchenUrgentOrders();
-  tab.classList.toggle('has-alert',has);
-  tab.style.display=has?'inline-block':'none';
-  const qty=getKitchenUrgentSummary().quantity;
-  tab.textContent=has?`🚨 Kitchen (${qty})`:'🚨 Kitchen';
+  const hasAny=hasAnyKitchenUrgentOrders();
+  const hasUnsent=hasKitchenUrgentOrders();
+  tab.classList.toggle('has-alert',hasUnsent);
+  tab.style.display=hasAny?'inline-block':'none';
+  tab.textContent='🚨 Kitchen';
 }
 function openBaristaPage(){
+  const start=document.getElementById('serviceStart');
+  if(start) start.style.display='none';
   baristaDrawer.classList.add('open');
   setBaristaView('orders');
 }
@@ -586,19 +594,33 @@ function getKitchenUrgentSummary(){
   });
   return {quantity,total,orders};
 }
-function hasKitchenUrgentOrders(){return getKitchenUrgentSummary().orders>0}
+function hasAnyKitchenUrgentOrders(){return pendingOrders.some(o=>(o.items||[]).some(isKitchenUrgentItem))}
+function hasKitchenUrgentOrders(){return pendingOrders.some(o=>!o.kitchenNotified && (o.items||[]).some(isKitchenUrgentItem))}
+function markKitchenDone(no){
+  const order=getPendingOrderByNo(no);
+  if(!order)return;
+  order.kitchenNotified=true;
+  setPendingOrderStorage();
+  if(baristaView==='kitchen') renderKitchenAlerts();
+  else updateKitchenAlertTab();
+  showActionToast(`Kitchen informed for Order #${order.no}`);
+}
 function renderKitchenAlerts(){
   const summary=getKitchenUrgentSummary();
   updateKitchenAlertTab();
   if(!summary.orders){baristaKitchenView.innerHTML='<div class="barista-empty">No urgent kitchen orders right now.</div>';return;}
-  const cards=pendingOrders.map(o=>{
+  const cards=[...pendingOrders].map(o=>{
     const urgent=(o.items||[]).filter(isKitchenUrgentItem);
-    if(!urgent.length)return '';
+    if(!urgent.length)return null;
+    return {o,urgent};
+  }).filter(Boolean).sort((a,b)=>(a.o.kitchenNotified?1:0)-(b.o.kitchenNotified?1:0));
+  const cardsHtml=cards.map(({o,urgent})=>{
     const service=serviceLabel(o.serviceType);
     const total=urgent.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0);
-    return `<div class="kitchen-order-card"><div class="kitchen-order-head"><div><b>Order #${o.no}</b><div class="kitchen-order-meta">${o.date} · ${o.time}</div>${service?`<span class="kitchen-order-type">${service}</span>`:''}${o.note?`<div class="note-preview">📝 ${escapeHtml(o.note)}</div>`:''}</div><div class="kitchen-order-total">${peso(total)}</div></div>${urgent.map(x=>{const details=[x.size,x.flavor].filter(Boolean).join(' · ');return `<div class="kitchen-item"><div><b>${Number(x.qty)||0}× ${x.name}</b>${details?`<small>${details}</small>`:''}</div><strong>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</strong></div>`}).join('')}</div>`;
+    const done=!!o.kitchenNotified;
+    return `<div class="kitchen-order-card ${done?'kitchen-done':''}"><div class="kitchen-order-head"><div><b>Order #${o.no}</b><div class="kitchen-order-meta">${o.date} · ${o.time}</div>${service?`<span class="kitchen-order-type">${service}</span>`:''}${o.note?`<div class="note-preview">📝 ${escapeHtml(o.note)}</div>`:''}</div><div style="text-align:right"><div class="kitchen-order-total">${peso(total)}</div><button class="kitchen-done-btn ${done?'sent':''}" ${done?'disabled':''} onclick="markKitchenDone('${o.no}')">${done?'Done ✓':'Done'}</button></div></div>${urgent.map(x=>{const details=[x.size,x.flavor].filter(Boolean).join(' · ');return `<div class="kitchen-item"><div><b>${Number(x.qty)||0}× ${x.name}</b>${details?`<small>${details}</small>`:''}</div><strong>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</strong></div>`}).join('')}</div>`;
   }).join('');
-  baristaKitchenView.innerHTML=`<div class="kitchen-summary"><div class="kitchen-total-row"><div><strong>🚨 Tell the kitchen team now</strong><div class="muted" style="margin-top:4px">Urgent food orders: Fries, Shiang Hai and Nachos only. Siomai is excluded.</div></div><div class="kitchen-total-big">${summary.quantity} item${summary.quantity===1?'':'s'}</div></div><div class="muted" style="margin-top:8px">${summary.orders} order${summary.orders===1?'':'s'} · Food total ${peso(summary.total)}</div></div>${cards}`;
+  baristaKitchenView.innerHTML=`<div class="kitchen-summary"><div class="kitchen-total-row"><div class="kitchen-total-big">${summary.quantity} item${summary.quantity===1?'':'s'}</div><div class="kitchen-total-big">${peso(summary.total)}</div></div><div class="muted" style="margin-top:8px">${summary.orders} order${summary.orders===1?'':'s'} · Fries, Shiang Hai and Nachos</div></div>${cardsHtml}`;
 }
 
 function setPendingOrderStorage(){
@@ -716,12 +738,12 @@ function orderUnitTotal(unit){
 function pendingOrderTotal(order=getPendingOrder()){
   if(!order)return 0;
   ensurePendingUnits(order);
-  return order.units.reduce((sum,u)=>sum+orderUnitTotal(u),0);
+  return order.units.filter(u=>!u.cancelled).reduce((sum,u)=>sum+orderUnitTotal(u),0);
 }
 function buildHistoryItemsFromPending(order=getPendingOrder()){
   if(!order)return[];
   ensurePendingUnits(order);
-  return order.units.map(u=>({
+  return order.units.filter(u=>!u.cancelled).map(u=>({
     name:u.name,
     category:u.category,
     type:u.type,
@@ -746,6 +768,23 @@ function baristaDiscount(uid,pct){
   setPendingOrderStorage();
   renderBaristaOrders();
 }
+function removeBaristaUnit(uid){
+  const order=getPendingOrder();
+  if(!order)return;
+  ensurePendingUnits(order);
+  const u=order.units.find(x=>x.uid===uid && !x.cancelled);
+  if(!u)return;
+  const activeCount=order.units.filter(x=>!x.cancelled).length;
+  if(activeCount<=1){
+    if(confirm('Remove the last item? This will cancel the entire transaction.')) cancelPendingTransaction(order.no);
+    return;
+  }
+  u.cancelled=true;
+  if(order.items?.[u.sourceIndex]) order.items[u.sourceIndex].qty=Math.max(0,(Number(order.items[u.sourceIndex].qty)||0)-1);
+  setPendingOrderStorage();
+  renderBaristaOrders();
+  showActionToast(`Removed 1× ${u.name} from Order #${order.no}`);
+}
 function toggleBaristaGroup(i){
   const el=document.getElementById('barista-group-'+i);
   if(el)el.classList.toggle('open');
@@ -766,27 +805,29 @@ function renderBaristaOrders(){
     const total=pendingOrderTotal(o);
     const active=String(o.no)===String(selectedOrder.no);
     return `<button class="pending-order-select ${active?'active':''}" onclick="selectPendingOrder('${o.no}')">
-      <span><b>Order #${o.no}${o.note?` · ${escapeHtml(o.note)}`:''}</b><small>${serviceLabel(o.serviceType)?serviceLabel(o.serviceType)+' · ':''}${o.date} · ${o.time} · ${o.items.reduce((s,x)=>s+(Number(x.qty)||0),0)} item(s)</small></span>
+      <span><b>Order #${o.no}${o.note?` · ${escapeHtml(o.note)}`:''}</b><small>${serviceLabel(o.serviceType)?serviceLabel(o.serviceType)+' · ':''}${o.date} · ${o.time} · ${o.units ? o.units.filter(u=>!u.cancelled).length : o.items.reduce((s,x)=>s+(Number(x.qty)||0),0)} item(s)</small></span>
       <span class="pending-total">${peso(total)}</span>
     </button>`;
   }).join('');
 
   const order=selectedOrder;
-  const originalTotal=order.items.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0);
+  const originalTotal=order.units.filter(u=>!u.cancelled).reduce((s,u)=>s+(Number(u.originalPrice)||0),0);
   const total=pendingOrderTotal(order);
   const groups=order.items.map((x,gi)=>{
-    const units=order.units.filter(u=>u.sourceIndex===gi);
+    const units=order.units.filter(u=>u.sourceIndex===gi && !u.cancelled);
     const lineTotal=units.reduce((s,u)=>s+orderUnitTotal(u),0);
+    if(!units.length)return '';
     const details=[x.type&&x.type!=='standard'?x.type:'',x.size,x.flavor,x.sweetness].filter(Boolean).join(' · ');
     const unitRows=units.map((u)=>{
       const pct=u.food?0:(Number(u.discountPercent)||0);
       const net=orderUnitTotal(u);
       const discountUI=u.food
-        ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span></div>`
+        ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`
         : `<div class="discount-buttons">
             <button class="discount-btn none ${pct===0?'active':''}" onclick="baristaDiscount('${u.uid}',0)">None</button>
             <button class="discount-btn ${pct===10?'active':''}" onclick="baristaDiscount('${u.uid}',10)">10%</button>
             <button class="discount-btn ${pct===20?'active':''}" onclick="baristaDiscount('${u.uid}',20)">20%</button>
+            <button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button>
           </div>`;
       const priceText=!u.food && pct
         ? `₱${Number(u.originalPrice).toLocaleString('en-PH',{minimumFractionDigits:0,maximumFractionDigits:2})} − ${pct}% = <b>${peso(net)}</b>`
@@ -798,7 +839,7 @@ function renderBaristaOrders(){
     }).join('');
     return `<div class="barista-group" id="barista-group-${gi}">
       <button class="barista-group-toggle" onclick="toggleBaristaGroup(${gi})">
-        <span>${x.qty}× ${x.name}<small>${details}</small></span><span>${peso(lineTotal)} ▾</span>
+        <span>${units.length}× ${x.name}<small>${details}</small></span><span>${peso(lineTotal)} ▾</span>
       </button>
       <div class="barista-group-body">${unitRows}</div>
     </div>`;
@@ -865,6 +906,7 @@ function cashKeypadPress(key){
   }
   updateCashReceived(text);
 }
+function cashQuickSet(amount){ updateCashReceived(Number(amount)||0); }
 function cashKeypadBackspace(){
   let text=String(cashReceived||0);
   if(text==='0')text='';
@@ -889,7 +931,9 @@ function renderBaristaPaymentPanel(){
         <div class="barista-cash-box"><span>Amount received</span><b id="baristaCashAmount">${peso(cashReceived)}</b></div>
         <div id="baristaChangeBox" class="barista-cash-box ${insufficient?'change-needed':'change-ok'}"><span id="baristaChangeLabel">${insufficient?'Still due':'Change'}</span><b id="baristaChangeValue">${peso(insufficient?Math.max(0,total-cashReceived):Math.max(0,cashReceived-total))}</b></div>
       </div>
-      <div class="cash-keypad">
+      <div class="cash-quick-buttons">
+        <button onclick="cashQuickSet(100)">₱100</button><button onclick="cashQuickSet(500)">₱500</button><button onclick="cashQuickSet(1000)">₱1,000</button>
+      </div><div class="cash-keypad">
         <button onclick="cashKeypadPress(1)">1</button><button onclick="cashKeypadPress(2)">2</button><button onclick="cashKeypadPress(3)">3</button>
         <button onclick="cashKeypadPress(4)">4</button><button onclick="cashKeypadPress(5)">5</button><button onclick="cashKeypadPress(6)">6</button>
         <button onclick="cashKeypadPress(7)">7</button><button onclick="cashKeypadPress(8)">8</button><button onclick="cashKeypadPress(9)">9</button>

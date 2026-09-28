@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v50';
+const CACHE='kbr-pos-v51';
 const ASSETS=[
   './',
   './index.html',
@@ -6,6 +6,7 @@ const ASSETS=[
   './manifest.json',
   './payment.js'
 ];
+
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE)
@@ -13,6 +14,7 @@ self.addEventListener('install', event => {
       .then(() => self.skipWaiting())
   );
 });
+
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
@@ -20,6 +22,7 @@ self.addEventListener('activate', event => {
       .then(() => self.clients.claim())
   );
 });
+
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
