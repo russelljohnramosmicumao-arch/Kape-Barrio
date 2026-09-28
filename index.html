@@ -367,6 +367,9 @@ function showActionToast(message){
 }
 function closeOrderSentMessage(){
   document.getElementById('orderSentModal')?.classList.remove('open');
+  customerServiceType='';
+  sessionStorage.removeItem('kbr_current_service');
+  showCustomerStart();
 }
 function showOrderSentMessage(order){
   const modal=document.getElementById('orderSentModal');
@@ -1186,9 +1189,8 @@ async function makeReceipt(){
   setPendingOrderStorage();
   currentReceipt={no,date,time,serviceType:newOrder.serviceType,note:newOrder.note||'',total:orderedItems.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0),items:JSON.parse(JSON.stringify(orderedItems)),payment:''};
   cart=[];persist();render();renderOrder();closeOrder();
-  customerServiceType='';
-  sessionStorage.removeItem('kbr_current_service');
-  showCustomerStart();
+  // Keep the customer on the menu while the order confirmation is shown.
+  // The Close button will return to the Dine In / Take Out screen.
   showOrderSentMessage(currentReceipt);
 }
 async function saveReceipt(receipt=currentReceipt){
