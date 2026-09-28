@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v51';
+const CACHE='kbr-pos-v52';
 const ASSETS=[
   './',
   './index.html',
