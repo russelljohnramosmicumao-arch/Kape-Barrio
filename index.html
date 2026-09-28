@@ -107,11 +107,11 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .kitchen-summary strong{color:#a72e27}
 .kitchen-total-row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .kitchen-total-big{font-size:24px;font-weight:900;color:#a72e27}
-.kitchen-order-card{background:#fff;border:2px solid #efc1bd;border-left:6px solid #d9483e;border-radius:16px;padding:14px;margin-bottom:12px}
+.kitchen-order-card{background:#fff;border:2px solid #efc1bd;border-left:6px solid #d9483e;border-radius:16px;padding:14px;margin-bottom:12px}.kitchen-order-card.sent{border-color:#acd7b5;border-left-color:#2f8f4e;background:#fbfffa}
 .kitchen-order-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .kitchen-order-head b{color:var(--brown);font-size:18px}.kitchen-order-meta{color:#7a6b60;font-size:13px;margin-top:3px}.kitchen-order-total{font-weight:900;color:#a72e27;font-size:18px;white-space:nowrap}
 .kitchen-item{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;background:#fff8f7;border:1px solid #f0d6d2;border-radius:12px;padding:10px;margin-top:9px}.kitchen-item b{color:#4e4137}.kitchen-item small{display:block;color:#7a6b60;margin-top:3px}
-.kitchen-order-type{display:inline-block;margin-top:6px;border-radius:999px;padding:4px 8px;background:#f7f1e9;color:#6b4328;font-size:11px;font-weight:900}
+.kitchen-order-type{display:inline-block;margin-top:6px;border-radius:999px;padding:4px 8px;background:#f7f1e9;color:#6b4328;font-size:11px;font-weight:900}.kitchen-send-btn{margin-top:12px;width:100%;min-height:46px;border-radius:12px;border:2px solid #d9483e;background:#d9483e;color:#fff;font-size:15px;font-weight:900;cursor:pointer}.kitchen-send-btn.sent{background:#2f8f4e;border-color:#2f8f4e}.kitchen-header-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.kitchen-header-total{font-size:18px;font-weight:900;color:#a72e27;white-space:nowrap}.kitchen-order-card.sent .kitchen-order-total{color:#2f6f3a}
 @media(max-width:599px){.service-options{grid-template-columns:1fr}.service-choice{min-height:90px;font-size:20px}}
 </style>
 </head>
@@ -136,7 +136,6 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
       <button class="service-choice" onclick="startCustomerOrder('dine-in')"><span>🍽️</span>Dine In</button>
       <button class="service-choice takeout" onclick="startCustomerOrder('take-out')"><span>🥤</span>Take Out</button>
     </div>
-    <button class="secondary" style="width:100%;margin-top:14px" onclick="openBaristaPage()">☕ Barista Page</button>
   </div>
 </div>
 
@@ -284,10 +283,33 @@ function startCustomerOrder(type){
   const start=document.getElementById('serviceStart');
   if(start)start.style.display='none';
   render();
+  armCustomerIdleTimer();
 }
 function showCustomerStart(){
   const start=document.getElementById('serviceStart');
   if(start)start.style.display='flex';
+  clearCustomerIdleTimer();
+}
+let customerIdleTimer=null;
+function clearCustomerIdleTimer(){
+  if(customerIdleTimer){clearTimeout(customerIdleTimer);customerIdleTimer=null;}
+}
+function armCustomerIdleTimer(){
+  clearCustomerIdleTimer();
+  if(!customerServiceType)return;
+  customerIdleTimer=setTimeout(()=>{
+    if(baristaDrawer?.classList.contains('open')){ armCustomerIdleTimer(); return; }
+    clearAppendTarget();
+    cart=[];
+    persist();
+    render();
+    renderOrder();
+    closeOrder();
+    customerServiceType='';
+    sessionStorage.removeItem('kbr_current_service');
+    showCustomerStart();
+    showActionToast('No order sent for 2 minutes. Returning to Dine In / Take Out.');
+  },120000);
 }
 function setCategory(name){
   if(!cats.includes(name)) return;
@@ -543,60 +565,60 @@ function saveTransactionToHistory(receipt){
     alert('Storage is full. Please export your CSV and clear older history before saving more transactions.');
   }
 }
-function closeBaristaPage(){baristaDrawer.classList.remove("open")}
+function closeBaristaPage(){baristaDrawer.classList.remove("open"); if(customerServiceType)armCustomerIdleTimer();}
+function getKitchenUrgentOrders(){
+  return pendingOrders.filter(o=>(o.items||[]).some(isKitchenUrgentItem));
+}
+function getKitchenUrgentSummary(){
+  let quantity=0,total=0,orders=0,unsentOrders=0;
+  getKitchenUrgentOrders().forEach(o=>{
+    const urgent=(o.items||[]).filter(isKitchenUrgentItem);
+    orders+=1;
+    if(!o.kitchenSent)unsentOrders+=1;
+    urgent.forEach(x=>{quantity+=Number(x.qty)||0;total+=(Number(x.qty)||0)*(Number(x.price)||0);});
+  });
+  return {quantity,total,orders,unsentOrders};
+}
+function hasKitchenUrgentOrders(){return getKitchenUrgentOrders().length>0}
 function updateKitchenAlertTab(){
   const tab=document.getElementById('baristaKitchenTab');
   if(!tab)return;
-  const has=hasKitchenUrgentOrders();
-  tab.classList.toggle('has-alert',has);
+  const summary=getKitchenUrgentSummary();
+  const has=summary.orders>0;
   tab.style.display=has?'inline-block':'none';
-  const qty=getKitchenUrgentSummary().quantity;
-  tab.textContent=has?`🚨 Kitchen (${qty})`:'🚨 Kitchen';
+  tab.classList.toggle('has-alert',summary.unsentOrders>0);
+  tab.textContent=summary.unsentOrders>0?`🍳 Kitchen (${summary.unsentOrders})`:'🍳 Kitchen';
 }
-function openBaristaPage(){
-  baristaDrawer.classList.add('open');
-  setBaristaView('orders');
+function markKitchenSent(no){
+  const order=getPendingOrderByNo(no);
+  if(!order)return;
+  order.kitchenSent=true;
+  setPendingOrderStorage();
+  if(baristaView==='kitchen')renderKitchenAlerts();
+  else renderBaristaOrders();
+  showActionToast(`Order #${order.no} sent to kitchen`);
 }
-function setBaristaView(view){
-  baristaView=view;
-  baristaOrdersTab.classList.toggle('active',view==='orders');
-  baristaKitchenTab.classList.toggle('active',view==='kitchen');
-  baristaHistoryTab.classList.toggle('active',view==='history');
-  baristaOrdersView.style.display=view==='orders'?'block':'none';
-  baristaKitchenView.style.display=view==='kitchen'?'block':'none';
-  baristaHistoryView.style.display=view==='history'?'block':'none';
-  if(view==='orders')renderBaristaOrders();
-  else if(view==='kitchen')renderKitchenAlerts();
-  else renderHistory();
-}
-
-function isKitchenUrgentItem(item){
-  const n=String(item?.name||'').trim().toLowerCase();
-  return ['fries','shiang hai','nachos'].includes(n);
-}
-function getKitchenUrgentSummary(){
-  let quantity=0,total=0,orders=0;
-  pendingOrders.forEach(o=>{
-    const urgent=(o.items||[]).filter(isKitchenUrgentItem);
-    if(!urgent.length)return;
-    orders+=1;
-    urgent.forEach(x=>{quantity+=Number(x.qty)||0;total+=(Number(x.qty)||0)*(Number(x.price)||0);});
-  });
-  return {quantity,total,orders};
-}
-function hasKitchenUrgentOrders(){return getKitchenUrgentSummary().orders>0}
 function renderKitchenAlerts(){
   const summary=getKitchenUrgentSummary();
   updateKitchenAlertTab();
-  if(!summary.orders){baristaKitchenView.innerHTML='<div class="barista-empty">No urgent kitchen orders right now.</div>';return;}
-  const cards=pendingOrders.map(o=>{
+  if(!summary.orders){baristaKitchenView.innerHTML='<div class="barista-empty">No food orders for the kitchen right now.</div>';return;}
+  const kitchenOrders=getKitchenUrgentOrders().slice().sort((a,b)=>{
+    const sa=a.kitchenSent?1:0, sb=b.kitchenSent?1:0;
+    if(sa!==sb)return sa-sb;
+    return Number(pendingOrders.indexOf(a))-Number(pendingOrders.indexOf(b));
+  });
+  const cards=kitchenOrders.map(o=>{
     const urgent=(o.items||[]).filter(isKitchenUrgentItem);
-    if(!urgent.length)return '';
     const service=serviceLabel(o.serviceType);
     const total=urgent.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0);
-    return `<div class="kitchen-order-card"><div class="kitchen-order-head"><div><b>Order #${o.no}${o.customerName?` · ${escapeHtml(o.customerName)}`:''}</b><div class="kitchen-order-meta">${o.date} · ${o.time}</div>${service?`<span class="kitchen-order-type">${service}</span>`:''}</div><div class="kitchen-order-total">${peso(total)}</div></div>${urgent.map(x=>{const details=[x.size,x.flavor].filter(Boolean).join(' · ');return `<div class="kitchen-item"><div><b>${Number(x.qty)||0}× ${x.name}</b>${details?`<small>${details}</small>`:''}</div><strong>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</strong></div>`}).join('')}</div>`;
+    const sent=!!o.kitchenSent;
+    return `<div class="kitchen-order-card ${sent?'sent':''}">
+      <div class="kitchen-order-head"><div><b>Order #${o.no}${o.customerName?` · ${escapeHtml(o.customerName)}`:''}</b><div class="kitchen-order-meta">${o.date} · ${o.time}</div>${service?`<span class="kitchen-order-type">${service}</span>`:''}</div><div class="kitchen-order-total">${peso(total)}</div></div>
+      ${urgent.map(x=>{const details=[x.size,x.flavor].filter(Boolean).join(' · ');return `<div class="kitchen-item"><div><b>${Number(x.qty)||0}× ${x.name}</b>${details?`<small>${details}</small>`:''}</div><strong>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</strong></div>`}).join('')}
+      <button class="kitchen-send-btn ${sent?'sent':''}" ${sent?'disabled':''} onclick="markKitchenSent('${o.no}')">${sent?'Sent':'Send to Kitchen'}</button>
+    </div>`;
   }).join('');
-  baristaKitchenView.innerHTML=`<div class="kitchen-summary"><div class="kitchen-total-row"><div><strong>🚨 Tell the kitchen team now</strong><div class="muted" style="margin-top:4px">Urgent food orders: Fries, Shiang Hai and Nachos only. Siomai is excluded.</div></div><div class="kitchen-total-big">${summary.quantity} item${summary.quantity===1?'':'s'}</div></div><div class="muted" style="margin-top:8px">${summary.orders} order${summary.orders===1?'':'s'} · Food total ${peso(summary.total)}</div></div>${cards}`;
+  baristaKitchenView.innerHTML=`<div class="kitchen-header-row"><h3 style="margin:0;color:var(--brown);font-family:Georgia,serif">Kitchen Orders</h3><div class="kitchen-header-total">${summary.quantity} item${summary.quantity===1?'':'s'} · ${peso(summary.total)}</div></div>${cards}`;
 }
 
 function setPendingOrderStorage(){
@@ -663,7 +685,7 @@ function selectPendingOrder(no){
   renderBaristaOrders();
 }
 function ensureAllPendingUnits(){
-  pendingOrders.forEach(order=>ensurePendingUnits(order));
+  pendingOrders.forEach(order=>{ if(typeof order.kitchenSent!=='boolean')order.kitchenSent=false; ensurePendingUnits(order); });
 }
 function ensurePendingUnits(order){
   if(!order)return;
@@ -1031,7 +1053,7 @@ let baristaView="orders";
 let selectedBaristaPayment="";
 let cashReceived=0;
 if(pendingOrders.length) {
-  pendingOrders.forEach(o=>{ if(o && !o.units) o.units=null; });
+  pendingOrders.forEach(o=>{ if(o && !o.units) o.units=null; if(o && typeof o.kitchenSent!=='boolean')o.kitchenSent=false; });
   localStorage.removeItem("kbr_pending_order");
   setPendingOrderStorage();
 }
@@ -1047,8 +1069,10 @@ async function makeReceipt(){
     const target=getPendingOrderByNo(appendNo);
     clearAppendTarget();
     if(target){
+      const hasNewKitchenItems=orderedItems.some(isKitchenUrgentItem);
       target.items=(target.items||[]).concat(JSON.parse(JSON.stringify(orderedItems)));
       target.units=null;
+      if(hasNewKitchenItems)target.kitchenSent=false;
       pendingOrders=pendingOrders.filter(o=>String(o.no)!==String(target.no));
       pendingOrders.unshift(target);
       activePendingOrderNo=target.no;
@@ -1065,7 +1089,7 @@ async function makeReceipt(){
   }
 
   const no=orderNumber();
-  const newOrder={no,date,time,serviceType:customerServiceType||'dine-in',items:JSON.parse(JSON.stringify(orderedItems)),units:null,customerName:''};
+  const newOrder={no,date,time,serviceType:customerServiceType||'dine-in',items:JSON.parse(JSON.stringify(orderedItems)),units:null,customerName:'',kitchenSent:false};
   pendingOrders.unshift(newOrder);
   activePendingOrderNo=no;
   selectedBaristaPayment='';
