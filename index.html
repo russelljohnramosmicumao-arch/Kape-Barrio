@@ -565,6 +565,30 @@ function saveTransactionToHistory(receipt){
     alert('Storage is full. Please export your CSV and clear older history before saving more transactions.');
   }
 }
+function openBaristaPage(){
+  clearCustomerIdleTimer();
+  baristaDrawer.classList.add("open");
+  updateKitchenAlertTab();
+  setBaristaView(baristaView||"orders");
+}
+function setBaristaView(view){
+  baristaView=view;
+  document.getElementById("baristaOrdersTab")?.classList.toggle("active",view==="orders");
+  document.getElementById("baristaKitchenTab")?.classList.toggle("active",view==="kitchen");
+  document.getElementById("baristaHistoryTab")?.classList.toggle("active",view==="history");
+  const ordersEl=document.getElementById("baristaOrdersView");
+  const kitchenEl=document.getElementById("baristaKitchenView");
+  const historyEl=document.getElementById("baristaHistoryView");
+  if(ordersEl)ordersEl.style.display=view==="orders"?"":"none";
+  if(kitchenEl)kitchenEl.style.display=view==="kitchen"?"":"none";
+  if(historyEl)historyEl.style.display=view==="history"?"":"none";
+  if(view==="orders") renderBaristaOrders();
+  if(view==="kitchen") renderKitchenAlerts();
+  if(view==="history"){
+    renderHistory();
+    renderDailyCsvArchive();
+  }
+}
 function closeBaristaPage(){baristaDrawer.classList.remove("open"); if(customerServiceType)armCustomerIdleTimer();}
 function getKitchenUrgentOrders(){
   return pendingOrders.filter(o=>(o.items||[]).some(isKitchenUrgentItem));
