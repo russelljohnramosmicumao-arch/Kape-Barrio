@@ -168,6 +168,21 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .kitchen-thumb-action{display:flex;justify-content:flex-end;margin-top:9px}
 @media(max-width:599px){.barista-thumb-grid,.kitchen-thumb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.barista-detail-toolbar{align-items:stretch;flex-direction:column}.barista-back-orders{width:100%}}
 
+
+/* v59: stronger order cards and clearer order numbers */
+.barista-order-thumb,.history-thumb,.kitchen-thumb{border-width:2px}
+.barista-order-thumb{box-shadow:0 3px 10px rgba(60,40,25,.08)}
+.order-number-badge{display:inline-flex;align-items:center;gap:4px;background:#2f6f3a;color:#fff;border-radius:9px;padding:5px 8px;font-size:13px;font-weight:900;line-height:1;border:2px solid #1f5b2f;white-space:nowrap}
+.barista-order-head .order-number-badge{font-size:15px;padding:6px 9px}
+.barista-unit{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid #f0e7de}
+.barista-unit-name{min-width:0}
+.barista-unit-name b{display:block;color:var(--brown);font-size:14px}
+.barista-unit-price{font-weight:900;color:var(--brown);white-space:nowrap;font-size:14px}
+.discount-buttons{display:none!important}
+.barista-group{border-width:2px}
+.barista-group-body{display:block!important;padding:8px 10px}
+.barista-group-label{background:#fbf8f4;padding:10px 13px;border-bottom:1px solid #eee3d7;font-weight:900;color:#4e4137;display:flex;justify-content:space-between;gap:10px;align-items:center}
+
 </style>
 </head>
 <body>
@@ -707,7 +722,7 @@ function renderKitchenAlerts(){
       return `<div class="barista-order-thumb-item"><span>${Number(x.qty)||0}× ${escapeHtml(x.name)}</span><span>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</span></div>${details?`<div class="barista-order-thumb-meta">${escapeHtml(details)}</div>`:''}`;
     }).join('');
     return `<div class="kitchen-thumb ${done?'kitchen-done':''}">
-      <div class="barista-order-thumb-head"><b>Order #${String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</b><span class="barista-order-thumb-total">${peso(total)}</span></div>
+      <div class="barista-order-thumb-head"><span class="order-number-badge">Order #${String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><span class="barista-order-thumb-total">${peso(total)}</span></div>
       <div class="barista-order-thumb-meta">${service}</div>
       <div class="barista-order-thumb-items">${items}</div>
       <div class="kitchen-thumb-action"><button class="kitchen-done-btn ${done?'sent':''}" onclick="markKitchenDone('${o.no}')">${done?'Done':'Done'}</button></div>
@@ -895,14 +910,12 @@ function renderBaristaOrders(){
         ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`
         : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="baristaDiscount('${u.uid}',20)">20%</button><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`;
       return `<div class="barista-unit">
-        <div class="barista-unit-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small><div class="discount-price">${priceText}</div></div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px">
-          <button class="unit-done-btn ${servedClass}" onclick="toggleUnitServed('${u.uid}')">${u.served?'✓ Served':'☐ Done?'}</button>
-          ${discountUI}
-        </div>
+        <button class="unit-done-btn ${servedClass}" onclick="toggleUnitServed('${u.uid}')" aria-label="Mark item served">${u.served?'✓ Served':'☐ Done?'}</button>
+        <div class="barista-unit-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small></div>
+        <div class="barista-unit-price">${peso(net)}</div>
       </div>`;
     }).join('');
-    return `<div class="barista-group open" id="barista-group-${gi}"><button class="barista-group-toggle" onclick="toggleBaristaGroup(${gi})"><span>${units.length}× ${escapeHtml(x.name)}<small>${escapeHtml(details)}</small></span><span>${peso(lineTotal)} ▾</span></button><div class="barista-group-body">${unitRows}</div></div>`;
+    return `<div class="barista-group open" id="barista-group-${gi}"><div class="barista-group-label"><span>${units.length}× ${escapeHtml(x.name)}${details?`<small>${escapeHtml(details)}</small>`:''}</span><span>${peso(lineTotal)}</span></div><div class="barista-group-body">${unitRows}</div></div>`;
   }).join('');
 
   let statusNote='';
@@ -912,9 +925,9 @@ function renderBaristaOrders(){
     ? statusNote
     : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">💵 Cash payment</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">📱 GCash payment</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
-  baristaOrdersView.innerHTML=`<div class="barista-detail-toolbar"><button class="secondary barista-back-orders" onclick="closeBaristaOrderDetail()">← Back to orders</button><div class="barista-order-thumb-meta" style="margin:0;font-weight:900">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')} · ${serviceLabel(order.serviceType)||'Order'} · ${peso(total)}</div></div>
+  baristaOrdersView.innerHTML=`<div class="barista-detail-toolbar"><button class="secondary barista-back-orders" onclick="closeBaristaOrderDetail()">← Back to orders</button><div class="barista-order-thumb-meta" style="margin:0;font-weight:900"><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span> · ${serviceLabel(order.serviceType)||'Order'} · ${peso(total)}</div></div>
     <div class="barista-order-card">
-      <div class="barista-order-head"><div><b>Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}${order.note?` · ${escapeHtml(order.note)}`:''}</b><div class="barista-order-meta">${serviceLabel(order.serviceType)?serviceLabel(order.serviceType)+' · ':''}${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
+      <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${order.note?` <span class="muted">· ${escapeHtml(order.note)}</span>`:''}<div class="barista-order-meta">${serviceLabel(order.serviceType)?serviceLabel(order.serviceType)+' · ':''}${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
       <div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>
       ${noteEditorOpenNo===String(order.no)?`<div class="note-editor"><textarea id="pendingOrderNoteInput" maxlength="250" placeholder="Add name, less ice, less sugar, special request, etc.">${escapeHtml(order.note||'')}</textarea><div class="note-editor-actions"><button class="secondary" onclick="closePendingNoteEditor()">Close</button><button class="primary" style="background:#2f8f4e;border-color:#2f8f4e" onclick="savePendingOrderNote()">Save note</button></div></div>`:''}
       <div class="report-note">Original total: ${peso(originalTotal)}. Discounts can be applied only to drinks, one cup at a time.</div>
@@ -1052,7 +1065,7 @@ function renderHistory(){
       return `<div class="history-thumb-item"><span>${x.qty}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
     }).join('');
     return `<div class="history-thumb">
-      <div class="history-thumb-head"><b>Order #${String(r.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</b><span class="history-thumb-total">${peso(r.total)}</span></div>
+      <div class="history-thumb-head"><span class="order-number-badge">Order #${String(r.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><span class="history-thumb-total">${peso(r.total)}</span></div>
       <div class="history-thumb-meta">${serviceLabel(r.serviceType)||''} · ${(r.payment||'').toUpperCase()}</div>
       <div class="history-thumb-items">${items}</div>
       ${r.note?`<div class="history-thumb-meta">📝 ${escapeHtml(r.note)}</div>`:''}
