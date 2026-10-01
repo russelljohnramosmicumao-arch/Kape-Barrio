@@ -152,6 +152,22 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .history-total-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.history-total-card{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px}.history-total-card small{display:block;color:#7a6b60;font-weight:800;font-size:11px}.history-total-card b{display:block;margin-top:4px;color:var(--brown);font-size:22px}
 @media(max-width:599px){.pending-orders-list{grid-template-columns:repeat(2,minmax(0,1fr))}.history-thumb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.history-total-strip{grid-template-columns:1fr 1fr}.history-total-card b{font-size:18px}}
 
+/* v58: Barista order thumbnails/detail view */
+.barista-thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;margin-top:4px}
+.barista-order-thumb{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:11px;box-shadow:0 2px 8px rgba(60,40,25,.06);cursor:pointer;text-align:left;width:100%;color:inherit}
+.barista-order-thumb:active{transform:scale(.99)}
+.barista-order-thumb.active{border:2px solid #2f8f4e;background:#f2fbf3}
+.barista-order-thumb-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.barista-order-thumb-head b{color:var(--brown);font-size:15px}.barista-order-thumb-total{color:var(--brown);font-weight:900;white-space:nowrap}
+.barista-order-thumb-meta{color:#7a6b60;font-size:11px;margin-top:3px}.barista-order-thumb-items{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:11px;color:#4e4137}.barista-order-thumb-item{display:flex;justify-content:space-between;gap:6px}.barista-order-thumb-item span:last-child{font-weight:800;color:var(--brown);white-space:nowrap}
+.barista-detail-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.barista-back-orders{min-height:42px;padding:9px 12px}
+.kitchen-thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.kitchen-thumb{background:#fff;border:2px solid #efc1bd;border-radius:14px;padding:11px;box-shadow:0 2px 8px rgba(60,40,25,.06)}
+.kitchen-thumb.kitchen-done{border-color:#9dd3a5;background:#f7fff7}
+.kitchen-thumb .kitchen-item{margin-top:7px}
+.kitchen-thumb-action{display:flex;justify-content:flex-end;margin-top:9px}
+@media(max-width:599px){.barista-thumb-grid,.kitchen-thumb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.barista-detail-toolbar{align-items:stretch;flex-direction:column}.barista-back-orders{width:100%}}
+
 </style>
 </head>
 <body>
@@ -638,7 +654,21 @@ function openBaristaPage(){
   setBaristaView('orders');
 }
 function setBaristaView(view){
-  baristaView=view;baristaOrdersTab.classList.toggle('active',view==='orders');document.getElementById('baristaServedUnpaidTab')?.classList.toggle('active',view==='served-unpaid');document.getElementById('baristaUnservedPaidTab')?.classList.toggle('active',view==='unserved-paid');baristaKitchenTab.classList.toggle('active',view==='kitchen');baristaHistoryTab.classList.toggle('active',view==='history');baristaOrdersView.style.display=['orders','served-unpaid','unserved-paid'].includes(view)?'block':'none';baristaKitchenView.style.display=view==='kitchen'?'block':'none';baristaHistoryView.style.display=view==='history'?'block':'none';if(['orders','served-unpaid','unserved-paid'].includes(view))renderBaristaOrders();else if(view==='kitchen')renderKitchenAlerts();else renderHistory();
+  baristaView=view;
+  baristaDetailOpenNo="";
+  selectedBaristaPayment="";
+  cashReceived=0;
+  baristaOrdersTab.classList.toggle('active',view==='orders');
+  document.getElementById('baristaServedUnpaidTab')?.classList.toggle('active',view==='served-unpaid');
+  document.getElementById('baristaUnservedPaidTab')?.classList.toggle('active',view==='unserved-paid');
+  baristaKitchenTab.classList.toggle('active',view==='kitchen');
+  baristaHistoryTab.classList.toggle('active',view==='history');
+  baristaOrdersView.style.display=['orders','served-unpaid','unserved-paid'].includes(view)?'block':'none';
+  baristaKitchenView.style.display=view==='kitchen'?'block':'none';
+  baristaHistoryView.style.display=view==='history'?'block':'none';
+  if(['orders','served-unpaid','unserved-paid'].includes(view))renderBaristaOrders();
+  else if(view==='kitchen')renderKitchenAlerts();
+  else renderHistory();
 }function isKitchenUrgentItem(item){
   const n=String(item?.name||'').trim().toLowerCase();
   return ['fries','shiang hai','nachos','samyang buldak'].includes(n);
@@ -663,16 +693,27 @@ function markKitchenDone(no){
   showActionToast(`Kitchen informed for Order #${order.no}`);
 }
 function renderKitchenAlerts(){
-  const summary=getKitchenUrgentSummary(); updateKitchenAlertTab();
-  if(!summary.orders){baristaKitchenView.innerHTML='<div class="barista-empty">No kitchen food orders right now.</div>';return;}
-  const cards=getAllOpenOrders().map(o=>{
-    const urgent=(o.items||[]).filter(isKitchenUrgentItem); if(!urgent.length)return null; return {o,urgent};
-  }).filter(Boolean).sort((a,b)=>(a.o.kitchenNotified?1:0)-(b.o.kitchenNotified?1:0));
-  const cardsHtml=cards.map(({o,urgent})=>{
-    const service=serviceLabel(o.serviceType); const total=urgent.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0); const done=!!o.kitchenNotified;
-    return `<div class="kitchen-order-card ${done?'kitchen-done':''}"><div class="kitchen-order-head"><div><b>Order #${o.no}</b><div class="kitchen-order-meta">${o.date} · ${o.time}</div>${service?`<span class="kitchen-order-type">${service}</span>`:''}${o.note?`<div class="note-preview">📝 ${escapeHtml(o.note)}</div>`:''}</div><div style="text-align:right"><div class="kitchen-order-total">${peso(total)}</div><button class="kitchen-done-btn ${done?'sent':''}" ${done?'disabled':''} onclick="markKitchenDone('${o.no}')">${done?'Done ✓':'Done'}</button></div></div>${urgent.map(x=>{const details=[x.size,x.flavor].filter(Boolean).join(' · ');return `<div class="kitchen-item"><div><b>${Number(x.qty)||0}× ${x.name}</b>${details?`<small>${details}</small>`:''}</div><strong>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</strong></div>`}).join('')}</div>`;
+  const summary=getKitchenUrgentSummary();
+  updateKitchenAlertTab();
+  if(!summary.orders){baristaKitchenView.innerHTML='<div class="barista-empty">No urgent kitchen orders right now.</div>';return;}
+  const cards=pendingOrders.map(o=>{
+    const urgent=(o.items||[]).filter(isKitchenUrgentItem);
+    if(!urgent.length)return '';
+    const done=!!o.kitchenDone;
+    const service=serviceLabel(o.serviceType)||'Order';
+    const total=urgent.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0);
+    const items=urgent.map(x=>{
+      const details=[x.size,x.flavor].filter(Boolean).join(' · ');
+      return `<div class="barista-order-thumb-item"><span>${Number(x.qty)||0}× ${escapeHtml(x.name)}</span><span>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</span></div>${details?`<div class="barista-order-thumb-meta">${escapeHtml(details)}</div>`:''}`;
+    }).join('');
+    return `<div class="kitchen-thumb ${done?'kitchen-done':''}">
+      <div class="barista-order-thumb-head"><b>Order #${String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</b><span class="barista-order-thumb-total">${peso(total)}</span></div>
+      <div class="barista-order-thumb-meta">${service}</div>
+      <div class="barista-order-thumb-items">${items}</div>
+      <div class="kitchen-thumb-action"><button class="kitchen-done-btn ${done?'sent':''}" onclick="markKitchenDone('${o.no}')">${done?'Done':'Done'}</button></div>
+    </div>`;
   }).join('');
-  baristaKitchenView.innerHTML=`<div class="kitchen-summary"><div class="kitchen-total-row"><div class="kitchen-total-big">${summary.quantity} item${summary.quantity===1?'':'s'}</div><div class="kitchen-total-big">${peso(summary.total)}</div></div><div class="muted" style="margin-top:8px">${summary.orders} order${summary.orders===1?'':'s'} · Fries, Shiang Hai, Nachos and Samyang Buldak</div></div>${cardsHtml}`;
+  baristaKitchenView.innerHTML=`<div class="kitchen-summary"><div class="kitchen-total-row"><div class="kitchen-total-big">${summary.quantity} item${summary.quantity===1?'':'s'}</div><div class="kitchen-total-big">${peso(summary.total)}</div></div><div class="muted" style="margin-top:8px">${summary.orders} order${summary.orders===1?'':'s'} · Fries, Shiang Hai, Nachos and Samyang Buldak</div></div><div class="kitchen-thumb-grid">${cards}</div>`;
 }
 
 function setPendingOrderStorage(){
@@ -704,7 +745,7 @@ function updatePendingOrdersTab(){
   if(uTab)uTab.textContent=`Unserved - Paid${unservedPaidOrders.length?` (${unservedPaidOrders.length})`:''}`;
   updateKitchenAlertTab();
 }
-function selectOpenOrder(no){const found=findOpenOrder(no);if(!found)return;activePendingOrderNo=found.no;selectedBaristaPayment='';cashReceived=0;setPendingOrderStorage();renderBaristaOrders()}
+function selectOpenOrder(no){const found=findOpenOrder(no);if(!found)return;activePendingOrderNo=found.no;baristaDetailOpenNo=found.no;selectedBaristaPayment='';cashReceived=0;setPendingOrderStorage();renderBaristaOrders()}
 function selectPendingOrder(no){selectOpenOrder(no)}
 function findOpenOrderByUnit(uid){return getAllOpenOrders().find(o=>Array.isArray(o.units)&&o.units.some(u=>u.uid===uid))||null}
 function syncOpenOrderLifecycle(order){
@@ -721,7 +762,7 @@ function finalizeOpenOrder(order){
   const items=buildHistoryItemsFromPending(order);const total=Math.round(items.reduce((s,x)=>s+(Number(x.price)||0),0)*100)/100;
   const receipt={no:order.no,date:order.date,time:order.time,serviceType:order.serviceType||'dine-in',note:order.note||'',dayKey:receiptDayKey(order)||localDayKey(),total,payment:order.paymentMethod||'cash',items,cashReceived:order.paymentMethod==='cash'?Number(order.cashReceived||0):0,change:order.paymentMethod==='cash'?Number(order.change||0):0};
   saveTransactionToHistory(receipt);currentReceipt=receipt;removeOpenOrderFromBuckets(order.no);
-  activePendingOrderNo=pendingOrders[0]?.no||servedUnpaidOrders[0]?.no||unservedPaidOrders[0]?.no||'';setPendingOrderStorage();selectedBaristaPayment='';cashReceived=0;renderBaristaOrders();render();showCompletedReceipt(receipt);
+  activePendingOrderNo=pendingOrders[0]?.no||servedUnpaidOrders[0]?.no||unservedPaidOrders[0]?.no||'';baristaDetailOpenNo='';setPendingOrderStorage();selectedBaristaPayment='';cashReceived=0;renderBaristaOrders();render();showCompletedReceipt(receipt);
 }
 function addAdditionalOrder(no){
   const order=findOpenOrder(no);if(!order)return;if(order.paid){alert('This order is already paid and cannot accept additional items.');return;}
@@ -812,23 +853,33 @@ function renderBaristaOrders(){
   updatePendingOrdersTab();
   const orders=getOrdersForBaristaView();
   if(!orders.length){
-    selectedBaristaPayment='';cashReceived=0;
+    selectedBaristaPayment='';cashReceived=0;baristaDetailOpenNo="";
     const msg={orders:'No pending transactions. When customers tap Send order, their orders will appear here.','served-unpaid':'No served but unpaid transactions.','unserved-paid':'No paid but unserved transactions.'}[baristaView]||'No transactions in this section.';
     baristaOrdersView.innerHTML=`<div class="barista-empty">${msg}</div>`;
     return;
   }
 
-  const order=getCurrentBaristaOrder();
-  const thumbnails=orders.map(o=>{
-    const total=pendingOrderTotal(o);
-    const active=String(o.no)===String(order.no);
-    const displayNo=String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0');
-    const itemCount=(o.units||[]).filter(u=>!u.cancelled).length||o.items.reduce((s,x)=>s+(Number(x.qty)||0),0);
-    return `<button class="pending-order-select ${active?'active':''}" onclick="selectOpenOrder('${o.no}')">
-      <span class="pending-order-tab-main"><b>Order #${displayNo}</b><small>${serviceLabel(o.serviceType)||'Order'} · ${itemCount} item${itemCount===1?'':'s'}</small></span>
-      <span class="pending-total">${peso(total)}</span>
-    </button>`;
-  }).join('');
+  const order=baristaDetailOpenNo ? orders.find(o=>String(o.no)===String(baristaDetailOpenNo)) : null;
+  if(!order){
+    baristaDetailOpenNo="";
+    const thumbnails=orders.map(o=>{
+      const total=pendingOrderTotal(o);
+      const displayNo=String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0');
+      const items=(o.items||[]).map(x=>{
+        const line=(Number(x.price)||0)*(Number(x.qty)||0);
+        return `<div class="barista-order-thumb-item"><span>${Number(x.qty)||0}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
+      }).join('');
+      return `<button class="barista-order-thumb" onclick="selectOpenOrder('${o.no}')">
+        <div class="barista-order-thumb-head"><b>Order #${displayNo}</b><span class="barista-order-thumb-total">${peso(total)}</span></div>
+        <div class="barista-order-thumb-meta">${serviceLabel(o.serviceType)||'Order'}</div>
+        <div class="barista-order-thumb-items">${items}</div>
+        ${o.note?`<div class="barista-order-thumb-meta">📝 ${escapeHtml(o.note)}</div>`:''}
+      </button>`;
+    }).join('');
+    const title={orders:'Pending Orders','served-unpaid':'Served - Unpaid','unserved-paid':'Unserved - Paid'}[baristaView]||'Orders';
+    baristaOrdersView.innerHTML=`<div class="barista-order-thumb-meta" style="margin:0 0 8px;font-weight:900;font-size:12px">${title}</div><div class="barista-thumb-grid">${thumbnails}</div>`;
+    return;
+  }
 
   const originalTotal=order.units.filter(u=>!u.cancelled).reduce((s,u)=>s+(Number(u.originalPrice)||0),0);
   const total=pendingOrderTotal(order);
@@ -844,14 +895,14 @@ function renderBaristaOrders(){
         ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`
         : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="baristaDiscount('${u.uid}',20)">20%</button><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`;
       return `<div class="barista-unit">
-        <div class="barista-unit-name"><b>1× ${u.name}</b><small>${details}</small><div class="discount-price">${priceText}</div></div>
+        <div class="barista-unit-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small><div class="discount-price">${priceText}</div></div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px">
           <button class="unit-done-btn ${servedClass}" onclick="toggleUnitServed('${u.uid}')">${u.served?'✓ Served':'☐ Done?'}</button>
           ${discountUI}
         </div>
       </div>`;
     }).join('');
-    return `<div class="barista-group open" id="barista-group-${gi}"><button class="barista-group-toggle" onclick="toggleBaristaGroup(${gi})"><span>${units.length}× ${x.name}<small>${details}</small></span><span>${peso(lineTotal)} ▾</span></button><div class="barista-group-body">${unitRows}</div></div>`;
+    return `<div class="barista-group open" id="barista-group-${gi}"><button class="barista-group-toggle" onclick="toggleBaristaGroup(${gi})"><span>${units.length}× ${escapeHtml(x.name)}<small>${escapeHtml(details)}</small></span><span>${peso(lineTotal)} ▾</span></button><div class="barista-group-body">${unitRows}</div></div>`;
   }).join('');
 
   let statusNote='';
@@ -861,7 +912,7 @@ function renderBaristaOrders(){
     ? statusNote
     : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">💵 Cash payment</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">📱 GCash payment</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
-  baristaOrdersView.innerHTML=`<div class="pending-orders-list">${thumbnails}</div>
+  baristaOrdersView.innerHTML=`<div class="barista-detail-toolbar"><button class="secondary barista-back-orders" onclick="closeBaristaOrderDetail()">← Back to orders</button><div class="barista-order-thumb-meta" style="margin:0;font-weight:900">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')} · ${serviceLabel(order.serviceType)||'Order'} · ${peso(total)}</div></div>
     <div class="barista-order-card">
       <div class="barista-order-head"><div><b>Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}${order.note?` · ${escapeHtml(order.note)}`:''}</b><div class="barista-order-meta">${serviceLabel(order.serviceType)?serviceLabel(order.serviceType)+' · ':''}${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
       <div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>
@@ -871,10 +922,18 @@ function renderBaristaOrders(){
     </div>`;
   if(baristaView!=='unserved-paid')renderBaristaPaymentPanel();
 }
+function closeBaristaOrderDetail(){
+  baristaDetailOpenNo="";
+  selectedBaristaPayment="";
+  cashReceived=0;
+  noteEditorOpenNo="";
+  renderBaristaOrders();
+}
 function selectBaristaPayment(method){
   selectedBaristaPayment=method;
   if(method!=='cash')cashReceived=0;
   renderBaristaOrders();
+  setTimeout(()=>document.getElementById('baristaPaymentPanel')?.scrollIntoView({behavior:'smooth',block:'center'}),60);
 }
 function updateCashReceived(value){
   cashReceived=Math.max(0,Math.round((Number(value)||0)*100)/100);
@@ -1106,6 +1165,7 @@ let activePendingOrderNo=localStorage.getItem("kbr_active_pending_order") || (pe
 let baristaView="orders";
 let selectedBaristaPayment="";
 let cashReceived=0;
+let baristaDetailOpenNo="";
 function normalizeOpenOrder(o){
   if(!o)return;
   if(o.note==null)o.note=String(o.customerName||'').trim();
