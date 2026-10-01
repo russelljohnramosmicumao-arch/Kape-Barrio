@@ -15,6 +15,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 body{min-height:100vh;position:relative;overflow-x:hidden}
+main,header{position:relative}
 body::before{content:"";position:fixed;inset:-22px;background:url("images/kbr-shop-background.png") center/cover no-repeat;filter:blur(11px);opacity:.095;transform:scale(1.035);pointer-events:none;z-index:0}
 header,main{position:relative;z-index:1}
 header{position:sticky;top:0;z-index:20;background:rgba(251,247,240,.96);backdrop-filter:blur(12px);border-bottom:1px solid #eadfD2;padding:10px 18px 8px}
@@ -38,7 +39,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 #products.swipe-out-left{opacity:.15;transform:translateX(-28px)}
 #products.swipe-out-right{opacity:.15;transform:translateX(28px)}
 .swipe-hint{display:none;text-align:center;color:#8a7868;font-size:13px;margin:-4px 0 12px}
-.order-sent-drawer{z-index:300;align-items:center;padding:20px}
+.order-sent-drawer{z-index:300;align-items:center!important;justify-content:center!important;padding:20px}
 .order-sent-panel{width:min(520px,94vw);background:#fff;border:1px solid #eadfd4;border-radius:24px;padding:30px 26px 24px;text-align:center;box-shadow:0 18px 55px rgba(60,40,25,.24)}
 .order-sent-icon{width:62px;height:62px;border-radius:50%;margin:0 auto 14px;background:#2f8f4e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900}
 .order-sent-panel h2{margin:0 0 14px;color:var(--brown);font-family:Georgia,serif;font-size:30px}
@@ -102,7 +103,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-drawer .panel{max-width:1100px}.barista-login{text-align:center;max-width:420px;margin:0 auto}.barista-login h2{margin-bottom:4px}.pin-display{display:flex;justify-content:center;gap:10px;margin:16px 0 18px}.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid #cdbdab;background:#fff}.pin-dot.filled{background:var(--brown);border-color:var(--brown)}.pin-error{min-height:20px;color:#b52e2e;font-weight:800;font-size:13px;margin-bottom:8px}.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:320px;margin:0 auto}.keypad button{min-height:64px;border:1px solid #d9c7b5;background:#fff;border-radius:15px;font-size:22px;font-weight:900;color:var(--brown);cursor:pointer;box-shadow:0 3px 8px rgba(60,40,25,.07)}.keypad button:active{transform:scale(.97);background:#f7f1e9}.keypad .key-action{font-size:14px;background:#f7f1e9}.barista-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.barista-top h2{margin:0}.barista-actions{display:flex;gap:8px;flex-wrap:wrap}.barista-actions button{min-height:44px}.barista-tabs{display:flex;gap:8px;margin:10px 0 14px;overflow:auto}.barista-tab{border:1px solid #d9c7b5;background:#fff;color:var(--brown);border-radius:999px;padding:10px 14px;font-weight:900;white-space:nowrap}.barista-tab.active{background:#1f6f39;color:#fff;border-color:#1f6f39}.barista-order-card{background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px;margin-bottom:12px}.barista-order-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.barista-order-head b{color:var(--brown);font-size:18px}.barista-order-meta{color:#7a6b60;font-size:13px;margin-top:3px}.barista-order-total{font-weight:900;color:var(--brown);font-size:20px;text-align:right;white-space:nowrap}.barista-group{border:1px solid #eadfd4;border-radius:13px;margin-top:10px;overflow:hidden}.barista-group-toggle{width:100%;border:0;background:#fbf8f4;padding:12px 13px;display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;cursor:pointer;font-weight:900;color:#4e4137}.barista-group-toggle small{display:block;color:#7a6b60;font-weight:700;margin-top:3px}.barista-group-body{display:none;padding:10px;border-top:1px solid #eee3d7;background:#fff}.barista-group.open .barista-group-body{display:block}.barista-unit{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid #f0e7de}.barista-unit:last-child{border-bottom:0}.barista-unit-name{flex:1}.barista-unit-name b{display:block;color:var(--brown)}.barista-unit-name small{color:#7a6b60}.discount-buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.discount-btn{border:1px solid #d9c7b5;background:#fff;border-radius:9px;padding:8px 9px;font-weight:900;color:var(--brown)}.discount-btn.active{background:#2f8f4e;border-color:#2f8f4e;color:#fff}.discount-btn.none.active{background:#7a6b60;border-color:#7a6b60}.discount-price{font-size:12px;color:#6e6a64;margin-top:2px}.barista-payment{background:#f7fbf6;border:1px solid #cfe5c7;border-radius:16px;padding:14px;margin-top:14px}.barista-payment-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.barista-payment-title h3{margin:0;color:var(--brown)}.barista-payment-total{font-size:24px;font-weight:900;color:#2f6f3a}.barista-payment-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.barista-pay-btn{min-height:58px;border:2px solid #d9c7b5;background:#fff;border-radius:14px;font-size:16px;font-weight:900;color:var(--brown);cursor:pointer}.barista-pay-btn.cash{border-color:#c6b39f}.barista-pay-btn.gcash{border-color:#4f9e5e;background:#edf8ea;color:#245b2f}.barista-pay-btn.selected{box-shadow:0 0 0 3px rgba(47,143,78,.14)}.barista-pay-panel{margin-top:12px;background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:14px}.barista-gcash-card{display:block;width:100%;max-width:300px;max-height:38vh;object-fit:contain;margin:6px auto 10px;border-radius:14px;border:1px solid #dfe7dd}.barista-close-pay{width:100%;min-height:54px;margin-top:12px;background:#2f8f4e;color:#fff;border:1px solid #2f8f4e;border-radius:13px;font-weight:900;font-size:16px}.barista-close-pay:disabled{opacity:.45;cursor:not-allowed}.barista-cash-label{display:block;font-weight:900;color:var(--brown);margin:2px 0 7px}.barista-cash-layout{display:grid;grid-template-columns:1.05fr .8fr 1fr;gap:12px;align-items:stretch}.cash-pane{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px}.barista-cash-summary{display:flex;flex-direction:column;gap:10px;height:100%}.barista-cash-box{background:#fbf8f4;border:1px solid #eadfd4;border-radius:13px;padding:12px 14px}.barista-cash-box span{display:block;color:#6e6a64;font-size:12px;font-weight:800;margin-bottom:5px}.barista-cash-box b{display:block;color:var(--brown);font-size:26px}.barista-cash-box.change-ok{background:#edf7e9;border-color:#c7dfbf}.barista-cash-box.change-ok b{color:#2f6f3a}.barista-cash-box.change-needed{background:#fff4e8;border-color:#ecd1a9}.barista-cash-box.change-needed b{color:#9a6115}.cash-quick-pane{display:flex;flex-direction:column;gap:8px}.cash-quick-title{font-weight:900;color:var(--brown);font-size:13px;margin-bottom:2px}.cash-quick-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cash-quick-buttons button{min-height:54px;border:1px solid #d9c7b5;background:#f7f1e9;border-radius:11px;font-size:17px;font-weight:900;color:var(--brown);cursor:pointer}.cash-quick-buttons button:active{transform:scale(.97);background:#f0e7dc}.cash-keypad-pane{display:flex;flex-direction:column}.cash-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#f7f1e9;border:1px solid #e5d8ca;border-radius:13px;padding:8px;height:100%}.cash-keypad button{min-height:42px;border:1px solid #d9c7b5;background:#fff;border-radius:10px;font-size:17px;font-weight:900;color:var(--brown);cursor:pointer}.cash-keypad button:active{transform:scale(.97);background:#f0e7dc}.cash-keypad .cash-key-action{font-size:12px;background:#f7f1e9}.cash-keypad .cash-key-zero{grid-column:span 2}.cash-keypad .cash-key-enter{background:#2f8f4e;color:#fff;border-color:#2f8f4e}.barista-cash-input{width:100%;min-height:58px;border:2px solid #d9c7b5;border-radius:14px;padding:10px 14px;font-size:24px;font-weight:900;text-align:right;color:var(--brown);background:#fff}.barista-cash-input:focus{outline:0;border-color:#2f8f4e;box-shadow:0 0 0 3px rgba(47,143,78,.12)}.barista-change{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;padding:12px 14px;border-radius:13px;background:#edf7e9;border:1px solid #c7dfbf}.barista-change span{font-weight:800;color:#53634a}.barista-change b{font-size:24px;color:#2f6f3a}.barista-change.insufficient{background:#fff4e8;border-color:#ecd1a9}.barista-change.insufficient b{color:#9a6115}.barista-empty{padding:35px 10px;text-align:center;color:#857568}.barista-receipt{margin-top:14px;background:#fff;border:1px solid #eadfd4;border-radius:16px;padding:14px}.barista-history{margin-top:12px}.barista-history .history-list{margin-top:8px}.pending-orders-list{display:flex;gap:4px;overflow-x:auto;margin-bottom:14px;padding:4px 4px 0;scrollbar-width:none;align-items:flex-end}.pending-orders-list::-webkit-scrollbar{display:none}.pending-order-select{flex:0 0 auto;min-width:205px;border:1px solid #d8c7b5;border-bottom:2px solid #cbb8a5;background:#f7f1e9;border-radius:12px 12px 0 0;padding:7px 8px 7px;display:flex;align-items:center;gap:8px;color:var(--brown);box-shadow:0 -1px 0 rgba(0,0,0,.02)}
 .pending-order-tab-main{flex:1;min-width:0;border:0;background:transparent;padding:4px 4px;text-align:left;cursor:pointer;color:inherit}.pending-order-tab-main:active{transform:scale(.98)}
 .order-done-btn{flex:0 0 auto;min-width:58px;min-height:34px;border:1px solid #d9c7b5;background:#fff;color:#6d5a4a;border-radius:9px;font-size:12px;font-weight:900;cursor:pointer;padding:7px 9px}.order-done-btn:active{transform:scale(.97)}
-.order-done-btn.done{background:#2f8f4e;border-color:#2f8f4e;color:#fff}.pending-order-select.active{border:1px solid #a6d4ad;border-bottom:3px solid #2f8f4e;background:#dff4e3;color:#205c2c;box-shadow:0 -2px 8px rgba(47,143,78,.10)}.pending-order-select.active b{color:#205c2c}.pending-order-select b{font-size:14px;line-height:1.1}.pending-order-select small{display:block;color:#7a6a5d;margin-top:3px;font-weight:700;font-size:11px}.pending-order-select.active small{color:#3f6c48}.pending-order-select .pending-total{font-weight:900;white-space:nowrap;font-size:13px}.pending-order-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.pending-order-actions button{flex:1;min-width:180px;min-height:44px}.pending-order-name{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.pending-order-name input{flex:1;min-width:180px;min-height:44px;border:1px solid #d9c7b5;border-radius:12px;padding:9px 12px;font-size:16px;color:var(--brown);font-weight:800}.pending-order-name button{min-height:44px}.cancel-pending-btn{background:#f7caca!important;border:2px solid #e7a0a0!important;color:#8b2e2e!important;font-weight:900!important}@media(max-width:700px){.barista-cash-layout{grid-template-columns:1fr}.cash-quick-buttons{grid-template-columns:repeat(4,1fr)}}@media(max-width:599px){.barista-payment-options{grid-template-columns:1fr}.barista-unit{align-items:flex-start;flex-direction:column}.discount-buttons{justify-content:flex-start}.keypad button{min-height:58px}.barista-cash-layout{grid-template-columns:1fr}.cash-quick-buttons{grid-template-columns:1fr 1fr}.cash-keypad{max-width:260px;margin:0 auto;width:100%}}
+.order-done-btn.done{background:#2f8f4e;border-color:#2f8f4e;color:#fff}.unit-done-btn{flex:0 0 auto;min-width:66px;min-height:34px;border:1px solid #d9c7b5;background:#fff;color:#6d5a4a;border-radius:9px;font-size:12px;font-weight:900;cursor:pointer;padding:7px 9px}.unit-done-btn:active{transform:scale(.97)}.unit-done-btn.done{background:#2f8f4e;border-color:#2f8f4e;color:#fff}.barista-status-note{margin-top:8px;padding:10px 12px;border-radius:12px;background:#edf7e9;border:1px solid #c7dfbf;color:#315d38;font-weight:800;font-size:13px}.barista-status-note.unpaid{background:#fff4e8;border-color:#ecd1a9;color:#9a6115}.pending-order-select.active{border:1px solid #a6d4ad;border-bottom:3px solid #2f8f4e;background:#dff4e3;color:#205c2c;box-shadow:0 -2px 8px rgba(47,143,78,.10)}.pending-order-select.active b{color:#205c2c}.pending-order-select b{font-size:14px;line-height:1.1}.pending-order-select small{display:block;color:#7a6a5d;margin-top:3px;font-weight:700;font-size:11px}.pending-order-select.active small{color:#3f6c48}.pending-order-select .pending-total{font-weight:900;white-space:nowrap;font-size:13px}.pending-order-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.pending-order-actions button{flex:1;min-width:180px;min-height:44px}.pending-order-name{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.pending-order-name input{flex:1;min-width:180px;min-height:44px;border:1px solid #d9c7b5;border-radius:12px;padding:9px 12px;font-size:16px;color:var(--brown);font-weight:800}.pending-order-name button{min-height:44px}.cancel-pending-btn{background:#f7caca!important;border:2px solid #e7a0a0!important;color:#8b2e2e!important;font-weight:900!important}@media(max-width:700px){.barista-cash-layout{grid-template-columns:1fr}.cash-quick-buttons{grid-template-columns:repeat(4,1fr)}}@media(max-width:599px){.barista-payment-options{grid-template-columns:1fr}.barista-unit{align-items:flex-start;flex-direction:column}.discount-buttons{justify-content:flex-start}.keypad button{min-height:58px}.barista-cash-layout{grid-template-columns:1fr}.cash-quick-buttons{grid-template-columns:1fr 1fr}.cash-keypad{max-width:260px;margin:0 auto;width:100%}}
 
 /* Customer service choice */
 .start-barista-btn{position:absolute;right:16px;top:16px;width:50px;height:50px;border-radius:50%;border:1px solid #d9c7b5;background:#fff;color:#2f8f4e;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(60,40,25,.14);cursor:pointer}.start-barista-btn:active{transform:scale(.96)}
@@ -136,6 +137,21 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .kitchen-item{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;background:#fff8f7;border:1px solid #f0d6d2;border-radius:12px;padding:10px;margin-top:9px}.kitchen-item b{color:#4e4137}.kitchen-item small{display:block;color:#7a6b60;margin-top:3px}
 .kitchen-order-type{display:inline-block;margin-top:6px;border-radius:999px;padding:4px 8px;background:#f7f1e9;color:#6b4328;font-size:11px;font-weight:900}
 @media(max-width:599px){.service-options{grid-template-columns:1fr}.service-choice{min-height:90px;font-size:20px}}
+
+/* v57: thumbnail order/history views and per-item served status */
+.pending-orders-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:14px;padding:4px 1px;overflow:visible}
+.pending-order-select{min-width:0;width:100%;border:1px solid #d8c7b5;border-radius:12px;background:#f7f1e9;padding:10px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--brown);box-shadow:0 2px 8px rgba(60,40,25,.06);cursor:pointer;text-align:left}
+.pending-order-select.active{border:2px solid #2f8f4e;background:#e6f6e8;color:#205c2c;box-shadow:0 3px 10px rgba(47,143,78,.12)}
+.pending-order-tab-main{display:block;min-width:0;flex:1;border:0;background:transparent;padding:0;text-align:left;cursor:pointer;color:inherit}
+.pending-order-select b{font-size:14px;line-height:1.1}.pending-order-select small{display:block;color:#7a6a5d;margin-top:3px;font-weight:700;font-size:10px}.pending-order-select.active small{color:#3f6c48}.pending-order-select .pending-total{font-weight:900;white-space:nowrap;font-size:13px}
+.unit-done-btn{flex:0 0 auto;min-width:78px;min-height:38px;border:1px solid #d9c7b5;background:#fff;color:#6d5a4a;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;padding:7px 10px}.unit-done-btn.done{background:#2f8f4e;border-color:#2f8f4e;color:#fff}
+.history-thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;margin-top:14px}
+.history-thumb{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:11px;box-shadow:0 2px 8px rgba(60,40,25,.06)}
+.history-thumb-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.history-thumb-head b{color:var(--brown);font-size:15px}.history-thumb-total{color:var(--brown);font-weight:900;white-space:nowrap}
+.history-thumb-meta{color:#7a6b60;font-size:11px;margin-top:3px}.history-thumb-items{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:11px;color:#4e4137}.history-thumb-item{display:flex;justify-content:space-between;gap:6px}.history-thumb-item span:last-child{font-weight:800;color:var(--brown);white-space:nowrap}
+.history-total-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.history-total-card{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px}.history-total-card small{display:block;color:#7a6b60;font-weight:800;font-size:11px}.history-total-card b{display:block;margin-top:4px;color:var(--brown);font-size:22px}
+@media(max-width:599px){.pending-orders-list{grid-template-columns:repeat(2,minmax(0,1fr))}.history-thumb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.history-total-strip{grid-template-columns:1fr 1fr}.history-total-card b{font-size:18px}}
+
 </style>
 </head>
 <body>
@@ -194,7 +210,9 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
       </div>
       <div class="barista-tabs">
         <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Pending Orders</button>
-        <button id="baristaKitchenTab" class="barista-tab kitchen-urgent-tab" onclick="setBaristaView('kitchen')">🚨 Kitchen</button>
+        <button id="baristaServedUnpaidTab" class="barista-tab" onclick="setBaristaView('served-unpaid')">Served - Unpaid</button>
+        <button id="baristaUnservedPaidTab" class="barista-tab" onclick="setBaristaView('unserved-paid')">Unserved - Paid</button>
+        <button id="baristaKitchenTab" class="barista-tab kitchen-urgent-tab" onclick="setBaristaView('kitchen')">🍳 Kitchen</button>
         <button id="baristaHistoryTab" class="barista-tab" onclick="setBaristaView('history')">Transaction History</button>
       </div>
       <div id="baristaOrdersView"></div>
@@ -265,7 +283,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 <div id="receiptDrawer" class="drawer" onclick="if(event.target===this)closeReceipt()">
   <div class="panel">
     <div id="receiptArea" class="receipt-scroll"></div>
-    <div class="receipt-actions"><button class="secondary" onclick="closeReceipt()">Close</button><button class="primary" onclick="saveReceipt()">Save picture</button></div>
+    <div class="receipt-actions"><button class="secondary" onclick="closeReceipt()">Close</button></div>
   </div>
 </div>
 
@@ -620,25 +638,14 @@ function openBaristaPage(){
   setBaristaView('orders');
 }
 function setBaristaView(view){
-  baristaView=view;
-  baristaOrdersTab.classList.toggle('active',view==='orders');
-  baristaKitchenTab.classList.toggle('active',view==='kitchen');
-  baristaHistoryTab.classList.toggle('active',view==='history');
-  baristaOrdersView.style.display=view==='orders'?'block':'none';
-  baristaKitchenView.style.display=view==='kitchen'?'block':'none';
-  baristaHistoryView.style.display=view==='history'?'block':'none';
-  if(view==='orders')renderBaristaOrders();
-  else if(view==='kitchen')renderKitchenAlerts();
-  else renderHistory();
-}
-
-function isKitchenUrgentItem(item){
+  baristaView=view;baristaOrdersTab.classList.toggle('active',view==='orders');document.getElementById('baristaServedUnpaidTab')?.classList.toggle('active',view==='served-unpaid');document.getElementById('baristaUnservedPaidTab')?.classList.toggle('active',view==='unserved-paid');baristaKitchenTab.classList.toggle('active',view==='kitchen');baristaHistoryTab.classList.toggle('active',view==='history');baristaOrdersView.style.display=['orders','served-unpaid','unserved-paid'].includes(view)?'block':'none';baristaKitchenView.style.display=view==='kitchen'?'block':'none';baristaHistoryView.style.display=view==='history'?'block':'none';if(['orders','served-unpaid','unserved-paid'].includes(view))renderBaristaOrders();else if(view==='kitchen')renderKitchenAlerts();else renderHistory();
+}function isKitchenUrgentItem(item){
   const n=String(item?.name||'').trim().toLowerCase();
   return ['fries','shiang hai','nachos','samyang buldak'].includes(n);
 }
 function getKitchenUrgentSummary(){
   let quantity=0,total=0,orders=0;
-  pendingOrders.forEach(o=>{
+  getAllOpenOrders().forEach(o=>{
     const urgent=(o.items||[]).filter(isKitchenUrgentItem);
     if(!urgent.length)return;
     orders+=1;
@@ -646,148 +653,110 @@ function getKitchenUrgentSummary(){
   });
   return {quantity,total,orders};
 }
-function hasAnyKitchenUrgentOrders(){return pendingOrders.some(o=>(o.items||[]).some(isKitchenUrgentItem))}
-function getKitchenUnresolvedOrderCount(){return pendingOrders.filter(o=>!o.kitchenNotified && (o.items||[]).some(isKitchenUrgentItem)).length}
+function hasAnyKitchenUrgentOrders(){return getAllOpenOrders().some(o=>(o.items||[]).some(isKitchenUrgentItem))}
+function getKitchenUnresolvedOrderCount(){return getAllOpenOrders().filter(o=>!o.kitchenNotified && (o.items||[]).some(isKitchenUrgentItem)).length}
 function hasKitchenUrgentOrders(){return getKitchenUnresolvedOrderCount()>0}
 function markKitchenDone(no){
-  const order=getPendingOrderByNo(no);
-  if(!order)return;
-  order.kitchenNotified=true;
-  setPendingOrderStorage();
-  if(baristaView==='kitchen') renderKitchenAlerts();
-  else updateKitchenAlertTab();
+  const order=findOpenOrder(no); if(!order)return;
+  order.kitchenNotified=true; setPendingOrderStorage();
+  if(baristaView==='kitchen')renderKitchenAlerts(); else updateKitchenAlertTab();
   showActionToast(`Kitchen informed for Order #${order.no}`);
 }
 function renderKitchenAlerts(){
-  const summary=getKitchenUrgentSummary();
-  updateKitchenAlertTab();
-  if(!summary.orders){baristaKitchenView.innerHTML='<div class="barista-empty">No urgent kitchen orders right now.</div>';return;}
-  const cards=[...pendingOrders].map(o=>{
-    const urgent=(o.items||[]).filter(isKitchenUrgentItem);
-    if(!urgent.length)return null;
-    return {o,urgent};
+  const summary=getKitchenUrgentSummary(); updateKitchenAlertTab();
+  if(!summary.orders){baristaKitchenView.innerHTML='<div class="barista-empty">No kitchen food orders right now.</div>';return;}
+  const cards=getAllOpenOrders().map(o=>{
+    const urgent=(o.items||[]).filter(isKitchenUrgentItem); if(!urgent.length)return null; return {o,urgent};
   }).filter(Boolean).sort((a,b)=>(a.o.kitchenNotified?1:0)-(b.o.kitchenNotified?1:0));
   const cardsHtml=cards.map(({o,urgent})=>{
-    const service=serviceLabel(o.serviceType);
-    const total=urgent.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0);
-    const done=!!o.kitchenNotified;
+    const service=serviceLabel(o.serviceType); const total=urgent.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0); const done=!!o.kitchenNotified;
     return `<div class="kitchen-order-card ${done?'kitchen-done':''}"><div class="kitchen-order-head"><div><b>Order #${o.no}</b><div class="kitchen-order-meta">${o.date} · ${o.time}</div>${service?`<span class="kitchen-order-type">${service}</span>`:''}${o.note?`<div class="note-preview">📝 ${escapeHtml(o.note)}</div>`:''}</div><div style="text-align:right"><div class="kitchen-order-total">${peso(total)}</div><button class="kitchen-done-btn ${done?'sent':''}" ${done?'disabled':''} onclick="markKitchenDone('${o.no}')">${done?'Done ✓':'Done'}</button></div></div>${urgent.map(x=>{const details=[x.size,x.flavor].filter(Boolean).join(' · ');return `<div class="kitchen-item"><div><b>${Number(x.qty)||0}× ${x.name}</b>${details?`<small>${details}</small>`:''}</div><strong>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</strong></div>`}).join('')}</div>`;
   }).join('');
   baristaKitchenView.innerHTML=`<div class="kitchen-summary"><div class="kitchen-total-row"><div class="kitchen-total-big">${summary.quantity} item${summary.quantity===1?'':'s'}</div><div class="kitchen-total-big">${peso(summary.total)}</div></div><div class="muted" style="margin-top:8px">${summary.orders} order${summary.orders===1?'':'s'} · Fries, Shiang Hai, Nachos and Samyang Buldak</div></div>${cardsHtml}`;
 }
 
-function toggleBaristaDone(no){
-  const order=getPendingOrderByNo(no);
-  if(!order)return;
-  order.baristaDone=!order.baristaDone;
-  setPendingOrderStorage();
-  renderBaristaOrders();
-}
 function setPendingOrderStorage(){
-  localStorage.setItem("kbr_pending_orders",JSON.stringify(pendingOrders));
-  if(activePendingOrderNo)localStorage.setItem("kbr_active_pending_order",String(activePendingOrderNo));
-  else localStorage.removeItem("kbr_active_pending_order");
-  updatePendingOrdersTab();
-  if(baristaView==='kitchen')renderKitchenAlerts();
+  saveOpenOrderBuckets(); updatePendingOrdersTab(); if(baristaView==='kitchen')renderKitchenAlerts();
 }
 function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function getPendingOrderByNo(no){return pendingOrders.find(o=>String(o.no)===String(no))||null}
-let noteEditorOpenNo="";
-function openPendingNoteEditor(no){
-  noteEditorOpenNo=String(no);
-  renderBaristaOrders();
-  setTimeout(()=>document.getElementById('pendingOrderNoteInput')?.focus(),0);
+function getPendingOrderByNo(no){return findOpenOrder(no)}
+function getOrdersForBaristaView(view=baristaView){
+  if(view==='served-unpaid')return servedUnpaidOrders;
+  if(view==='unserved-paid')return unservedPaidOrders;
+  return pendingOrders;
 }
-function closePendingNoteEditor(){
-  noteEditorOpenNo="";
-  renderBaristaOrders();
-}
-function savePendingOrderNote(){
-  const order=getPendingOrder();
-  if(!order)return;
-  const input=document.getElementById('pendingOrderNoteInput');
-  if(!input)return;
-  order.note=String(input.value||'').trim().slice(0,250);
-  setPendingOrderStorage();
-  renderBaristaOrders();
-  showActionToast(order.note?`Note saved for Order #${order.no}`:`Note removed from Order #${order.no}`);
-}
-function addAdditionalOrder(no){
-  const order=getPendingOrderByNo(no);
-  if(!order)return;
-  localStorage.setItem('kbr_append_to_pending_order',String(order.no));
-  customerServiceType=order.serviceType||customerServiceType||'dine-in';
-  sessionStorage.setItem('kbr_current_service',customerServiceType);
-  const start=document.getElementById('serviceStart');
-  if(start)start.style.display='none';
-  closeBaristaPage();
-  closeOrder();
-  render();
-  showActionToast(`Add items to Order #${order.no}`);
-}
-function clearAppendTarget(){localStorage.removeItem('kbr_append_to_pending_order')}
-function cancelPendingTransaction(no){
-  const order=getPendingOrderByNo(no);
-  if(!order)return;
-  const label=order.note?` #${order.no} · ${order.note}`:` #${order.no}`;
-  if(!confirm(`Cancel pending transaction${label}?\nThis order will not be added to sales history.`))return;
-  pendingOrders=pendingOrders.filter(o=>String(o.no)!==String(order.no));
-  if(String(activePendingOrderNo)===String(order.no))activePendingOrderNo=pendingOrders[0]?.no||'';
-  if(String(localStorage.getItem('kbr_append_to_pending_order')||'')===String(order.no))clearAppendTarget();
-  setPendingOrderStorage();
-  selectedBaristaPayment='';
-  cashReceived=0;
-  renderBaristaOrders();
-  showActionToast(`Order #${order.no} cancelled`);
-}
-
-function updatePendingOrdersTab(){
-  if(typeof baristaOrdersTab==='undefined' || !baristaOrdersTab)return;
-  baristaOrdersTab.textContent=`Pending Orders${pendingOrders.length?` (${pendingOrders.length})`:''}`;
-  updateKitchenAlertTab();
-}
-function getPendingOrder(){
-  if(!pendingOrders.length)return null;
-  let order=pendingOrders.find(o=>String(o.no)===String(activePendingOrderNo));
-  if(!order){order=pendingOrders[0];activePendingOrderNo=order.no;setPendingOrderStorage();}
+function getCurrentBaristaOrder(){
+  const list=getOrdersForBaristaView(); if(!list.length)return null;
+  let order=list.find(o=>String(o.no)===String(activePendingOrderNo));
+  if(!order){order=list[0];activePendingOrderNo=order.no;saveOpenOrderBuckets();}
   return order;
 }
-function selectPendingOrder(no){
-  const found=pendingOrders.find(o=>String(o.no)===String(no));
-  if(!found)return;
-  activePendingOrderNo=found.no;
-  selectedBaristaPayment='';
-  cashReceived=0;
-  setPendingOrderStorage();
-  renderBaristaOrders();
+function getPendingOrder(){return getCurrentBaristaOrder()}
+let noteEditorOpenNo="";
+function openPendingNoteEditor(no){noteEditorOpenNo=String(no);renderBaristaOrders();setTimeout(()=>document.getElementById('pendingOrderNoteInput')?.focus(),0)}
+function closePendingNoteEditor(){noteEditorOpenNo="";renderBaristaOrders()}
+function savePendingOrderNote(){const order=getCurrentBaristaOrder();if(!order)return;const input=document.getElementById('pendingOrderNoteInput');if(!input)return;order.note=String(input.value||'').trim().slice(0,250);setPendingOrderStorage();renderBaristaOrders();showActionToast(order.note?`Note saved for Order #${order.no}`:`Note removed from Order #${order.no}`)}
+function updatePendingOrdersTab(){
+  if(typeof baristaOrdersTab==='undefined'||!baristaOrdersTab)return;
+  baristaOrdersTab.textContent=`Pending Orders${pendingOrders.length?` (${pendingOrders.length})`:''}`;
+  const sTab=document.getElementById('baristaServedUnpaidTab'),uTab=document.getElementById('baristaUnservedPaidTab');
+  if(sTab)sTab.textContent=`Served - Unpaid${servedUnpaidOrders.length?` (${servedUnpaidOrders.length})`:''}`;
+  if(uTab)uTab.textContent=`Unserved - Paid${unservedPaidOrders.length?` (${unservedPaidOrders.length})`:''}`;
+  updateKitchenAlertTab();
+}
+function selectOpenOrder(no){const found=findOpenOrder(no);if(!found)return;activePendingOrderNo=found.no;selectedBaristaPayment='';cashReceived=0;setPendingOrderStorage();renderBaristaOrders()}
+function selectPendingOrder(no){selectOpenOrder(no)}
+function findOpenOrderByUnit(uid){return getAllOpenOrders().find(o=>Array.isArray(o.units)&&o.units.some(u=>u.uid===uid))||null}
+function syncOpenOrderLifecycle(order){
+  if(!order)return; ensurePendingUnits(order);ensureUnitServedFlags(order);
+  const served=isOrderFullyServed(order),paid=!!order.paid;
+  if(served&&paid){finalizeOpenOrder(order);return;}
+  removeOpenOrderFromBuckets(order.no);
+  if(served&&!paid){servedUnpaidOrders.unshift(order);showActionToast(`Order #${order.no} moved to Served - Unpaid`);} else if(!served&&paid){unservedPaidOrders.unshift(order);showActionToast(`Order #${order.no} moved to Unserved - Paid`);} else pendingOrders.unshift(order);
+  activePendingOrderNo=order.no;setPendingOrderStorage();renderBaristaOrders();
+}
+function toggleUnitServed(uid){const order=findOpenOrderByUnit(uid);if(!order)return;const unit=order.units.find(u=>u.uid===uid);if(!unit)return;unit.served=!unit.served;syncOpenOrderLifecycle(order)}
+function finalizeOpenOrder(order){
+  ensurePendingUnits(order);ensureUnitServedFlags(order);
+  const items=buildHistoryItemsFromPending(order);const total=Math.round(items.reduce((s,x)=>s+(Number(x.price)||0),0)*100)/100;
+  const receipt={no:order.no,date:order.date,time:order.time,serviceType:order.serviceType||'dine-in',note:order.note||'',dayKey:receiptDayKey(order)||localDayKey(),total,payment:order.paymentMethod||'cash',items,cashReceived:order.paymentMethod==='cash'?Number(order.cashReceived||0):0,change:order.paymentMethod==='cash'?Number(order.change||0):0};
+  saveTransactionToHistory(receipt);currentReceipt=receipt;removeOpenOrderFromBuckets(order.no);
+  activePendingOrderNo=pendingOrders[0]?.no||servedUnpaidOrders[0]?.no||unservedPaidOrders[0]?.no||'';setPendingOrderStorage();selectedBaristaPayment='';cashReceived=0;renderBaristaOrders();render();showCompletedReceipt(receipt);
+}
+function addAdditionalOrder(no){
+  const order=findOpenOrder(no);if(!order)return;if(order.paid){alert('This order is already paid and cannot accept additional items.');return;}
+  localStorage.setItem('kbr_append_to_pending_order',String(order.no));customerServiceType=order.serviceType||customerServiceType||'dine-in';sessionStorage.setItem('kbr_current_service',customerServiceType);const start=document.getElementById('serviceStart');if(start)start.style.display='none';closeBaristaPage();closeOrder();render();showActionToast(`Add items to Order #${order.no}`);
+}
+function cancelPendingTransaction(no){
+  const order=findOpenOrder(no);if(!order)return;const label=order.note?` #${order.no} · ${order.note}`:` #${order.no}`;if(!confirm(`Cancel transaction${label}?
+This order will not be added to sales history.`))return;removeOpenOrderFromBuckets(order.no);if(String(activePendingOrderNo)===String(order.no))activePendingOrderNo=pendingOrders[0]?.no||servedUnpaidOrders[0]?.no||unservedPaidOrders[0]?.no||'';if(String(localStorage.getItem('kbr_append_to_pending_order')||'')===String(order.no))clearAppendTarget();setPendingOrderStorage();selectedBaristaPayment='';cashReceived=0;renderBaristaOrders();showActionToast(`Order #${order.no} cancelled`);
 }
 function ensureAllPendingUnits(){
   pendingOrders.forEach(order=>ensurePendingUnits(order));
 }
 function ensurePendingUnits(order){
   if(!order)return;
-  if(order.units && Array.isArray(order.units))return;
+  if(order.units&&Array.isArray(order.units))return;
   order.units=[];
   (order.items||[]).forEach((x,itemIndex)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
-      order.units.push({
-        uid:`${order.no}-${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,
-        sourceIndex:itemIndex,
-        name:x.name,
-        category:x.category,
-        type:x.type,
-        size:x.size,
-        flavor:x.flavor||'',
-        sweetness:x.sweetness||'',
-        originalPrice:Number(x.price)||0,
-        price:Number(x.price)||0,
-        discountPercent:0,
-        food:!!x.food
-      });
+      order.units.push({uid:`${order.no}-${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:itemIndex,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
     }
   });
   setPendingOrderStorage();
 }
+function appendItemsToOrder(order,newItems){
+  ensurePendingUnits(order);ensureUnitServedFlags(order);
+  const sourceBase=order.items.length;
+  order.items=(order.items||[]).concat(JSON.parse(JSON.stringify(newItems||[])));
+  (newItems||[]).forEach((x,offset)=>{
+    for(let i=0;i<(Number(x.qty)||0);i++){
+      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
+    }
+  });
+}
+function ensureUnitServedFlags(order){if(!order||!Array.isArray(order.units))return;order.units.forEach(u=>{if(typeof u.served!=='boolean')u.served=!!order.baristaDone})}
+function ensureAllOpenUnits(){getAllOpenOrders().forEach(o=>{ensurePendingUnits(o);ensureUnitServedFlags(o)})}
 function orderUnitTotal(unit){
   const original=Number(unit.originalPrice||unit.price||0);
   const pct=unit.food?0:(Number(unit.discountPercent)||0);
@@ -829,113 +798,78 @@ function baristaDiscount(uid,pct){
   renderBaristaOrders();
 }
 function removeBaristaUnit(uid){
-  const order=getPendingOrder();
-  if(!order)return;
-  ensurePendingUnits(order);
-  const u=order.units.find(x=>x.uid===uid && !x.cancelled);
-  if(!u)return;
-  const activeCount=order.units.filter(x=>!x.cancelled).length;
-  if(activeCount<=1){
-    if(confirm('Remove the last item? This will cancel the entire transaction.')) cancelPendingTransaction(order.no);
-    return;
-  }
-  u.cancelled=true;
-  if(order.items?.[u.sourceIndex]) order.items[u.sourceIndex].qty=Math.max(0,(Number(order.items[u.sourceIndex].qty)||0)-1);
-  setPendingOrderStorage();
-  renderBaristaOrders();
-  showActionToast(`Removed 1× ${u.name} from Order #${order.no}`);
+  const order=getPendingOrder();if(!order)return;ensurePendingUnits(order);const u=order.units.find(x=>x.uid===uid&&!x.cancelled);if(!u)return;const activeCount=order.units.filter(x=>!x.cancelled).length;
+  if(activeCount<=1){if(confirm('Remove the last item? This will cancel the entire transaction.'))cancelPendingTransaction(order.no);return;}
+  u.cancelled=true;if(order.items?.[u.sourceIndex])order.items[u.sourceIndex].qty=Math.max(0,(Number(order.items[u.sourceIndex].qty)||0)-1);
+  syncOpenOrderLifecycle(order);showActionToast(`Removed 1x ${u.name} from Order #${order.no}`);
 }
 function toggleBaristaGroup(i){
   const el=document.getElementById('barista-group-'+i);
   if(el)el.classList.toggle('open');
 }
 function renderBaristaOrders(){
-  ensureAllPendingUnits();
+  ensureAllOpenUnits();
   updatePendingOrdersTab();
-  if(!pendingOrders.length){
-    activePendingOrderNo="";
-    selectedBaristaPayment="";
-    cashReceived=0;
-    baristaOrdersView.innerHTML='<div class="barista-empty">No pending transactions.<br>When customers tap Send order, their orders will appear here.</div>';
+  const orders=getOrdersForBaristaView();
+  if(!orders.length){
+    selectedBaristaPayment='';cashReceived=0;
+    const msg={orders:'No pending transactions. When customers tap Send order, their orders will appear here.','served-unpaid':'No served but unpaid transactions.','unserved-paid':'No paid but unserved transactions.'}[baristaView]||'No transactions in this section.';
+    baristaOrdersView.innerHTML=`<div class="barista-empty">${msg}</div>`;
     return;
   }
 
-  const selectedOrder=getPendingOrder();
-  const pendingList= pendingOrders.map((o)=>{
+  const order=getCurrentBaristaOrder();
+  const thumbnails=orders.map(o=>{
     const total=pendingOrderTotal(o);
-    const active=String(o.no)===String(selectedOrder.no);
-    const displayNo=String(o.no).replace(/\D/g,'').slice(-3).replace(/^0+/,'')||'0';
-    return `<div class="pending-order-select ${active?'active':''}">
-      <button class="pending-order-tab-main" onclick="selectPendingOrder('${o.no}')">
-        <span><b>Order #${displayNo}</b><small>${serviceLabel(o.serviceType)||'Order'}</small></span>
-        <span class="pending-total">${peso(total)}</span>
-      </button>
-      <button class="order-done-btn ${o.baristaDone?'done':''}" onclick="toggleBaristaDone('${o.no}')">${o.baristaDone?'Done':'Done?'}</button>
-    </div>`;
+    const active=String(o.no)===String(order.no);
+    const displayNo=String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0');
+    const itemCount=(o.units||[]).filter(u=>!u.cancelled).length||o.items.reduce((s,x)=>s+(Number(x.qty)||0),0);
+    return `<button class="pending-order-select ${active?'active':''}" onclick="selectOpenOrder('${o.no}')">
+      <span class="pending-order-tab-main"><b>Order #${displayNo}</b><small>${serviceLabel(o.serviceType)||'Order'} · ${itemCount} item${itemCount===1?'':'s'}</small></span>
+      <span class="pending-total">${peso(total)}</span>
+    </button>`;
   }).join('');
 
-  const order=selectedOrder;
   const originalTotal=order.units.filter(u=>!u.cancelled).reduce((s,u)=>s+(Number(u.originalPrice)||0),0);
   const total=pendingOrderTotal(order);
   const groups=order.items.map((x,gi)=>{
-    const units=order.units.filter(u=>u.sourceIndex===gi && !u.cancelled);
-    const lineTotal=units.reduce((s,u)=>s+orderUnitTotal(u),0);
+    const units=order.units.filter(u=>u.sourceIndex===gi&&!u.cancelled);
     if(!units.length)return '';
     const details=[x.type&&x.type!=='standard'?x.type:'',x.size,x.flavor,x.sweetness].filter(Boolean).join(' · ');
-    const unitRows=units.map((u)=>{
-      const pct=u.food?0:(Number(u.discountPercent)||0);
-      const net=orderUnitTotal(u);
+    const lineTotal=units.reduce((s,u)=>s+orderUnitTotal(u),0);
+    const unitRows=units.map(u=>{
+      const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u),servedClass=u.served?'done':'';
+      const priceText=!u.food&&pct?`₱${Number(u.originalPrice).toLocaleString('en-PH',{minimumFractionDigits:0,maximumFractionDigits:2})} − ${pct}% = <b>${peso(net)}</b>`:peso(net);
       const discountUI=u.food
         ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`
-        : `<div class="discount-buttons">
-            <button class="discount-btn none ${pct===0?'active':''}" onclick="baristaDiscount('${u.uid}',0)">None</button>
-            <button class="discount-btn ${pct===10?'active':''}" onclick="baristaDiscount('${u.uid}',10)">10%</button>
-            <button class="discount-btn ${pct===20?'active':''}" onclick="baristaDiscount('${u.uid}',20)">20%</button>
-            <button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button>
-          </div>`;
-      const priceText=!u.food && pct
-        ? `₱${Number(u.originalPrice).toLocaleString('en-PH',{minimumFractionDigits:0,maximumFractionDigits:2})} − ${pct}% = <b>${peso(net)}</b>`
-        : peso(net);
+        : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="baristaDiscount('${u.uid}',20)">20%</button><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`;
       return `<div class="barista-unit">
         <div class="barista-unit-name"><b>1× ${u.name}</b><small>${details}</small><div class="discount-price">${priceText}</div></div>
-        ${discountUI}
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px">
+          <button class="unit-done-btn ${servedClass}" onclick="toggleUnitServed('${u.uid}')">${u.served?'✓ Served':'☐ Done?'}</button>
+          ${discountUI}
+        </div>
       </div>`;
     }).join('');
-    return `<div class="barista-group" id="barista-group-${gi}">
-      <button class="barista-group-toggle" onclick="toggleBaristaGroup(${gi})">
-        <span>${units.length}× ${x.name}<small>${details}</small></span><span>${peso(lineTotal)} ▾</span>
-      </button>
-      <div class="barista-group-body">${unitRows}</div>
-    </div>`;
+    return `<div class="barista-group open" id="barista-group-${gi}"><button class="barista-group-toggle" onclick="toggleBaristaGroup(${gi})"><span>${units.length}× ${x.name}<small>${details}</small></span><span>${peso(lineTotal)} ▾</span></button><div class="barista-group-body">${unitRows}</div></div>`;
   }).join('');
 
-  baristaOrdersView.innerHTML=
-    `<div class="pending-orders-list">${pendingList}</div>
-     <div class="barista-order-card">
-       <div class="barista-order-head">
-         <div><b>Order #${order.no}${order.note?` · ${escapeHtml(order.note)}`:''}</b><div class="barista-order-meta">${serviceLabel(order.serviceType)?serviceLabel(order.serviceType)+' · ':''}${order.date} · ${order.time}</div></div>
-         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px">
-           <div class="barista-order-total">${peso(total)}</div>
-           <button class="order-done-btn ${order.baristaDone?'done':''}" onclick="toggleBaristaDone('${order.no}')">${order.baristaDone?'Done':'Done?'}</button>
-         </div>
-       </div>
-       <div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>
-       ${noteEditorOpenNo===String(order.no)?`<div class="note-editor"><textarea id="pendingOrderNoteInput" maxlength="250" placeholder="Add name, less ice, less sugar, special request, etc.">${escapeHtml(order.note||'')}</textarea><div class="note-editor-actions"><button class="secondary" onclick="closePendingNoteEditor()">Close</button><button class="primary" style="background:#2f8f4e;border-color:#2f8f4e" onclick="savePendingOrderNote()">Save note</button></div></div>`:''}
-       <div class="report-note">Original total: ${peso(originalTotal)}. Discounts can be applied only to drinks, one cup at a time.</div>
-       ${groups}
-       <div class="barista-payment">
-         <div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div>
-         <div class="barista-payment-options">
-           <button class="barista-pay-btn cancel-pending-btn" onclick="cancelPendingTransaction('${order.no}')">Cancel</button>
-           <button class="barista-pay-btn" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button>
-           <button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">💵 Cash payment</button>
-           <button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">📱 GCash payment</button>
-         </div>
-         <div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div>
-         <div id="baristaPaymentPanel"></div>
-       </div>
-     </div>`;
-  renderBaristaPaymentPanel();
+  let statusNote='';
+  if(baristaView==='served-unpaid')statusNote='<div class="barista-status-note unpaid">✅ All items served. Payment is still unpaid.</div>';
+  if(baristaView==='unserved-paid')statusNote='<div class="barista-status-note">💳 Payment completed. Waiting for remaining items to be served.</div>';
+  const paymentBlock=baristaView==='unserved-paid'
+    ? statusNote
+    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">💵 Cash payment</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">📱 GCash payment</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
+
+  baristaOrdersView.innerHTML=`<div class="pending-orders-list">${thumbnails}</div>
+    <div class="barista-order-card">
+      <div class="barista-order-head"><div><b>Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}${order.note?` · ${escapeHtml(order.note)}`:''}</b><div class="barista-order-meta">${serviceLabel(order.serviceType)?serviceLabel(order.serviceType)+' · ':''}${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
+      <div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>
+      ${noteEditorOpenNo===String(order.no)?`<div class="note-editor"><textarea id="pendingOrderNoteInput" maxlength="250" placeholder="Add name, less ice, less sugar, special request, etc.">${escapeHtml(order.note||'')}</textarea><div class="note-editor-actions"><button class="secondary" onclick="closePendingNoteEditor()">Close</button><button class="primary" style="background:#2f8f4e;border-color:#2f8f4e" onclick="savePendingOrderNote()">Save note</button></div></div>`:''}
+      <div class="report-note">Original total: ${peso(originalTotal)}. Discounts can be applied only to drinks, one cup at a time.</div>
+      ${groups}${paymentBlock}
+    </div>`;
+  if(baristaView!=='unserved-paid')renderBaristaPaymentPanel();
 }
 function selectBaristaPayment(method){
   selectedBaristaPayment=method;
@@ -944,7 +878,7 @@ function selectBaristaPayment(method){
 }
 function updateCashReceived(value){
   cashReceived=Math.max(0,Math.round((Number(value)||0)*100)/100);
-  const total=pendingOrderTotal();
+  const total=pendingOrderTotal(getCurrentBaristaOrder());
   const change=Math.max(0,cashReceived-total);
   const changeEl=document.getElementById("baristaChangeValue");
   const changeLabel=document.getElementById("baristaChangeLabel");
@@ -984,13 +918,13 @@ function cashKeypadClear(){updateCashReceived(0)}
 function renderBaristaPaymentPanel(){
   const host=document.getElementById('baristaPaymentPanel');
   if(!host)return;
-  if(!getPendingOrder()){host.innerHTML='';return}
+  if(!getCurrentBaristaOrder()){host.innerHTML='';return}
   if(!selectedBaristaPayment){
     host.innerHTML='<div class="muted" style="margin-top:10px;text-align:center">Select a payment method when the customer is ready to pay.</div>';
     return;
   }
   if(selectedBaristaPayment==='cash'){
-    const total=pendingOrderTotal();
+    const total=pendingOrderTotal(getCurrentBaristaOrder());
     const insufficient=cashReceived<total;
     host.innerHTML=`<div class="barista-pay-panel"><div class="barista-cash-layout">
       <div class="cash-pane">
@@ -1021,28 +955,11 @@ function renderBaristaPaymentPanel(){
   host.innerHTML=`<div class="barista-pay-panel"><img class="barista-gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src='images/gcash-card.png';"><div class="gcash-number">GCash Number: 09672365176</div><div class="gcash-help">Confirm the customer has completed the GCash payment before pressing Complete.</div><button class="barista-close-pay" onclick="completePendingPayment('gcash')">Complete GCash Payment</button></div>`;
 }
 function completePendingPayment(method){
-  const order=getPendingOrder();
-  if(!order)return;
-  ensurePendingUnits(order);
-  const items=buildHistoryItemsFromPending(order);
-  const total=Math.round(items.reduce((s,x)=>s+(Number(x.price)||0),0)*100)/100;
-  let change=0,received=0;
-  if(method==='cash'){
-    received=Math.round((Number(cashReceived)||0)*100)/100;
-    if(received<total){updateCashReceived(received);return;}
-    change=Math.round((received-total)*100)/100;
-  }
-  const receipt={no:order.no,date:order.date,time:order.time,serviceType:order.serviceType||'dine-in',note:order.note||'',dayKey:receiptDayKey(order)||localDayKey(),total,payment:method,items,cashReceived:method==='cash'?received:0,change:method==='cash'?change:0};
-  saveTransactionToHistory(receipt);
-  currentReceipt=receipt;
-  pendingOrders=pendingOrders.filter(o=>String(o.no)!==String(order.no));
-  activePendingOrderNo=pendingOrders[0]?.no||"";
-  setPendingOrderStorage();
-  selectedBaristaPayment='';
-  cashReceived=0;
-  renderBaristaOrders();
-  render();
-  showCompletedReceipt(receipt);
+  const order=getCurrentBaristaOrder();if(!order)return;ensurePendingUnits(order);ensureUnitServedFlags(order);
+  const items=buildHistoryItemsFromPending(order);const total=Math.round(items.reduce((s,x)=>s+(Number(x.price)||0),0)*100)/100;let change=0,received=0;
+  if(method==='cash'){received=Math.round((Number(cashReceived)||0)*100)/100;if(received<total){updateCashReceived(received);return;}change=Math.round((received-total)*100)/100;}
+  order.paid=true;order.paymentMethod=method;order.cashReceived=method==='cash'?received:0;order.change=method==='cash'?change:0;order.paidAt=new Date().toISOString();selectedBaristaPayment='';cashReceived=0;
+  if(isOrderFullyServed(order))finalizeOpenOrder(order);else{removeOpenOrderFromBuckets(order.no);unservedPaidOrders.unshift(order);activePendingOrderNo=order.no;setPendingOrderStorage();renderBaristaOrders();showActionToast(`Order #${order.no} is paid and waiting to be served`);}
 }
 function showCompletedReceipt(receipt){
   receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt"><div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${receipt.no}</div><div>${serviceLabel(receipt.serviceType)?serviceLabel(receipt.serviceType)+' · ':''}${receipt.date} · ${receipt.time}</div>${receipt.note?`<div style="margin-top:5px;">📝 ${escapeHtml(receipt.note)}</div>`:''}</div><hr>${receipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${x.name}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''}${x.discountPercent?` · ${x.discountPercent}% off`:''}</small></div><div>${peso(x.price)}</div></div>`).join('')}<hr><div class="receipt-line"><b>TOTAL</b><b>${peso(receipt.total)}</b></div>${receipt.payment==='cash'?`<div class="receipt-line"><span>Cash received</span><span>${peso(receipt.cashReceived||0)}</span></div><div class="receipt-line"><b>CHANGE</b><b>${peso(receipt.change||0)}</b></div>`:''}<hr><div class="center">Paid ${receipt.payment==='gcash'?'via GCash':'in Cash'}. Thank you!</div></div>`;
@@ -1050,17 +967,38 @@ function showCompletedReceipt(receipt){
 }
 function renderHistory(){
   renderDailyCsvArchive();
-  if(!history.length){baristaHistoryList.innerHTML='<div class="history-empty">No transactions yet.<br>Completed orders will appear here.</div>';baristaSalesReport.style.display='none';return}
-  baristaHistoryList.innerHTML=history.map((r,i)=>{
-    const summary=(r.items||[]).map(x=>{
-      const details=[x.type&&x.type!=='standard'?x.type:'',x.size,x.flavor,x.sweetness].filter(Boolean).join(' · ');
-      const discountText=x.food ? 'No discount' : (Number(x.discountPercent)||0)>0 ? `${x.discountPercent}% off` : 'No discount';
-      const original=Number(x.originalPrice??x.price??0)||0;
-      const total=Number(x.price??0)||0;
-      return `<div class="history-line"><div class="history-line-main"><b>${x.qty}× ${x.name}</b><small>${details}</small></div><div class="history-line-meta"><span>Discount: ${discountText}</span><strong>Total: ${peso(total*(Number(x.qty)||0))}</strong>${(Number(x.qty)||0)>1?`<small>${peso(total)} each</small>`:''}</div></div>`;
+  if(!history.length){
+    baristaHistoryList.innerHTML='<div class="history-empty">No transactions yet.<br>Completed orders will appear here.</div>';
+    baristaSalesReport.style.display='none';
+    return;
+  }
+
+  const kitchenNames=new Set(['Fries','Shiang hai','Nachos','Samyang Buldak']);
+  let kitchenFoodTotal=0, kapeBarRioTotal=0;
+  history.forEach(r=>{
+    (r.items||[]).forEach(x=>{
+      const line=(Number(x.price)||0)*(Number(x.qty)||0);
+      if(kitchenNames.has(x.name)) kitchenFoodTotal+=line;
+      else kapeBarRioTotal+=line;
+    });
+  });
+
+  baristaHistoryList.innerHTML=`<div class="history-total-strip">
+    <div class="history-total-card"><small>Kitchen Food (Fries, Shiang Hai, Nachos, Samyang Buldak)</small><b>${peso(kitchenFoodTotal)}</b></div>
+    <div class="history-total-card"><small>Kape' Bar-Rio (Drinks + Siomai)</small><b>${peso(kapeBarRioTotal)}</b></div>
+  </div>
+  <div class="history-thumb-grid">${history.map(r=>{
+    const items=(r.items||[]).map(x=>{
+      const line=(Number(x.price)||0)*(Number(x.qty)||0);
+      return `<div class="history-thumb-item"><span>${x.qty}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
     }).join('');
-    return `<div class="history-item"><div class="history-head"><div><b>Order #${r.no}</b><div class="history-meta">${serviceLabel(r.serviceType)?serviceLabel(r.serviceType)+' · ':''}${r.date} · ${r.time} · ${(r.payment||'').toUpperCase()}</div>${r.note?`<div class="history-meta">📝 ${escapeHtml(r.note)}</div>`:''}</div><div class="history-total">${peso(r.total)}</div></div><div class="history-items">${summary}</div><div class="history-actions"><button class="primary" onclick="saveHistoryReceipt(${i})">Save picture</button></div></div>`;
-  }).join('');
+    return `<div class="history-thumb">
+      <div class="history-thumb-head"><b>Order #${String(r.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</b><span class="history-thumb-total">${peso(r.total)}</span></div>
+      <div class="history-thumb-meta">${serviceLabel(r.serviceType)||''} · ${(r.payment||'').toUpperCase()}</div>
+      <div class="history-thumb-items">${items}</div>
+      ${r.note?`<div class="history-thumb-meta">📝 ${escapeHtml(r.note)}</div>`:''}
+    </div>`;
+  }).join('')}</div>`;
 }
 function getSalesStats(){
   const stats={transactions:history.length,totalSales:0,totalDrinkCups:0,totalFoodQty:0,byDrink:{},bySize:{},byGroup:{},bySweetness:{}};
@@ -1153,6 +1091,10 @@ function orderNumber(){
 let currentReceipt=null;
 let pendingOrders=JSON.parse(localStorage.getItem("kbr_pending_orders")||"[]");
 if(!Array.isArray(pendingOrders))pendingOrders=[];
+let servedUnpaidOrders=JSON.parse(localStorage.getItem("kbr_served_unpaid_orders")||"[]");
+if(!Array.isArray(servedUnpaidOrders))servedUnpaidOrders=[];
+let unservedPaidOrders=JSON.parse(localStorage.getItem("kbr_unserved_paid_orders")||"[]");
+if(!Array.isArray(unservedPaidOrders))unservedPaidOrders=[];
 const legacyPending=localStorage.getItem("kbr_pending_order");
 if(!pendingOrders.length && legacyPending){
   try{
@@ -1160,15 +1102,50 @@ if(!pendingOrders.length && legacyPending){
     if(old)pendingOrders=[old];
   }catch(err){}
 }
-let activePendingOrderNo=localStorage.getItem("kbr_active_pending_order") || (pendingOrders[0]?.no||"");
+let activePendingOrderNo=localStorage.getItem("kbr_active_pending_order") || (pendingOrders[0]?.no||servedUnpaidOrders[0]?.no||unservedPaidOrders[0]?.no||"");
 let baristaView="orders";
 let selectedBaristaPayment="";
 let cashReceived=0;
-if(pendingOrders.length) {
-  pendingOrders.forEach(o=>{ if(o && o.note==null) o.note=String(o.customerName||'').trim(); if(o && !o.units) o.units=null; if(o && typeof o.baristaDone!=='boolean') o.baristaDone=false; });
-  localStorage.removeItem("kbr_pending_order");
-  setPendingOrderStorage();
+function normalizeOpenOrder(o){
+  if(!o)return;
+  if(o.note==null)o.note=String(o.customerName||'').trim();
+  if(!Array.isArray(o.units))o.units=null;
+  if(typeof o.paid!=='boolean')o.paid=false;
+  if(!o.paymentMethod)o.paymentMethod='';
+  if(typeof o.cashReceived!=='number')o.cashReceived=0;
+  if(typeof o.change!=='number')o.change=0;
+  if(typeof o.baristaDone!=='boolean')o.baristaDone=false;
 }
+function isOrderFullyServed(order){
+  ensurePendingUnits(order); ensureUnitServedFlags(order);
+  const activeUnits=order.units.filter(u=>!u.cancelled);
+  return activeUnits.length>0 && activeUnits.every(u=>u.served===true);
+}
+function getAllOpenOrders(){return [...pendingOrders,...servedUnpaidOrders,...unservedPaidOrders]}
+function findOpenOrder(no){return getAllOpenOrders().find(o=>String(o.no)===String(no))||null}
+function removeOpenOrderFromBuckets(no){
+  pendingOrders=pendingOrders.filter(o=>String(o.no)!==String(no));
+  servedUnpaidOrders=servedUnpaidOrders.filter(o=>String(o.no)!==String(no));
+  unservedPaidOrders=unservedPaidOrders.filter(o=>String(o.no)!==String(no));
+}
+function saveOpenOrderBuckets(){
+  localStorage.setItem('kbr_pending_orders',JSON.stringify(pendingOrders));
+  localStorage.setItem('kbr_served_unpaid_orders',JSON.stringify(servedUnpaidOrders));
+  localStorage.setItem('kbr_unserved_paid_orders',JSON.stringify(unservedPaidOrders));
+  if(activePendingOrderNo)localStorage.setItem('kbr_active_pending_order',String(activePendingOrderNo));
+  else localStorage.removeItem('kbr_active_pending_order');
+}
+[...pendingOrders,...servedUnpaidOrders,...unservedPaidOrders].forEach(normalizeOpenOrder);
+localStorage.removeItem('kbr_pending_order');
+setTimeout(()=>{if(typeof setPendingOrderStorage==='function')setPendingOrderStorage()},0);
+
+ensureAllOpenUnits();
+(function reclassifyOpenOrders(){
+  const all=[...pendingOrders,...servedUnpaidOrders,...unservedPaidOrders];const seen=new Set();pendingOrders=[];servedUnpaidOrders=[];unservedPaidOrders=[];
+  all.forEach(o=>{if(!o||seen.has(String(o.no)))return;seen.add(String(o.no));normalizeOpenOrder(o);ensurePendingUnits(o);ensureUnitServedFlags(o);const served=isOrderFullyServed(o);if(served&&!o.paid)servedUnpaidOrders.push(o);else if(!served&&o.paid)unservedPaidOrders.push(o);else if(!served)pendingOrders.push(o);else servedUnpaidOrders.push(o);});
+  saveOpenOrderBuckets();
+})();
+
 async function makeReceipt(){
   if(!cart.length){alert("Add at least one item.");return}
   const appendNo=localStorage.getItem('kbr_append_to_pending_order');
@@ -1178,13 +1155,13 @@ async function makeReceipt(){
   const orderedItems=[...cart].sort((a,b)=>(a.category==='Snackies'?1:0)-(b.category==='Snackies'?1:0));
 
   if(appendNo){
-    const target=getPendingOrderByNo(appendNo);
+    const target=findOpenOrder(appendNo);
     clearAppendTarget();
     if(target){
-      target.items=(target.items||[]).concat(JSON.parse(JSON.stringify(orderedItems)));
-      target.units=null;
+      if(target.paid){alert('This order is already paid and cannot accept additional items.');clearAppendTarget();return;}
+      appendItemsToOrder(target,orderedItems);
       target.baristaDone=false;
-      pendingOrders=pendingOrders.filter(o=>String(o.no)!==String(target.no));
+      removeOpenOrderFromBuckets(target.no);
       pendingOrders.unshift(target);
       activePendingOrderNo=target.no;
       selectedBaristaPayment='';
@@ -1200,7 +1177,7 @@ async function makeReceipt(){
   }
 
   const no=orderNumber();
-  const newOrder={no,date,time,serviceType:customerServiceType||'dine-in',items:JSON.parse(JSON.stringify(orderedItems)),units:null,note:'',baristaDone:false};
+  const newOrder={no,date,time,serviceType:customerServiceType||'dine-in',items:JSON.parse(JSON.stringify(orderedItems)),units:null,note:'',baristaDone:false,paid:false,paymentMethod:'',cashReceived:0,change:0};
   pendingOrders.unshift(newOrder);
   activePendingOrderNo=no;
   selectedBaristaPayment='';
