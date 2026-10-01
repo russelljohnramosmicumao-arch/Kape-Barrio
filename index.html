@@ -164,7 +164,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-order-card.mixed{border-color:#9b7b58;background:linear-gradient(90deg,#fbfffb 0 50%,#fffdfa 50% 100%)}
 
 .barista-selected-order-toggle.take-out{border-color:#e9a04a;background:#fff4e2;color:#9a5c12;box-shadow:0 3px 10px rgba(229,138,34,.12)}
-.barista-order-card.take-out{border-color:#e9a04a;background:#fffdfa}
+.barista-order-card.dine-in{border-color:#2f8f4e;background:#f7fff7}.barista-order-card.take-out{border-color:#e9a04a;background:#fffdfa}
 .order-service-toggle{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed #eadfd4}
 .order-service-toggle span{font-size:12px;font-weight:900;color:#6e6258}
 .order-service-btn{border:1px solid #d9c7b5;background:#fff;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:900;color:var(--brown)}
@@ -172,6 +172,17 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .order-service-btn.active.takeout{background:#e58a22;border-color:#e58a22;color:#fff}
 
 .barista-order-thumb.active{border:2px solid #2f8f4e;background:#f2fbf3}
+/* v67: service-type colors must win over the generic active style. */
+.barista-order-thumb.dine-in{border-color:#2f8f4e!important;background:#f2fbf3!important}
+.barista-order-thumb.dine-in .order-number-badge{background:#2f6f3a!important;border-color:#1f572b!important;color:#fff!important}
+.barista-order-thumb.take-out{border-color:#e58a22!important;background:#fff5e8!important}
+.barista-order-thumb.take-out .order-number-badge{background:#e58a22!important;border-color:#c76f0c!important;color:#fff!important}
+.barista-order-thumb.mixed{border-color:#9b7b58!important;background:linear-gradient(90deg,#f2fbf3 0 50%,#fff4e2 50% 100%)!important}
+.barista-order-thumb.mixed .order-number-badge{background:linear-gradient(90deg,#2f6f3a 0 50%,#e58a22 50% 100%)!important;border-color:#6f6b4c!important;color:#fff!important}
+.barista-selected-order-toggle.dine-in{border-color:#2f8f4e!important;background:#e6f6e8!important;color:#205c2c!important}
+.barista-selected-order-toggle.take-out{border-color:#e58a22!important;background:#fff4e2!important;color:#9a5c12!important}
+.barista-selected-order-toggle.mixed{border-color:#9b7b58!important;background:linear-gradient(90deg,#e6f6e8 0 50%,#fff4e2 50% 100%)!important;color:#4c5d42!important}
+.barista-order-card.dine-in{border-color:#2f8f4e!important;background:#f7fff7!important}
 .barista-order-thumb.dine-in{border-color:#2f8f4e!important;background:#f2fbf3!important}.barista-order-thumb.dine-in .order-number-badge{background:#2f6f3a!important;border-color:#1f572b!important}.barista-order-thumb.take-out{border-color:#e9a04a!important;background:#fff8ee!important}.barista-order-thumb.take-out .order-number-badge{background:#e58a22!important;border-color:#c76f0c!important}.barista-order-thumb.mixed{border-color:#9b7b58!important;background:linear-gradient(90deg,#f2fbf3 0 50%,#fff4e2 50% 100%)!important}.barista-order-thumb.mixed .order-number-badge{background:linear-gradient(90deg,#2f6f3a 0 50%,#e58a22 50% 100%)!important;border-color:#6f6b4c!important}
 
 .barista-order-thumb-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
@@ -397,11 +408,19 @@ function isBestSeller(p){return BEST_SELLER_KEYS.has(`${p.category}||${p.name}`)
 function getOrderServiceModes(order){
   const modes=new Set();
   if(!order)return modes;
-  if(Array.isArray(order.units) && order.units.length){
-    order.units.filter(u=>!u.cancelled).forEach(u=>{const t=u.serviceType||order.serviceType;if(t) modes.add(t);});
+  const addMode=(t)=>{
+    if(t==='dine-in' || t==='take-out') modes.add(t);
+  };
+  // Always inspect both the individual units and the item rows. This is
+  // important for transactions that contain a mix of Dine In and Take Out,
+  // including older saved orders where the unit metadata may be stale.
+  if(Array.isArray(order.units)){
+    order.units.filter(u=>!u.cancelled).forEach(u=>addMode(u.serviceType));
   }
-  if(!modes.size && Array.isArray(order.items)) order.items.forEach(x=>{const t=x.serviceType||order.serviceType;if(t) modes.add(t);});
-  if(!modes.size && order.serviceType) modes.add(order.serviceType);
+  if(Array.isArray(order.items)){
+    order.items.forEach(x=>addMode(x.serviceType));
+  }
+  addMode(order.serviceType);
   return modes;
 }
 function orderServiceClass(order){
