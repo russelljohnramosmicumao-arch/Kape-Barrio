@@ -172,6 +172,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .order-service-btn.active.takeout{background:#e58a22;border-color:#e58a22;color:#fff}
 
 .barista-order-thumb.active{border:2px solid #2f8f4e;background:#f2fbf3}
+.barista-order-thumb.dine-in{border-color:#2f8f4e!important;background:#f2fbf3!important}.barista-order-thumb.dine-in .order-number-badge{background:#2f6f3a!important;border-color:#1f572b!important}.barista-order-thumb.take-out{border-color:#e9a04a!important;background:#fff8ee!important}.barista-order-thumb.take-out .order-number-badge{background:#e58a22!important;border-color:#c76f0c!important}.barista-order-thumb.mixed{border-color:#9b7b58!important;background:linear-gradient(90deg,#f2fbf3 0 50%,#fff4e2 50% 100%)!important}.barista-order-thumb.mixed .order-number-badge{background:linear-gradient(90deg,#2f6f3a 0 50%,#e58a22 50% 100%)!important;border-color:#6f6b4c!important}
+
 .barista-order-thumb-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .barista-order-thumb-head b{color:var(--brown);font-size:15px}.barista-order-thumb-total{color:var(--brown);font-weight:900;white-space:nowrap}
 .barista-order-thumb-meta{color:#7a6b60;font-size:11px;margin-top:3px}.barista-order-thumb-items{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:11px;color:#4e4137}.barista-order-thumb-item{display:flex;justify-content:space-between;gap:6px}.barista-order-thumb-item span:last-child{font-weight:800;color:var(--brown);white-space:nowrap}
@@ -843,7 +845,11 @@ function addAdditionalOrder(no){
   const order=findOpenOrder(no);if(!order)return;if(order.paid){alert('This order is already paid and cannot accept additional items.');return;}
   localStorage.setItem('kbr_append_to_pending_order',String(order.no));
   localStorage.setItem('kbr_append_to_pending_order_snapshot',JSON.stringify(order));
-  customerServiceType=order.serviceType||customerServiceType||'dine-in';
+  const modes=getOrderServiceModes(order);
+  // Never use the synthetic 'mixed' status as the service type for new items.
+  // New items begin with a real mode and can then be switched independently
+  // between Dine In and Take Out in the Barista item controls.
+  customerServiceType=modes.has('take-out') && !modes.has('dine-in') ? 'take-out' : 'dine-in';
   sessionStorage.setItem('kbr_current_service',customerServiceType);
   const start=document.getElementById('serviceStart');if(start)start.style.display='none';
   closeBaristaPage();closeOrder();render();
@@ -855,10 +861,12 @@ function setOrderServiceType(no,type,uid){
   ensurePendingUnits(order);
   if(uid){
     const u=order.units.find(x=>x.uid===uid&&!x.cancelled);
-    if(u) u.serviceType=type;
-    const source=order.items?.[u?.sourceIndex];
-    if(source) source.serviceType=type;
-    // When a source line represents multiple units, preserve any mixed service types at unit level.
+    if(!u)return;
+    u.serviceType=type;
+    const sourceIndex=u.sourceIndex;
+    const sameSource=order.units.filter(x=>x.sourceIndex===sourceIndex&&!x.cancelled);
+    const sameMode=sameSource.length>0 && sameSource.every(x=>x.serviceType===type);
+    if(order.items?.[sourceIndex]) order.items[sourceIndex].serviceType=sameMode?type:'mixed';
   }else{
     order.units.forEach(u=>{if(!u.cancelled)u.serviceType=type;});
     (order.items||[]).forEach(x=>x.serviceType=type);
@@ -879,7 +887,7 @@ function ensureAllPendingUnits(){
 }
 function ensurePendingUnits(order){
   if(!order)return;
-  if(order.units&&Array.isArray(order.units)){order.units.forEach((u,i)=>{if(!u.serviceType){const src=order.items?.[u.sourceIndex];u.serviceType=src?.serviceType||order.serviceType||'dine-in';}});return;}
+  if(order.units&&Array.isArray(order.units)){order.units.forEach((u,i)=>{if(!u.serviceType){const src=order.items?.[u.sourceIndex];u.serviceType=src?.serviceType||((order.serviceType==='take-out'||order.serviceType==='dine-in')?order.serviceType:'dine-in');}});return;}
   order.units=[];
   (order.items||[]).forEach((x,itemIndex)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
@@ -891,11 +899,18 @@ function ensurePendingUnits(order){
 function appendItemsToOrder(order,newItems){
   ensurePendingUnits(order);ensureUnitServedFlags(order);
   const sourceBase=order.items.length;
-  const stampedItems=JSON.parse(JSON.stringify(newItems||[])).map(x=>({...x,serviceType:x.serviceType||customerServiceType||order.serviceType||'dine-in'}));
+  const modes=getOrderServiceModes(order);
+  const safeServiceType=(customerServiceType==='take-out'||customerServiceType==='dine-in')
+    ? customerServiceType
+    : (modes.has('take-out')&&!modes.has('dine-in')?'take-out':'dine-in');
+  const stampedItems=JSON.parse(JSON.stringify(newItems||[])).map(x=>({
+    ...x,
+    serviceType:(x.serviceType==='take-out'||x.serviceType==='dine-in')?x.serviceType:safeServiceType
+  }));
   order.items=(order.items||[]).concat(stampedItems);
   (stampedItems||[]).forEach((x,offset)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
-      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,name:x.name,category:x.category,type:x.type,serviceType:x.serviceType||customerServiceType||order.serviceType||'dine-in',size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
+      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,name:x.name,category:x.category,type:x.type,serviceType:x.serviceType,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
     }
   });
 }
@@ -1038,8 +1053,8 @@ function renderBaristaOrders(){
         <div class="barista-unit-details-price">${peso(net)}</div>
         <div class="barista-unit-details-controls">${discountUI}${discountPrice}
           <div class="order-service-toggle"><span>Order type:</span>
-            <button class="order-service-btn dine ${order.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','dine-in','${u.uid}')">Dine In</button>
-            <button class="order-service-btn takeout ${order.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','take-out','${u.uid}')">Take Out</button>
+            <button class="order-service-btn dine ${u.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','dine-in','${u.uid}')">Dine In</button>
+            <button class="order-service-btn takeout ${u.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','take-out','${u.uid}')">Take Out</button>
           </div>
         </div>
       </div>`;
