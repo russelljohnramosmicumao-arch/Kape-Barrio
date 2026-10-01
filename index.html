@@ -178,9 +178,10 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-unit-name{min-width:0}
 .barista-unit-name b{display:block;color:var(--brown);font-size:14px}
 .barista-unit-price{font-weight:900;color:var(--brown);white-space:nowrap;font-size:14px}
-.discount-buttons{display:none!important}
+.discount-buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .barista-group{border-width:2px}
 .barista-group-body{padding:8px 10px}
+/* v63: keep discount/remove controls visible inside expanded lower level */
 /* v62 two-level item rows */
 .barista-group-label{background:#fbf8f4;padding:11px 12px;border-bottom:1px solid #eee3d7;font-weight:900;color:#4e4137;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;cursor:pointer}
 .barista-group-label-main{min-width:0;text-align:left}.barista-group-label-main b{display:block;color:var(--brown);font-size:15px}.barista-group-label-main small{display:block;color:#7a6b60;font-weight:700;margin-top:2px}.barista-group-label-price{font-weight:900;color:var(--brown);white-space:nowrap;display:flex;align-items:center;gap:8px}.group-chevron{font-size:13px;color:#8b7867}
