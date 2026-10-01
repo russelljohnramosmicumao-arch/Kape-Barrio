@@ -180,12 +180,15 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-unit-price{font-weight:900;color:var(--brown);white-space:nowrap;font-size:14px}
 .discount-buttons{display:none!important}
 .barista-group{border-width:2px}
-.barista-group-body{display:block!important;padding:8px 10px}
-.barista-group-label{background:#fbf8f4;padding:10px 13px;border-bottom:1px solid #eee3d7;font-weight:900;color:#4e4137;display:flex;justify-content:space-between;gap:10px;align-items:center}
-
+.barista-group-body{padding:8px 10px}
+/* v62 two-level item rows */
+.barista-group-label{background:#fbf8f4;padding:11px 12px;border-bottom:1px solid #eee3d7;font-weight:900;color:#4e4137;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;cursor:pointer}
+.barista-group-label-main{min-width:0;text-align:left}.barista-group-label-main b{display:block;color:var(--brown);font-size:15px}.barista-group-label-main small{display:block;color:#7a6b60;font-weight:700;margin-top:2px}.barista-group-label-price{font-weight:900;color:var(--brown);white-space:nowrap;display:flex;align-items:center;gap:8px}.group-chevron{font-size:13px;color:#8b7867}
+.group-done-btn{flex:0 0 auto;min-width:78px;min-height:38px;border:1px solid #d9c7b5;background:#fff;color:#6d5a4a;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;padding:7px 10px}.group-done-btn:active{transform:scale(.97)}.group-done-btn.done{background:#2f8f4e;border-color:#2f8f4e;color:#fff}
+.barista-group-body{background:#fff;padding:9px 12px 11px;border-top:1px solid #eee3d7}
+.barista-unit-details-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:10px 2px;border-bottom:1px solid #f0e7de;align-items:start}.barista-unit-details-row:last-child{border-bottom:0}.barista-unit-details-name b{display:block;color:var(--brown);font-size:14px}.barista-unit-details-name small{display:block;color:#7a6b60;margin-top:2px}.barista-unit-details-price{font-weight:900;color:var(--brown);white-space:nowrap;font-size:14px}.barista-unit-details-controls{grid-column:1 / -1}
 
 /* v61 item-level controls */
-.barista-unit{display:block!important;padding:10px 4px!important;border-bottom:1px solid #f0e7de}
 .barista-unit-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
 .barista-unit-name{min-width:0;text-align:left}
 .barista-unit-name b{display:block;color:var(--brown);font-size:15px}
@@ -873,14 +876,27 @@ function removeBaristaUnit(uid){
   u.cancelled=true;if(order.items?.[u.sourceIndex])order.items[u.sourceIndex].qty=Math.max(0,(Number(order.items[u.sourceIndex].qty)||0)-1);
   syncOpenOrderLifecycle(order);showActionToast(`Removed 1x ${u.name} from Order #${order.no}`);
 }
-function toggleBaristaGroup(i){
-  const el=document.getElementById('barista-group-'+i);
-  if(el)el.classList.toggle('open');
+function toggleBaristaGroup(orderNo, sourceIndex){
+  const key=`${orderNo}-${sourceIndex}`;
+  if(expandedBaristaGroupKeys.has(key)) expandedBaristaGroupKeys.delete(key);
+  else expandedBaristaGroupKeys.add(key);
+  renderBaristaOrders();
 }
 function toggleBaristaUnitDetails(uid){
   if(expandedBaristaUnitUids.has(uid)) expandedBaristaUnitUids.delete(uid);
   else expandedBaristaUnitUids.add(uid);
   renderBaristaOrders();
+}
+function toggleItemGroupServed(orderNo, sourceIndex){
+  const order=findOpenOrder(orderNo);
+  if(!order)return;
+  ensurePendingUnits(order);
+  ensureUnitServedFlags(order);
+  const units=order.units.filter(u=>u.sourceIndex===sourceIndex&&!u.cancelled);
+  if(!units.length)return;
+  const makeServed=!units.every(u=>u.served);
+  units.forEach(u=>{u.served=makeServed});
+  syncOpenOrderLifecycle(order);
 }
 function toggleSiomaiGroupServed(orderNo, sourceIndex){
   const order=findOpenOrder(orderNo);
@@ -933,41 +949,33 @@ function renderBaristaOrders(){
     if(!units.length)return '';
     const details=[x.type&&x.type!=='standard'?x.type:'',x.size,x.flavor,x.sweetness].filter(Boolean).join(' · ');
     const lineTotal=units.reduce((s,u)=>s+orderUnitTotal(u),0);
+    const allServed=units.every(u=>u.served);
+    const groupKey=`${order.no}-${gi}`;
+    const expanded=expandedBaristaGroupKeys.has(groupKey);
     const isSiomai=String(x.name||'').trim().toLowerCase()==='siomai';
+    const topPrice=peso(lineTotal);
 
-    if(isSiomai){
-      const allServed=units.every(u=>u.served);
-      const topPrice=peso(lineTotal);
-      return `<div class="barista-group open" id="barista-group-${gi}">
-        <div class="barista-group-label"><span>${units.length}× ${escapeHtml(x.name)}${details?`<small>${escapeHtml(details)}</small>`:''}</span><span>${topPrice}</span></div>
-        <div class="barista-group-body">
-          <div class="barista-unit siomai-unit">
-            <div class="barista-unit-top">
-              <button class="unit-done-btn ${allServed?'done':''}" onclick="event.stopPropagation();toggleSiomaiGroupServed('${order.no}',${gi})" aria-label="Mark Siomai served">${allServed?'✓ Served':'☐ Done?'}</button>
-              <div class="barista-unit-name"><b>${units.length}× ${escapeHtml(x.name)}</b><small>${escapeHtml(details)}</small></div>
-              <div class="barista-unit-price">${topPrice}</div>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    }
-
-    const unitRows=units.map(u=>{
-      const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u),servedClass=u.served?'done':'',expanded=expandedBaristaUnitUids.has(u.uid);
+    const unitRows=units.map((u)=>{
+      const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u);
       const discountUI=u.food
         ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`
         : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',20)">20%</button><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`;
       const discountPrice=!u.food&&pct?`<div class="discount-price">Original ${peso(u.originalPrice)} · ${pct}% off · <b>${peso(net)}</b></div>`:'';
-      return `<div class="barista-unit ${expanded?'expanded':''}" onclick="toggleBaristaUnitDetails('${u.uid}')">
-        <div class="barista-unit-top">
-          <button class="unit-done-btn ${servedClass}" onclick="event.stopPropagation();toggleUnitServed('${u.uid}')" aria-label="Mark item served">${u.served?'✓ Served':'☐ Done?'}</button>
-          <div class="barista-unit-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small></div>
-          <div class="barista-unit-price">${peso(net)}</div>
-        </div>
-        ${expanded?`<div class="barista-unit-details">${discountUI}${discountPrice}</div>`:''}
+      return `<div class="barista-unit-details-row">
+        <div class="barista-unit-details-name"><b>${isSiomai?`${units.length}× `:'1× '}${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small></div>
+        <div class="barista-unit-details-price">${peso(net)}</div>
+        <div class="barista-unit-details-controls">${discountUI}${discountPrice}</div>
       </div>`;
     }).join('');
-    return `<div class="barista-group open" id="barista-group-${gi}"><div class="barista-group-label"><span>${units.length}× ${escapeHtml(x.name)}${details?`<small>${escapeHtml(details)}</small>`:''}</span><span>${peso(lineTotal)}</span></div><div class="barista-group-body">${unitRows}</div></div>`;
+
+    return `<div class="barista-group ${expanded?'open':''}" id="barista-group-${gi}">
+      <div class="barista-group-label" onclick="toggleBaristaGroup('${order.no}',${gi})">
+        <button class="group-done-btn ${allServed?'done':''}" onclick="event.stopPropagation();toggleItemGroupServed('${order.no}',${gi})" aria-label="Mark ${escapeHtml(x.name)} served">${allServed?'✓ Served':'☐ Done?'}</button>
+        <span class="barista-group-label-main"><b>${units.length}× ${escapeHtml(x.name)}</b>${details?`<small>${escapeHtml(details)}</small>`:''}</span>
+        <span class="barista-group-label-price">${topPrice}<span class="group-chevron">${expanded?'▴':'▾'}</span></span>
+      </div>
+      ${expanded?`<div class="barista-group-body">${unitRows}</div>`:''}
+    </div>`;
   }).join('');
 
   let statusNote='';
@@ -990,6 +998,7 @@ function renderBaristaOrders(){
 function closeBaristaOrderDetail(){
   baristaDetailOpenNo="";
   expandedBaristaUnitUids.clear();
+  expandedBaristaGroupKeys.clear();
   selectedBaristaPayment="";
   cashReceived=0;
   noteEditorOpenNo="";
@@ -1233,6 +1242,7 @@ let selectedBaristaPayment="";
 let cashReceived=0;
 let baristaDetailOpenNo="";
 const expandedBaristaUnitUids=new Set();
+const expandedBaristaGroupKeys=new Set();
 function normalizeOpenOrder(o){
   if(!o)return;
   if(o.note==null)o.note=String(o.customerName||'').trim();
