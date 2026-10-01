@@ -156,15 +156,15 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;margin-top:4px}
 .barista-order-thumb{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:11px;box-shadow:0 2px 8px rgba(60,40,25,.06);cursor:pointer;text-align:left;width:100%;color:inherit}
 .barista-order-thumb:active{transform:scale(.99)}
-.barista-order-thumb.take-out{border-color:#e9a04a;background:#fff8ee}
-.barista-order-thumb.take-out .order-number-badge{background:#e58a22;border-color:#c76f0c}
-.barista-order-thumb.mixed{border-color:#9b7b58;background:linear-gradient(90deg,#f2fbf3 0 50%,#fff4e2 50% 100%)}
-.barista-order-thumb.mixed .order-number-badge{background:linear-gradient(90deg,#2f6f3a 0 50%,#e58a22 50% 100%);border-color:#6f6b4c}
-.barista-selected-order-toggle.mixed{border-color:#9b7b58;background:linear-gradient(90deg,#e6f6e8 0 50%,#fff4e2 50% 100%);color:#3f583f}
-.barista-order-card.mixed{border-color:#9b7b58;background:linear-gradient(90deg,#fbfffb 0 50%,#fffdfa 50% 100%)}
+.barista-order-thumb.take-out{border-color:#b85f12;background:#f6d8b8;color:#5a3210}
+.barista-order-thumb.take-out .order-number-badge{background:#b85f12;border-color:#8f480b;color:#fff}
+.barista-order-thumb.mixed{border-color:#6c5f43;background:linear-gradient(90deg,#cfe8d2 0 50%,#f1c996 50% 100%);color:#3d3124}
+.barista-order-thumb.mixed .order-number-badge{background:linear-gradient(90deg,#1f6f3a 0 50%,#b85f12 50% 100%);border-color:#5f5a45;color:#fff}
+.barista-selected-order-toggle.mixed{border-color:#6c5f43;background:linear-gradient(90deg,#cfe8d2 0 50%,#f1c996 50% 100%);color:#3d3124}
+.barista-order-card.mixed{border-color:#6c5f43;background:linear-gradient(90deg,#e6f2e7 0 50%,#f8ead7 50% 100%)}
 
-.barista-selected-order-toggle.take-out{border-color:#e9a04a;background:#fff4e2;color:#9a5c12;box-shadow:0 3px 10px rgba(229,138,34,.12)}
-.barista-order-card.dine-in{border-color:#2f8f4e;background:#f7fff7}.barista-order-card.take-out{border-color:#e9a04a;background:#fffdfa}
+.barista-selected-order-toggle.take-out{border-color:#b85f12;background:#f1c996;color:#6b390d;box-shadow:0 3px 10px rgba(184,95,18,.16)}
+.barista-order-card.dine-in{border-color:#1f6f3a;background:#dbeedc}.barista-order-card.take-out{border-color:#b85f12;background:#f6dfc3}
 .order-service-toggle{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed #eadfd4}
 .order-service-toggle span{font-size:12px;font-weight:900;color:#6e6258}
 .order-service-btn{border:1px solid #d9c7b5;background:#fff;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:900;color:var(--brown)}
@@ -229,6 +229,56 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-unit.expanded{background:#fcfaf7;border-radius:11px;padding:10px 8px!important}
 .siomai-unit{cursor:default!important}
 @media(max-width:599px){.barista-unit-top{grid-template-columns:auto minmax(0,1fr) auto}.barista-unit-details{padding-left:0}.unit-done-btn{min-width:72px}}
+
+/* v68: unmistakable service-type order colors */
+.barista-order-thumb.dine-in,
+.barista-order-thumb.dine-in.active{
+  background:#dff4e3 !important;
+  border:3px solid #2f8f4e !important;
+  color:#205c2c !important;
+}
+.barista-order-thumb.take-out,
+.barista-order-thumb.take-out.active{
+  background:#ffe5bf !important;
+  border:3px solid #e58a22 !important;
+  color:#8a5310 !important;
+}
+.barista-order-thumb.mixed,
+.barista-order-thumb.mixed.active{
+  background:linear-gradient(90deg,#dff4e3 0 50%,#ffe5bf 50% 100%) !important;
+  border:3px solid #9b7b58 !important;
+}
+.barista-order-thumb.dine-in .barista-order-thumb-head b,
+.barista-order-thumb.dine-in .barista-order-thumb-total{color:#205c2c !important}
+.barista-order-thumb.take-out .barista-order-thumb-head b,
+.barista-order-thumb.take-out .barista-order-thumb-total{color:#8a5310 !important}
+.barista-selected-order-toggle.dine-in{
+  background:#dff4e3 !important;
+  border:3px solid #2f8f4e !important;
+  color:#205c2c !important;
+}
+.barista-selected-order-toggle.take-out{
+  background:#ffe5bf !important;
+  border:3px solid #e58a22 !important;
+  color:#8a5310 !important;
+}
+.barista-selected-order-toggle.mixed{
+  background:linear-gradient(90deg,#dff4e3 0 50%,#ffe5bf 50% 100%) !important;
+  border:3px solid #9b7b58 !important;
+}
+.barista-order-card.dine-in{
+  background:#f1fbf3 !important;
+  border:3px solid #2f8f4e !important;
+}
+.barista-order-card.take-out{
+  background:#fff7ea !important;
+  border:3px solid #e58a22 !important;
+}
+.barista-order-card.mixed{
+  background:linear-gradient(90deg,#f1fbf3 0 50%,#fff7ea 50% 100%) !important;
+  border:3px solid #9b7b58 !important;
+}
+
 </style>
 </head>
 <body>
@@ -780,7 +830,9 @@ function getKitchenUnresolvedOrderCount(){return getAllOpenOrders().filter(o=>!o
 function hasKitchenUrgentOrders(){return getKitchenUnresolvedOrderCount()>0}
 function markKitchenDone(no){
   const order=findOpenOrder(no); if(!order)return;
-  order.kitchenNotified=true; setPendingOrderStorage();
+  order.kitchenNotified=true;
+  order.kitchenDone=true;
+  setPendingOrderStorage();
   if(baristaView==='kitchen')renderKitchenAlerts(); else updateKitchenAlertTab();
   showActionToast(`Kitchen informed for Order #${order.no}`);
 }
