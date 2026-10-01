@@ -156,6 +156,16 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;margin-top:4px}
 .barista-order-thumb{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:11px;box-shadow:0 2px 8px rgba(60,40,25,.06);cursor:pointer;text-align:left;width:100%;color:inherit}
 .barista-order-thumb:active{transform:scale(.99)}
+.barista-order-thumb.take-out{border-color:#e9a04a;background:#fff8ee}
+.barista-order-thumb.take-out .order-number-badge{background:#e58a22;border-color:#c76f0c}
+.barista-selected-order-toggle.take-out{border-color:#e9a04a;background:#fff4e2;color:#9a5c12;box-shadow:0 3px 10px rgba(229,138,34,.12)}
+.barista-order-card.take-out{border-color:#e9a04a;background:#fffdfa}
+.order-service-toggle{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed #eadfd4}
+.order-service-toggle span{font-size:12px;font-weight:900;color:#6e6258}
+.order-service-btn{border:1px solid #d9c7b5;background:#fff;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:900;color:var(--brown)}
+.order-service-btn.active.dine{background:#2f6f3a;border-color:#2f6f3a;color:#fff}
+.order-service-btn.active.takeout{background:#e58a22;border-color:#e58a22;color:#fff}
+
 .barista-order-thumb.active{border:2px solid #2f8f4e;background:#f2fbf3}
 .barista-order-thumb-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .barista-order-thumb-head b{color:var(--brown);font-size:15px}.barista-order-thumb-total{color:var(--brown);font-weight:900;white-space:nowrap}
@@ -452,6 +462,7 @@ function showOrderSentMessage(order){
   modal?.classList.add('open');
 }
 function goToServiceStart(){
+  clearAppendTarget();
   closeOrderSentMessage();
   selector.classList.remove('open');
   orderDrawer.classList.remove('open');
@@ -797,9 +808,27 @@ function finalizeOpenOrder(order){
   saveTransactionToHistory(receipt);currentReceipt=receipt;removeOpenOrderFromBuckets(order.no);
   activePendingOrderNo=pendingOrders[0]?.no||servedUnpaidOrders[0]?.no||unservedPaidOrders[0]?.no||'';baristaDetailOpenNo='';setPendingOrderStorage();selectedBaristaPayment='';cashReceived=0;renderBaristaOrders();render();showCompletedReceipt(receipt);
 }
+function clearAppendTarget(){
+  localStorage.removeItem('kbr_append_to_pending_order');
+  localStorage.removeItem('kbr_append_to_pending_order_snapshot');
+}
 function addAdditionalOrder(no){
   const order=findOpenOrder(no);if(!order)return;if(order.paid){alert('This order is already paid and cannot accept additional items.');return;}
-  localStorage.setItem('kbr_append_to_pending_order',String(order.no));customerServiceType=order.serviceType||customerServiceType||'dine-in';sessionStorage.setItem('kbr_current_service',customerServiceType);const start=document.getElementById('serviceStart');if(start)start.style.display='none';closeBaristaPage();closeOrder();render();showActionToast(`Add items to Order #${order.no}`);
+  localStorage.setItem('kbr_append_to_pending_order',String(order.no));
+  localStorage.setItem('kbr_append_to_pending_order_snapshot',JSON.stringify(order));
+  customerServiceType=order.serviceType||customerServiceType||'dine-in';
+  sessionStorage.setItem('kbr_current_service',customerServiceType);
+  const start=document.getElementById('serviceStart');if(start)start.style.display='none';
+  closeBaristaPage();closeOrder();render();
+  showActionToast(`Add items to Order #${order.no}`);
+}
+function setOrderServiceType(no,type){
+  const order=findOpenOrder(no);if(!order)return;
+  if(type!=='dine-in'&&type!=='take-out')return;
+  order.serviceType=type;
+  setPendingOrderStorage();
+  renderBaristaOrders();
+  showActionToast(`Order #${order.no}: ${serviceLabel(type)}`);
 }
 function cancelPendingTransaction(no){
   const order=findOpenOrder(no);if(!order)return;const label=order.note?` #${order.no} · ${order.note}`:` #${order.no}`;if(!confirm(`Cancel transaction${label}?
@@ -931,7 +960,7 @@ function renderBaristaOrders(){
         const line=(Number(x.price)||0)*(Number(x.qty)||0);
         return `<div class="barista-order-thumb-item"><span>${Number(x.qty)||0}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
       }).join('');
-      return `<button class="barista-order-thumb" onclick="selectOpenOrder('${o.no}')">
+      return `<button class="barista-order-thumb ${o.serviceType==='take-out'?'take-out':''}" onclick="selectOpenOrder('${o.no}')">
         <div class="barista-order-thumb-head"><b>Order #${displayNo}</b><span class="barista-order-thumb-total">${peso(total)}</span></div>
         <div class="barista-order-thumb-meta">${serviceLabel(o.serviceType)||'Order'}</div>
         <div class="barista-order-thumb-items">${items}</div>
@@ -965,7 +994,12 @@ function renderBaristaOrders(){
       return `<div class="barista-unit-details-row">
         <div class="barista-unit-details-name"><b>${isSiomai?`${units.length}× `:'1× '}${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small></div>
         <div class="barista-unit-details-price">${peso(net)}</div>
-        <div class="barista-unit-details-controls">${discountUI}${discountPrice}</div>
+        <div class="barista-unit-details-controls">${discountUI}${discountPrice}
+          <div class="order-service-toggle"><span>Order type:</span>
+            <button class="order-service-btn dine ${order.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','dine-in')">Dine In</button>
+            <button class="order-service-btn takeout ${order.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','take-out')">Take Out</button>
+          </div>
+        </div>
       </div>`;
     }).join('');
 
@@ -986,8 +1020,8 @@ function renderBaristaOrders(){
     ? statusNote
     : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">💵 Cash payment</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">📱 GCash payment</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
-  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
-    <div class="barista-order-card">
+  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${order.serviceType==='take-out'?'take-out':''}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
+    <div class="barista-order-card ${order.serviceType==='take-out'?'take-out':''}">
       <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${order.note?` <span class="muted">· ${escapeHtml(order.note)}</span>`:''}<div class="barista-order-meta">${serviceLabel(order.serviceType)?serviceLabel(order.serviceType)+' · ':''}${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
       <div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>
       ${noteEditorOpenNo===String(order.no)?`<div class="note-editor"><textarea id="pendingOrderNoteInput" maxlength="250" placeholder="Add name, less ice, less sugar, special request, etc.">${escapeHtml(order.note||'')}</textarea><div class="note-editor-actions"><button class="secondary" onclick="closePendingNoteEditor()">Close</button><button class="primary" style="background:#2f8f4e;border-color:#2f8f4e" onclick="savePendingOrderNote()">Save note</button></div></div>`:''}
@@ -1293,8 +1327,18 @@ async function makeReceipt(){
   const orderedItems=[...cart].sort((a,b)=>(a.category==='Snackies'?1:0)-(b.category==='Snackies'?1:0));
 
   if(appendNo){
-    const target=findOpenOrder(appendNo);
-    clearAppendTarget();
+    let target=findOpenOrder(appendNo);
+    if(!target){
+      try{
+        const snap=JSON.parse(localStorage.getItem('kbr_append_to_pending_order_snapshot')||'null');
+        if(snap && String(snap.no)===String(appendNo)){
+          normalizeOpenOrder(snap);ensurePendingUnits(snap);ensureUnitServedFlags(snap);
+          target=snap;
+          removeOpenOrderFromBuckets(target.no);
+          pendingOrders.unshift(target);
+        }
+      }catch(err){ target=null; }
+    }
     if(target){
       if(target.paid){alert('This order is already paid and cannot accept additional items.');clearAppendTarget();return;}
       appendItemsToOrder(target,orderedItems);
@@ -1309,9 +1353,11 @@ async function makeReceipt(){
       sessionStorage.setItem('kbr_current_service',customerServiceType);
       currentReceipt={no:target.no,date:target.date,time:target.time,serviceType:target.serviceType||customerServiceType,note:target.note||'',total:target.items.reduce((sum,x)=>sum+(Number(x.qty)||0)*(Number(x.price)||0),0),items:JSON.parse(JSON.stringify(target.items)),payment:''};
       cart=[];persist();render();renderOrder();closeOrder();
+      clearAppendTarget();
       showActionToast(`Additional items added to Order #${target.no}`);
       return;
     }
+    clearAppendTarget();
   }
 
   const no=orderNumber();
