@@ -158,6 +158,11 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-order-thumb:active{transform:scale(.99)}
 .barista-order-thumb.take-out{border-color:#e9a04a;background:#fff8ee}
 .barista-order-thumb.take-out .order-number-badge{background:#e58a22;border-color:#c76f0c}
+.barista-order-thumb.mixed{border-color:#9b7b58;background:linear-gradient(90deg,#f2fbf3 0 50%,#fff4e2 50% 100%)}
+.barista-order-thumb.mixed .order-number-badge{background:linear-gradient(90deg,#2f6f3a 0 50%,#e58a22 50% 100%);border-color:#6f6b4c}
+.barista-selected-order-toggle.mixed{border-color:#9b7b58;background:linear-gradient(90deg,#e6f6e8 0 50%,#fff4e2 50% 100%);color:#3f583f}
+.barista-order-card.mixed{border-color:#9b7b58;background:linear-gradient(90deg,#fbfffb 0 50%,#fffdfa 50% 100%)}
+
 .barista-selected-order-toggle.take-out{border-color:#e9a04a;background:#fff4e2;color:#9a5c12;box-shadow:0 3px 10px rgba(229,138,34,.12)}
 .barista-order-card.take-out{border-color:#e9a04a;background:#fffdfa}
 .order-service-toggle{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed #eadfd4}
@@ -387,6 +392,28 @@ function specialItems(name){
   return orderBestSellersFirst(PRODUCTS.filter(p=>p.category===name));
 }
 function isBestSeller(p){return BEST_SELLER_KEYS.has(`${p.category}||${p.name}`)}
+function getOrderServiceModes(order){
+  const modes=new Set();
+  if(!order)return modes;
+  if(Array.isArray(order.units) && order.units.length){
+    order.units.filter(u=>!u.cancelled).forEach(u=>{const t=u.serviceType||order.serviceType;if(t) modes.add(t);});
+  }
+  if(!modes.size && Array.isArray(order.items)) order.items.forEach(x=>{const t=x.serviceType||order.serviceType;if(t) modes.add(t);});
+  if(!modes.size && order.serviceType) modes.add(order.serviceType);
+  return modes;
+}
+function orderServiceClass(order){
+  const modes=getOrderServiceModes(order);
+  if(modes.has('dine-in') && modes.has('take-out')) return 'mixed';
+  if(modes.has('take-out')) return 'take-out';
+  return 'dine-in';
+}
+function orderServiceLabel(order){
+  const modes=getOrderServiceModes(order);
+  if(modes.has('dine-in') && modes.has('take-out')) return 'Dine In + Take Out';
+  if(modes.has('take-out')) return 'Take Out';
+  return 'Dine In';
+}
 function serviceLabel(type){return type==='take-out'?'Take Out':type==='dine-in'?'Dine In':''}
 function startCustomerOrder(type){
   customerServiceType=type;
@@ -822,14 +849,27 @@ function addAdditionalOrder(no){
   closeBaristaPage();closeOrder();render();
   showActionToast(`Add items to Order #${order.no}`);
 }
-function setOrderServiceType(no,type){
+function setOrderServiceType(no,type,uid){
   const order=findOpenOrder(no);if(!order)return;
   if(type!=='dine-in'&&type!=='take-out')return;
-  order.serviceType=type;
+  ensurePendingUnits(order);
+  if(uid){
+    const u=order.units.find(x=>x.uid===uid&&!x.cancelled);
+    if(u) u.serviceType=type;
+    const source=order.items?.[u?.sourceIndex];
+    if(source) source.serviceType=type;
+    // When a source line represents multiple units, preserve any mixed service types at unit level.
+  }else{
+    order.units.forEach(u=>{if(!u.cancelled)u.serviceType=type;});
+    (order.items||[]).forEach(x=>x.serviceType=type);
+  }
+  const modes=getOrderServiceModes(order);
+  order.serviceType = modes.size===1 ? [...modes][0] : 'mixed';
   setPendingOrderStorage();
   renderBaristaOrders();
-  showActionToast(`Order #${order.no}: ${serviceLabel(type)}`);
+  showActionToast(`Order #${order.no}: ${orderServiceLabel(order)}`);
 }
+
 function cancelPendingTransaction(no){
   const order=findOpenOrder(no);if(!order)return;const label=order.note?` #${order.no} · ${order.note}`:` #${order.no}`;if(!confirm(`Cancel transaction${label}?
 This order will not be added to sales history.`))return;removeOpenOrderFromBuckets(order.no);if(String(activePendingOrderNo)===String(order.no))activePendingOrderNo=pendingOrders[0]?.no||servedUnpaidOrders[0]?.no||unservedPaidOrders[0]?.no||'';if(String(localStorage.getItem('kbr_append_to_pending_order')||'')===String(order.no))clearAppendTarget();setPendingOrderStorage();selectedBaristaPayment='';cashReceived=0;renderBaristaOrders();showActionToast(`Order #${order.no} cancelled`);
@@ -839,7 +879,7 @@ function ensureAllPendingUnits(){
 }
 function ensurePendingUnits(order){
   if(!order)return;
-  if(order.units&&Array.isArray(order.units))return;
+  if(order.units&&Array.isArray(order.units)){order.units.forEach((u,i)=>{if(!u.serviceType){const src=order.items?.[u.sourceIndex];u.serviceType=src?.serviceType||order.serviceType||'dine-in';}});return;}
   order.units=[];
   (order.items||[]).forEach((x,itemIndex)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
@@ -851,10 +891,11 @@ function ensurePendingUnits(order){
 function appendItemsToOrder(order,newItems){
   ensurePendingUnits(order);ensureUnitServedFlags(order);
   const sourceBase=order.items.length;
-  order.items=(order.items||[]).concat(JSON.parse(JSON.stringify(newItems||[])));
-  (newItems||[]).forEach((x,offset)=>{
+  const stampedItems=JSON.parse(JSON.stringify(newItems||[])).map(x=>({...x,serviceType:x.serviceType||customerServiceType||order.serviceType||'dine-in'}));
+  order.items=(order.items||[]).concat(stampedItems);
+  (stampedItems||[]).forEach((x,offset)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
-      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
+      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,name:x.name,category:x.category,type:x.type,serviceType:x.serviceType||customerServiceType||order.serviceType||'dine-in',size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
     }
   });
 }
@@ -960,9 +1001,10 @@ function renderBaristaOrders(){
         const line=(Number(x.price)||0)*(Number(x.qty)||0);
         return `<div class="barista-order-thumb-item"><span>${Number(x.qty)||0}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
       }).join('');
-      return `<button class="barista-order-thumb ${o.serviceType==='take-out'?'take-out':''}" onclick="selectOpenOrder('${o.no}')">
+      const svcClass=orderServiceClass(o);
+      return `<button class="barista-order-thumb ${svcClass}" onclick="selectOpenOrder('${o.no}')">
         <div class="barista-order-thumb-head"><b>Order #${displayNo}</b><span class="barista-order-thumb-total">${peso(total)}</span></div>
-        <div class="barista-order-thumb-meta">${serviceLabel(o.serviceType)||'Order'}</div>
+        <div class="barista-order-thumb-meta">${orderServiceLabel(o)||'Order'}</div>
         <div class="barista-order-thumb-items">${items}</div>
         ${o.note?`<div class="barista-order-thumb-meta">📝 ${escapeHtml(o.note)}</div>`:''}
       </button>`;
@@ -996,8 +1038,8 @@ function renderBaristaOrders(){
         <div class="barista-unit-details-price">${peso(net)}</div>
         <div class="barista-unit-details-controls">${discountUI}${discountPrice}
           <div class="order-service-toggle"><span>Order type:</span>
-            <button class="order-service-btn dine ${order.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','dine-in')">Dine In</button>
-            <button class="order-service-btn takeout ${order.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','take-out')">Take Out</button>
+            <button class="order-service-btn dine ${order.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','dine-in','${u.uid}')">Dine In</button>
+            <button class="order-service-btn takeout ${order.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','take-out','${u.uid}')">Take Out</button>
           </div>
         </div>
       </div>`;
@@ -1020,9 +1062,10 @@ function renderBaristaOrders(){
     ? statusNote
     : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">💵 Cash payment</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">📱 GCash payment</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
-  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${order.serviceType==='take-out'?'take-out':''}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
-    <div class="barista-order-card ${order.serviceType==='take-out'?'take-out':''}">
-      <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${order.note?` <span class="muted">· ${escapeHtml(order.note)}</span>`:''}<div class="barista-order-meta">${serviceLabel(order.serviceType)?serviceLabel(order.serviceType)+' · ':''}${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
+  const orderSvcClass=orderServiceClass(order);
+  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${orderSvcClass}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
+    <div class="barista-order-card ${orderSvcClass}">
+      <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${order.note?` <span class="muted">· ${escapeHtml(order.note)}</span>`:''}<div class="barista-order-meta">${orderServiceLabel(order)} · ${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
       <div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>
       ${noteEditorOpenNo===String(order.no)?`<div class="note-editor"><textarea id="pendingOrderNoteInput" maxlength="250" placeholder="Add name, less ice, less sugar, special request, etc.">${escapeHtml(order.note||'')}</textarea><div class="note-editor-actions"><button class="secondary" onclick="closePendingNoteEditor()">Close</button><button class="primary" style="background:#2f8f4e;border-color:#2f8f4e" onclick="savePendingOrderNote()">Save note</button></div></div>`:''}
       <div class="report-note">Original total: ${peso(originalTotal)}. Discounts can be applied only to drinks, one cup at a time.</div>
@@ -1280,6 +1323,7 @@ const expandedBaristaUnitUids=new Set();
 const expandedBaristaGroupKeys=new Set();
 function normalizeOpenOrder(o){
   if(!o)return;
+  (o.items||[]).forEach(x=>{if(!x.serviceType)x.serviceType=o.serviceType||'dine-in';});
   if(o.note==null)o.note=String(o.customerName||'').trim();
   if(!Array.isArray(o.units))o.units=null;
   if(typeof o.paid!=='boolean')o.paid=false;
@@ -1361,13 +1405,15 @@ async function makeReceipt(){
   }
 
   const no=orderNumber();
-  const newOrder={no,date,time,serviceType:customerServiceType||'dine-in',items:JSON.parse(JSON.stringify(orderedItems)),units:null,note:'',baristaDone:false,paid:false,paymentMethod:'',cashReceived:0,change:0};
+  const orderMode=customerServiceType||'dine-in';
+  const newItems=JSON.parse(JSON.stringify(orderedItems)).map(x=>({...x,serviceType:orderMode}));
+  const newOrder={no,date,time,serviceType:orderMode,items:newItems,units:null,note:'',baristaDone:false,paid:false,paymentMethod:'',cashReceived:0,change:0};
   pendingOrders.unshift(newOrder);
   activePendingOrderNo=no;
   selectedBaristaPayment='';
   cashReceived=0;
   setPendingOrderStorage();
-  currentReceipt={no,date,time,serviceType:newOrder.serviceType,note:newOrder.note||'',total:orderedItems.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0),items:JSON.parse(JSON.stringify(orderedItems)),payment:''};
+  currentReceipt={no,date,time,serviceType:newOrder.serviceType,note:newOrder.note||'',total:newItems.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0),items:JSON.parse(JSON.stringify(newItems)),payment:''};
   cart=[];persist();render();renderOrder();closeOrder();
   // Keep the customer on the menu while the order confirmation is shown.
   // The Close button will return to the Dine In / Take Out screen.
