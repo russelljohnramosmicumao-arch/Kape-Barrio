@@ -149,7 +149,19 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .history-thumb{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:11px;box-shadow:0 2px 8px rgba(60,40,25,.06)}
 .history-thumb-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.history-thumb-head b{color:var(--brown);font-size:15px}.history-thumb-total{color:var(--brown);font-weight:900;white-space:nowrap}
 .history-thumb-meta{color:#7a6b60;font-size:11px;margin-top:3px}.history-thumb-items{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:11px;color:#4e4137}.history-thumb-item{display:flex;justify-content:space-between;gap:6px}.history-thumb-item span:last-child{font-weight:800;color:var(--brown);white-space:nowrap}
-.history-total-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.history-total-card{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px}.history-total-card small{display:block;color:#7a6b60;font-weight:800;font-size:11px}.history-total-card b{display:block;margin-top:4px;color:var(--brown);font-size:22px}
+.history-total-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+/* v71: apply Dine In / Take Out / Mixed colors consistently to Kitchen and Transaction History */
+.kitchen-thumb.dine-in{border-color:#2f6f3a!important;background:#e1f0e3!important}
+.kitchen-thumb.take-out{border-color:#b85f12!important;background:#f6dfc3!important}
+.kitchen-thumb.mixed{border-color:#7b694d!important;background:linear-gradient(90deg,#e1f0e3 0 50%,#f6dfc3 50% 100%)!important}
+.kitchen-thumb.dine-in .order-number-badge,.history-thumb.dine-in .order-number-badge{background:#1f5b2f!important;border-color:#123f20!important;color:#fff!important}
+.kitchen-thumb.take-out .order-number-badge,.history-thumb.take-out .order-number-badge{background:#8f480b!important;border-color:#6b3205!important;color:#fff!important}
+.kitchen-thumb.mixed .order-number-badge,.history-thumb.mixed .order-number-badge{background:linear-gradient(90deg,#1f5b2f 0 50%,#8f480b 50% 100%)!important;border-color:#4a4030!important;color:#fff!important}
+.history-thumb.dine-in{border-color:#2f6f3a!important;background:#eaf5eb!important}
+.history-thumb.take-out{border-color:#b85f12!important;background:#fbecd9!important}
+.history-thumb.mixed{border-color:#7b694d!important;background:linear-gradient(90deg,#eaf5eb 0 50%,#fbecd9 50% 100%)!important}
+.history-thumb.dine-in .history-thumb-meta,.history-thumb.take-out .history-thumb-meta,.history-thumb.mixed .history-thumb-meta{font-weight:800}
+.history-total-card{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px}.history-total-card small{display:block;color:#7a6b60;font-weight:800;font-size:11px}.history-total-card b{display:block;margin-top:4px;color:var(--brown);font-size:22px}
 @media(max-width:599px){.pending-orders-list{grid-template-columns:repeat(2,minmax(0,1fr))}.history-thumb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.history-total-strip{grid-template-columns:1fr 1fr}.history-total-card b{font-size:18px}}
 
 /* v58: Barista order thumbnails/detail view */
@@ -865,7 +877,7 @@ function renderKitchenAlerts(){
       const details=[x.size,x.flavor].filter(Boolean).join(' · ');
       return `<div class="barista-order-thumb-item"><span>${Number(x.qty)||0}× ${escapeHtml(x.name)}</span><span>${peso((Number(x.qty)||0)*(Number(x.price)||0))}</span></div>${details?`<div class="barista-order-thumb-meta">${escapeHtml(details)}</div>`:''}`;
     }).join('');
-    return `<div class="kitchen-thumb ${done?'kitchen-done':''}">
+    return `<div class="kitchen-thumb ${orderServiceClass(o)} ${done?'kitchen-done':''}">
       <div class="barista-order-thumb-head"><span class="order-number-badge">Order #${String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><span class="barista-order-thumb-total">${peso(total)}</span></div>
       <div class="barista-order-thumb-meta">${service}</div>
       <div class="barista-order-thumb-items">${items}</div>
@@ -1305,7 +1317,7 @@ function renderHistory(){
       const line=(Number(x.price)||0)*(Number(x.qty)||0);
       return `<div class="history-thumb-item"><span>${x.qty}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
     }).join('');
-    return `<div class="history-thumb">
+    return `<div class="history-thumb ${orderServiceClass(r)}">
       <div class="history-thumb-head"><span class="order-number-badge">Order #${String(r.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><span class="history-thumb-total">${peso(r.total)}</span></div>
       <div class="history-thumb-meta">${serviceLabel(r.serviceType)||''} · ${(r.payment||'').toUpperCase()}</div>
       <div class="history-thumb-items">${items}</div>
