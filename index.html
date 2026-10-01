@@ -160,7 +160,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-order-thumb-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .barista-order-thumb-head b{color:var(--brown);font-size:15px}.barista-order-thumb-total{color:var(--brown);font-weight:900;white-space:nowrap}
 .barista-order-thumb-meta{color:#7a6b60;font-size:11px;margin-top:3px}.barista-order-thumb-items{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:11px;color:#4e4137}.barista-order-thumb-item{display:flex;justify-content:space-between;gap:6px}.barista-order-thumb-item span:last-child{font-weight:800;color:var(--brown);white-space:nowrap}
-.barista-detail-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.barista-back-orders{min-height:42px;padding:9px 12px}
+.barista-detail-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.barista-back-orders{min-height:42px;padding:9px 12px}.barista-selected-order-toggle{width:100%;border:2px solid #2f8f4e;background:#e6f6e8;border-radius:14px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;color:#205c2c;cursor:pointer;text-align:left;font-weight:900;box-shadow:0 3px 10px rgba(47,143,78,.10)}.barista-selected-order-toggle small{display:block;color:#3f6c48;font-weight:700;margin-top:3px}
 .kitchen-thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
 .kitchen-thumb{background:#fff;border:2px solid #efc1bd;border-radius:14px;padding:11px;box-shadow:0 2px 8px rgba(60,40,25,.06)}
 .kitchen-thumb.kitchen-done{border-color:#9dd3a5;background:#f7fff7}
@@ -183,6 +183,20 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-group-body{display:block!important;padding:8px 10px}
 .barista-group-label{background:#fbf8f4;padding:10px 13px;border-bottom:1px solid #eee3d7;font-weight:900;color:#4e4137;display:flex;justify-content:space-between;gap:10px;align-items:center}
 
+
+/* v61 item-level controls */
+.barista-unit{display:block!important;padding:10px 4px!important;border-bottom:1px solid #f0e7de}
+.barista-unit-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
+.barista-unit-name{min-width:0;text-align:left}
+.barista-unit-name b{display:block;color:var(--brown);font-size:15px}
+.barista-unit-name small{display:block;color:#7a6b60;margin-top:2px}
+.barista-unit-price{font-weight:900;color:var(--brown);white-space:nowrap}
+.unit-done-btn{justify-self:start}
+.barista-unit-details{display:flex;flex-direction:column;gap:7px;padding:9px 0 2px 76px}
+.barista-unit:not(.expanded){cursor:pointer}
+.barista-unit.expanded{background:#fcfaf7;border-radius:11px;padding:10px 8px!important}
+.siomai-unit{cursor:default!important}
+@media(max-width:599px){.barista-unit-top{grid-template-columns:auto minmax(0,1fr) auto}.barista-unit-details{padding-left:0}.unit-done-btn{min-width:72px}}
 </style>
 </head>
 <body>
@@ -760,7 +774,7 @@ function updatePendingOrdersTab(){
   if(uTab)uTab.textContent=`Unserved - Paid${unservedPaidOrders.length?` (${unservedPaidOrders.length})`:''}`;
   updateKitchenAlertTab();
 }
-function selectOpenOrder(no){const found=findOpenOrder(no);if(!found)return;activePendingOrderNo=found.no;baristaDetailOpenNo=found.no;selectedBaristaPayment='';cashReceived=0;setPendingOrderStorage();renderBaristaOrders()}
+function selectOpenOrder(no){const found=findOpenOrder(no);if(!found)return;if(String(baristaDetailOpenNo)===String(found.no)){closeBaristaOrderDetail();return;}activePendingOrderNo=found.no;baristaDetailOpenNo=found.no;selectedBaristaPayment='';cashReceived=0;setPendingOrderStorage();renderBaristaOrders()}
 function selectPendingOrder(no){selectOpenOrder(no)}
 function findOpenOrderByUnit(uid){return getAllOpenOrders().find(o=>Array.isArray(o.units)&&o.units.some(u=>u.uid===uid))||null}
 function syncOpenOrderLifecycle(order){
@@ -863,6 +877,22 @@ function toggleBaristaGroup(i){
   const el=document.getElementById('barista-group-'+i);
   if(el)el.classList.toggle('open');
 }
+function toggleBaristaUnitDetails(uid){
+  if(expandedBaristaUnitUids.has(uid)) expandedBaristaUnitUids.delete(uid);
+  else expandedBaristaUnitUids.add(uid);
+  renderBaristaOrders();
+}
+function toggleSiomaiGroupServed(orderNo, sourceIndex){
+  const order=findOpenOrder(orderNo);
+  if(!order)return;
+  ensurePendingUnits(order);
+  ensureUnitServedFlags(order);
+  const units=order.units.filter(u=>u.sourceIndex===sourceIndex&&!u.cancelled);
+  if(!units.length)return;
+  const makeServed=!units.every(u=>u.served);
+  units.forEach(u=>{u.served=makeServed});
+  syncOpenOrderLifecycle(order);
+}
 function renderBaristaOrders(){
   ensureAllOpenUnits();
   updatePendingOrdersTab();
@@ -903,16 +933,38 @@ function renderBaristaOrders(){
     if(!units.length)return '';
     const details=[x.type&&x.type!=='standard'?x.type:'',x.size,x.flavor,x.sweetness].filter(Boolean).join(' · ');
     const lineTotal=units.reduce((s,u)=>s+orderUnitTotal(u),0);
+    const isSiomai=String(x.name||'').trim().toLowerCase()==='siomai';
+
+    if(isSiomai){
+      const allServed=units.every(u=>u.served);
+      const topPrice=peso(lineTotal);
+      return `<div class="barista-group open" id="barista-group-${gi}">
+        <div class="barista-group-label"><span>${units.length}× ${escapeHtml(x.name)}${details?`<small>${escapeHtml(details)}</small>`:''}</span><span>${topPrice}</span></div>
+        <div class="barista-group-body">
+          <div class="barista-unit siomai-unit">
+            <div class="barista-unit-top">
+              <button class="unit-done-btn ${allServed?'done':''}" onclick="event.stopPropagation();toggleSiomaiGroupServed('${order.no}',${gi})" aria-label="Mark Siomai served">${allServed?'✓ Served':'☐ Done?'}</button>
+              <div class="barista-unit-name"><b>${units.length}× ${escapeHtml(x.name)}</b><small>${escapeHtml(details)}</small></div>
+              <div class="barista-unit-price">${topPrice}</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
     const unitRows=units.map(u=>{
-      const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u),servedClass=u.served?'done':'';
-      const priceText=!u.food&&pct?`₱${Number(u.originalPrice).toLocaleString('en-PH',{minimumFractionDigits:0,maximumFractionDigits:2})} − ${pct}% = <b>${peso(net)}</b>`:peso(net);
+      const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u),servedClass=u.served?'done':'',expanded=expandedBaristaUnitUids.has(u.uid);
       const discountUI=u.food
-        ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`
-        : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="baristaDiscount('${u.uid}',20)">20%</button><button class="discount-btn remove" onclick="removeBaristaUnit('${u.uid}')">Remove</button></div>`;
-      return `<div class="barista-unit">
-        <button class="unit-done-btn ${servedClass}" onclick="toggleUnitServed('${u.uid}')" aria-label="Mark item served">${u.served?'✓ Served':'☐ Done?'}</button>
-        <div class="barista-unit-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small></div>
-        <div class="barista-unit-price">${peso(net)}</div>
+        ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`
+        : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',20)">20%</button><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`;
+      const discountPrice=!u.food&&pct?`<div class="discount-price">Original ${peso(u.originalPrice)} · ${pct}% off · <b>${peso(net)}</b></div>`:'';
+      return `<div class="barista-unit ${expanded?'expanded':''}" onclick="toggleBaristaUnitDetails('${u.uid}')">
+        <div class="barista-unit-top">
+          <button class="unit-done-btn ${servedClass}" onclick="event.stopPropagation();toggleUnitServed('${u.uid}')" aria-label="Mark item served">${u.served?'✓ Served':'☐ Done?'}</button>
+          <div class="barista-unit-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small></div>
+          <div class="barista-unit-price">${peso(net)}</div>
+        </div>
+        ${expanded?`<div class="barista-unit-details">${discountUI}${discountPrice}</div>`:''}
       </div>`;
     }).join('');
     return `<div class="barista-group open" id="barista-group-${gi}"><div class="barista-group-label"><span>${units.length}× ${escapeHtml(x.name)}${details?`<small>${escapeHtml(details)}</small>`:''}</span><span>${peso(lineTotal)}</span></div><div class="barista-group-body">${unitRows}</div></div>`;
@@ -925,7 +977,7 @@ function renderBaristaOrders(){
     ? statusNote
     : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">💵 Cash payment</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">📱 GCash payment</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
-  baristaOrdersView.innerHTML=`<div class="barista-detail-toolbar"><button class="secondary barista-back-orders" onclick="closeBaristaOrderDetail()">← Back to orders</button><div class="barista-order-thumb-meta" style="margin:0;font-weight:900"><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span> · ${serviceLabel(order.serviceType)||'Order'} · ${peso(total)}</div></div>
+  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
     <div class="barista-order-card">
       <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${order.note?` <span class="muted">· ${escapeHtml(order.note)}</span>`:''}<div class="barista-order-meta">${serviceLabel(order.serviceType)?serviceLabel(order.serviceType)+' · ':''}${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
       <div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>
@@ -937,6 +989,7 @@ function renderBaristaOrders(){
 }
 function closeBaristaOrderDetail(){
   baristaDetailOpenNo="";
+  expandedBaristaUnitUids.clear();
   selectedBaristaPayment="";
   cashReceived=0;
   noteEditorOpenNo="";
@@ -1179,6 +1232,7 @@ let baristaView="orders";
 let selectedBaristaPayment="";
 let cashReceived=0;
 let baristaDetailOpenNo="";
+const expandedBaristaUnitUids=new Set();
 function normalizeOpenOrder(o){
   if(!o)return;
   if(o.note==null)o.note=String(o.customerName||'').trim();
