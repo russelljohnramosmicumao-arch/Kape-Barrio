@@ -1233,6 +1233,7 @@ function cashKeypadPress(key){
   updateCashReceived(text);
 }
 function cashQuickSet(amount){ updateCashReceived(Number(amount)||0); }
+function cashQuickExact(){ updateCashReceived(pendingOrderTotal()); }
 function cashKeypadBackspace(){
   let text=String(cashReceived||0);
   if(text==='0')text='';
@@ -1262,7 +1263,7 @@ function renderBaristaPaymentPanel(){
       <div class="cash-pane cash-quick-pane">
         <div class="cash-quick-title">Quick cash</div>
         <div class="cash-quick-buttons">
-          <button onclick="cashQuickSet(50)">₱50</button><button onclick="cashQuickSet(100)">₱100</button><button onclick="cashQuickSet(500)">₱500</button><button onclick="cashQuickSet(1000)">₱1,000</button>
+          <button onclick="cashQuickSet(50)">₱50</button><button onclick="cashQuickSet(100)">₱100</button><button onclick="cashQuickSet(150)">₱150</button><button onclick="cashQuickSet(200)">₱200</button><button onclick="cashQuickSet(250)">₱250</button><button onclick="cashQuickSet(300)">₱300</button><button onclick="cashQuickSet(500)">₱500</button><button onclick="cashQuickSet(1000)">₱1,000</button><button onclick="cashQuickExact()">Exact amount</button>
         </div>
       </div>
       <div class="cash-pane cash-keypad-pane">
