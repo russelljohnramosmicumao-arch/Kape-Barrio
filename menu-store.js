@@ -16,7 +16,9 @@ const MenuStore = {
  },
  load(){try{
   const raw=localStorage.getItem(this.key);
-  const items=this.upgrade(this.validate(raw?JSON.parse(raw):DEFAULT_PRODUCTS));
+  const stored=this.validate(raw?JSON.parse(raw):DEFAULT_PRODUCTS);
+  stored.forEach(item=>{if(['Nom Chompoo','Cha Yen'].includes(item.name)&&item.category==='Thai Drinks')item.category='Specials';});
+  const items=this.upgrade(stored);
   const revision='kbr_icecream_prices_20261005';
   if(!localStorage.getItem(revision)){
    DEFAULT_PRODUCTS.filter(p=>p.category==='Ice Cream').forEach(base=>{
@@ -46,7 +48,7 @@ const MenuStore = {
  }catch(e){console.warn('Using original menu:',e);return structuredClone(DEFAULT_PRODUCTS);}},
  upgrade(items){
   items.forEach(p=>{if(p.category==='Soda'&&!p.name.endsWith(' Fruit Soda'))p.name+=' Fruit Soda';});
-  DEFAULT_PRODUCTS.filter(p=>p.category==='Ice Cream').forEach(p=>{if(!items.some(x=>x.category===p.category&&x.name.toLowerCase()===p.name.toLowerCase()))items.push(structuredClone(p));});
+  DEFAULT_PRODUCTS.filter(p=>p.category==='Ice Cream'||(p.category==='Specials'&&['Nom Chompoo','Cha Yen'].includes(p.name))).forEach(p=>{if(!items.some(x=>x.category===p.category&&x.name.toLowerCase()===p.name.toLowerCase()))items.push(structuredClone(p));});
   return items;
  },
  save(items){const valid=this.validate(items);localStorage.setItem(this.key,JSON.stringify(valid));return valid;}

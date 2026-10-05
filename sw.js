@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v77-budget-prices';
+const CACHE='kbr-pos-v79-specials-drinks';
 const ASSETS=[
   './',
   './index.html',
@@ -14,7 +14,9 @@ const ASSETS=[
   './images/regular-cone-thumbnail.png',
   './images/jumbo-cone-thumbnail.png',
   './images/ice-cream-bilog-thumbnail.png',
-  './images/ice-cream-tub-1-3l-thumbnail.png'
+  './images/ice-cream-tub-1-3l-thumbnail.png',
+  './images/nom-chompoo-thumbnail.png',
+  './images/cha-yen-thumbnail.png'
 ];
 
 self.addEventListener('install', event => {
