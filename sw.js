@@ -1,10 +1,20 @@
-const CACHE='kbr-pos-v72';
+const CACHE='kbr-pos-v76-icecream-photos';
 const ASSETS=[
   './',
   './index.html',
   './sw.js',
   './manifest.json',
-  './payment.js'
+  './payment.js',
+  './menu.html',
+  './menu.js',
+  './menu-defaults.js',
+  './menu-store.js',
+  './images/creambar-thumbnail.png',
+  './images/pinipig-thumbnail.png',
+  './images/regular-cone-thumbnail.png',
+  './images/jumbo-cone-thumbnail.png',
+  './images/ice-cream-bilog-thumbnail.png',
+  './images/ice-cream-tub-1-3l-thumbnail.png'
 ];
 
 self.addEventListener('install', event => {
