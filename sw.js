@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v76-icecream-photos';
+const CACHE='kbr-pos-v77-budget-prices';
 const ASSETS=[
   './',
   './index.html',

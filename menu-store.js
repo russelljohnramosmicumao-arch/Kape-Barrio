@@ -35,6 +35,13 @@ const MenuStore = {
    localStorage.setItem(this.key,JSON.stringify(items));
    localStorage.setItem(photoRevision,'1');
   }
+  const budgetRevision='kbr_budget_matcha_caramel_20261005';
+  if(!localStorage.getItem(budgetRevision)){
+   const updates={'Dirty Matcha':[69,79,99],'Caramel Latte':[59,69,89]};
+   items.forEach(item=>{if(Object.hasOwn(updates,item.name))item.prices=updates[item.name].slice();});
+   localStorage.setItem(this.key,JSON.stringify(items));
+   localStorage.setItem(budgetRevision,'1');
+  }
   return items;
  }catch(e){console.warn('Using original menu:',e);return structuredClone(DEFAULT_PRODUCTS);}},
  upgrade(items){
