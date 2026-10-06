@@ -1,7 +1,11 @@
-const CACHE='kbr-pos-v83-history-fix';
+const CACHE='kbr-pos-v84-sales-updates';
 const ASSETS=[
   './',
   './index.html',
+  './app-update.js',
+  './sales.html',
+  './sales.js',
+  './sales-data.js',
   './sw.js',
   './manifest.json',
   './payment.js',
@@ -24,14 +28,17 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE)
       .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key.startsWith('kbr-pos-') && key !== CACHE).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });

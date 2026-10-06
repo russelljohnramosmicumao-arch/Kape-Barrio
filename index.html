@@ -380,7 +380,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
           <button class="secondary history-clear" onclick="clearHistory()">Clear history</button>
         </div>
         <div class="history-tools" style="margin-top:10px">
-          <button class="primary" onclick="showSalesReport()">📊 Sales report</button>
+          <button class="primary" onclick="showSalesReport()">📊 Sales report</button><a class="secondary" href="sales.html">Sales analysis &amp; backups</a>
           <button class="secondary" onclick="exportSalesCSV()">⬇️ Export CSV</button>
         </div>
         <div id="dailyCsvArchive" class="sales-report" style="display:none"></div>
@@ -1657,11 +1657,11 @@ function refreshManagedMenu(){
 }
 window.addEventListener('pageshow',e=>{if(e.persisted)refreshManagedMenu();});
 window.addEventListener('storage',e=>{if(e.key===MenuStore.key)refreshManagedMenu();});
-if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
 runDailyCsvCheck();
 setInterval(()=>runDailyCsvCheck(),60000);
 render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
 <script src="sync-config.js"></script><script src="sync-core.js"></script><script src="sync-ui.js"></script><script src="app-sync.js"></script>
-</body></html>
+<script src="app-update.js"></script></body></html>

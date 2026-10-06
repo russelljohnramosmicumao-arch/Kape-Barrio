@@ -1,0 +1,12 @@
+(()=>{'use strict';if(!('serviceWorker' in navigator))return;
+let registration,reloadRequested=false,checking=false;
+const box=document.createElement('div');box.style.cssText='position:fixed;bottom:12px;left:12px;z-index:9998;background:white;border:1px solid #cdbdab;border-radius:12px;padding:8px;box-shadow:0 2px 8px #0002;max-width:calc(100vw - 24px);font:14px system-ui';
+const button=document.createElement('button'),note=document.createElement('span');button.textContent='Check for updates';button.style.cssText='padding:10px;border-radius:8px;border:1px solid #cdbdab;background:#fff;color:#503827;font:inherit';note.style.marginLeft='8px';box.append(button,note);document.body.append(box);
+function pending(){return localStorage.getItem('kbr_order_write_v1')||localStorage.getItem('kbr_order_draft_v1')||localStorage.getItem('kbr_menu_write_v1');}
+function waiting(){if(registration?.waiting){button.textContent='Update available · Refresh';note.textContent='';}}
+async function check(silent=false){if(checking||!registration)return;checking=true;try{await registration.update();waiting();if(!silent&&!registration.waiting)note.textContent=registration.installing?'Downloading update…':'No new update found.';}catch(e){if(!silent)note.textContent='Connect to the internet to check.';}finally{checking=false;}}
+button.onclick=async()=>{if(!registration)return;if(registration.waiting){if(pending()){note.textContent='Finish syncing your pending changes first.';return;}if(typeof cart!=='undefined'&&cart.length){note.textContent='Send or clear your current cart before updating.';return;}if(document.querySelector('dialog[open],#cloudScreen')){note.textContent='Finish the current edit or sync first.';return;}reloadRequested=true;registration.waiting.postMessage({type:'SKIP_WAITING'});note.textContent='Updating…';}else await check();};
+navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloadRequested){reloadRequested=false;location.reload();}else{note.textContent='App files updated. Reopen this page when ready.';}});
+navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{registration=r;waiting();r.addEventListener('updatefound',()=>{const worker=r.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed')waiting();});});check(true);}).catch(()=>note.textContent='Update checks unavailable.');
+setInterval(()=>{if(!document.hidden)check(true);},60000);window.addEventListener('focus',()=>check(true));window.addEventListener('online',()=>check(true));
+})();
