@@ -1,22 +1,23 @@
-const CACHE='kbr-pos-v80-availability';
+const CACHE='kbr-pos-v81-supabase-sync';
 const ASSETS=[
   './',
   './index.html',
   './sw.js',
   './manifest.json',
   './payment.js',
+  './sync-config.js',
+  './sync-core.js',
+  './sync-ui.js',
+  './app-sync.js',
+  './menu-sync.js',
+  './sync.css',
+  './sync-login.html',
+  './display.html',
+  './display.js',
   './menu.html',
   './menu.js',
   './menu-defaults.js',
-  './menu-store.js',
-  './images/creambar-thumbnail.png',
-  './images/pinipig-thumbnail.png',
-  './images/regular-cone-thumbnail.png',
-  './images/jumbo-cone-thumbnail.png',
-  './images/ice-cream-bilog-thumbnail.png',
-  './images/ice-cream-tub-1-3l-thumbnail.png',
-  './images/nom-chompoo-thumbnail.png',
-  './images/cha-yen-thumbnail.png'
+  './menu-store.js'
 ];
 
 self.addEventListener('install', event => {
@@ -36,7 +37,8 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
+  if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
+  // Authenticated Supabase responses must always bypass the offline cache.
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;

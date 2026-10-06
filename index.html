@@ -309,6 +309,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .unit-adjustments{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap}.addon-controls{display:flex;gap:8px;flex-wrap:wrap}.addon-control{display:flex;align-items:center;gap:6px;background:#f2f7ef;border:1px solid #d2e1ca;border-radius:10px;padding:6px}.addon-control span{font-size:12px;font-weight:700}.addon-control button{min-width:34px}.addon-control button:disabled{opacity:.4;cursor:default}.product-choice:disabled{opacity:.6;cursor:default}
 .unavailable-label{display:inline-block;color:#a32f24;background:#fff0ed;padding:5px 8px;border-radius:7px;font-weight:800;margin-bottom:5px}
 </style>
+<link rel="stylesheet" href="sync.css">
 </head>
 <body>
 <header>
@@ -1662,4 +1663,5 @@ setInterval(()=>runDailyCsvCheck(),60000);
 render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
+<script src="sync-config.js"></script><script src="sync-core.js"></script><script src="sync-ui.js"></script><script src="app-sync.js"></script>
 </body></html>
