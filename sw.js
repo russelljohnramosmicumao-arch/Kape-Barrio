@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v79-specials-drinks';
+const CACHE='kbr-pos-v80-availability';
 const ASSETS=[
   './',
   './index.html',

@@ -307,6 +307,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-order-card.mixed{background:linear-gradient(90deg,#e4f3e6 0 50%,#fff0d9 50% 100%) !important;border-color:#7b6a4d !important}
 
 .unit-adjustments{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap}.addon-controls{display:flex;gap:8px;flex-wrap:wrap}.addon-control{display:flex;align-items:center;gap:6px;background:#f2f7ef;border:1px solid #d2e1ca;border-radius:10px;padding:6px}.addon-control span{font-size:12px;font-weight:700}.addon-control button{min-width:34px}.addon-control button:disabled{opacity:.4;cursor:default}.product-choice:disabled{opacity:.6;cursor:default}
+.unavailable-label{display:inline-block;color:#a32f24;background:#fff0ed;padding:5px 8px;border-radius:7px;font-weight:800;margin-bottom:5px}
 </style>
 </head>
 <body>
@@ -470,7 +471,7 @@ function orderBestSellersFirst(items){
   });
 }
 function specialItems(name){
-  return orderBestSellersFirst(PRODUCTS.filter(p=>p.category===name));
+  return orderBestSellersFirst(PRODUCTS.filter(p=>p.category===name&&p.availability!=='out-of-stock'));
 }
 function isBestSeller(p){return BEST_SELLER_KEYS.has(`${p.category}||${p.name}`)}
 function getOrderServiceModes(order){
@@ -534,7 +535,7 @@ function render(){
   const items=specialItems(category);
   products.innerHTML=items.map(p=>{
     const badge=isBestSeller(p)?'<span class="best-seller-badge">Best Seller</span>':'';
-    return `<div class="card">${badge}<button class="product-choice" data-index="${PRODUCTS.indexOf(p)}" ${p.pricePending?'disabled aria-label="Price not set"':''} style="border:0;background:none;width:100%;padding:0;color:inherit;cursor:pointer">${p.image?`<img class="product-img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">`: '<div class="product-img" style="display:grid;place-items:center;font-size:36px">☕</div>'}<h3>${escapeHtml(p.name)}</h3>${p.pricePending?'<small>Price not set</small>':''}</button></div>`;
+    return `<div class="card">${badge}<button class="product-choice" data-index="${PRODUCTS.indexOf(p)}" ${p.availability==='not-available'?'disabled aria-label="Not Available"':p.pricePending?'disabled aria-label="Price not set"':''} style="border:0;background:none;width:100%;padding:0;color:inherit;cursor:pointer">${p.image?`<img class="product-img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">`: '<div class="product-img" style="display:grid;place-items:center;font-size:36px">☕</div>'}<h3>${escapeHtml(p.name)}</h3>${p.availability==='not-available'?'<small class="unavailable-label">Not Available</small>':p.pricePending?'<small>Price not set</small>':''}</button></div>`;
   }).join("");
   products.querySelectorAll(".product-choice").forEach(btn=>btn.onclick=()=>chooseProduct(PRODUCTS[Number(btn.dataset.index)]));
   updateCartBar();
@@ -622,6 +623,7 @@ products.addEventListener('touchend',e=>{
 },{passive:true});
 
 function chooseProduct(p){
+  if(p.availability==='not-available'||p.availability==='out-of-stock'){showActionToast('Not Available');return;}
   if(p.pricePending){showActionToast('Set this item’s price in Menu Manager first.');return;}
   selected={p,type:p.premium?'premium':'standard',sizeIndex:p.category==='Frappe & Smoothies'&&p.sizes.length>1?1:0,qty:1,sweetness:'Normal',flavor:p.name==='Fries'?'Plain':''};
   selName.textContent=p.name;
@@ -672,6 +674,10 @@ function renderSweetness(){
 }
 function changeQty(d){selected.qty=Math.max(1,selected.qty+d);selQty.textContent=selected.qty}
 function addSelected(){
+  if(!selected?.p)return;
+  const current=MenuStore.load().find(p=>p.name===selected.p.name&&p.category===selected.p.category);
+  if(!current||current.availability==='not-available'||current.availability==='out-of-stock'||current.pricePending){selector.classList.remove('open');refreshManagedMenu();showActionToast('Not Available');return;}
+
   const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
   const prices=selected.type==='premium'?p.premium:p.prices;
   const item={name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor:p.name==='Fries'?selected.flavor:''};
