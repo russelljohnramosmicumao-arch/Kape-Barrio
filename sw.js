@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v82-password-reset';
+const CACHE='kbr-pos-v83-history-fix';
 const ASSETS=[
   './',
   './index.html',
