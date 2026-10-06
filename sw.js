@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v81-supabase-sync';
+const CACHE='kbr-pos-v82-password-reset';
 const ASSETS=[
   './',
   './index.html',
