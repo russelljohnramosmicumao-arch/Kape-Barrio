@@ -1,9 +1,11 @@
-const CACHE='kbr-pos-v84-sales-updates';
+const CACHE='kbr-pos-v85-manager-page';
 const ASSETS=[
   './',
   './index.html',
   './app-update.js',
   './sales.html',
+  './manager.html',
+  './manager.js',
   './sales.js',
   './sales-data.js',
   './sw.js',

@@ -317,7 +317,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div class="brand-main" onclick="goToServiceStart()" role="button" tabindex="0" aria-label="Back to Dine In / Take Out">
       <span class="bean-logo" aria-hidden="true">🫘</span>
       <div><h1>Kape' Bar-Rio</h1><small>Shop & Cafe · POS</small></div>
-      <button class="header-barista" aria-label="Open barista page" onclick="event.stopPropagation();openBaristaPage()">☕<span>Barista</span></button>
+      <a id="managerLink" href="manager.html" hidden style="color:inherit;padding:8px;text-decoration:none">Manager</a><button class="header-barista" aria-label="Open barista page" onclick="event.stopPropagation();openBaristaPage()">☕<span>Barista</span></button>
     </div>
     <div id="headerCategory" class="header-category">Frappe &amp; Smoothies</div>
   </div>
@@ -362,26 +362,26 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
   <div class="panel">
     <div id="baristaAppView">
       <div class="barista-top">
-        <div><h2>Barista Page</h2><div class="muted">Orders, kitchen alerts, discounts, payment and sales history</div></div>
-        <div class="barista-actions"><a class="secondary" href="menu.html" style="display:inline-flex;align-items:center;text-decoration:none">Manage Menu</a><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
+        <div><h2>Barista Page</h2><div class="muted">Orders, kitchen alerts, add-ons, discounts and payment</div></div>
+        <div class="barista-actions"><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
       </div>
       <div class="barista-tabs">
         <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Pending Orders</button>
         <button id="baristaServedUnpaidTab" class="barista-tab" onclick="setBaristaView('served-unpaid')">Served - Unpaid</button>
         <button id="baristaUnservedPaidTab" class="barista-tab" onclick="setBaristaView('unserved-paid')">Unserved - Paid</button>
         <button id="baristaKitchenTab" class="barista-tab kitchen-urgent-tab" onclick="setBaristaView('kitchen')">🍳 Kitchen</button>
-        <button id="baristaHistoryTab" class="barista-tab" onclick="setBaristaView('history')">Transaction History</button>
+        <button id="baristaHistoryTab" style="display:none!important" class="barista-tab" onclick="setBaristaView('history')">Transaction History</button>
       </div>
       <div id="baristaOrdersView"></div>
       <div id="baristaKitchenView" style="display:none"></div>
-      <div id="baristaHistoryView" style="display:none">
+      <div id="baristaHistoryView" style="display:none!important">
         <div class="history-title-row">
           <h3 style="margin:0;color:var(--brown);font-family:Georgia,serif">Sales History</h3>
-          <button class="secondary history-clear" onclick="clearHistory()">Clear history</button>
+          
         </div>
         <div class="history-tools" style="margin-top:10px">
-          <button class="primary" onclick="showSalesReport()">📊 Sales report</button><a class="secondary" href="sales.html">Sales analysis &amp; backups</a>
-          <button class="secondary" onclick="exportSalesCSV()">⬇️ Export CSV</button>
+          
+          
         </div>
         <div id="dailyCsvArchive" class="sales-report" style="display:none"></div>
         <div id="baristaSalesReport" class="sales-report" style="display:none"></div>
@@ -822,6 +822,7 @@ function openBaristaPage(){
   setBaristaView('orders');
 }
 function setBaristaView(view){
+  if(view==='history'){location.href='manager.html';return;}
   baristaView=view;
   baristaDetailOpenNo="";
   selectedBaristaPayment="";

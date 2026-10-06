@@ -56,7 +56,8 @@
  clearHistory=()=>alert('Shared sales history is retained in the database. Export CSV to keep a separate copy.');
  async function start(){if(!cloud.requireLogin())return;ui.screen('Connecting this device…','Loading the shared shop menu and orders.');try{
   ui.rememberBackup();role=await cloud.role();const menuRow=await ui.menuReady(role);ui.applyMenu(menuRow);menuRevision=menuRow.revision;refreshManagedMenu();await loadOrders();ready=true;display();ui.close();cloud.status('Connected · updates every 3 sec');showPending();
-  const actions=document.querySelector('.barista-actions');if(actions){for(const [label,action] of [['iPad Display',()=>location.href='display.html'],['Pre-sync Backup',()=>ui.backup()],['Sign out',()=>cloud.logout()]]){const button=document.createElement('button');button.className='secondary';button.textContent=label;button.onclick=action;actions.append(button);}}
+  const managerLink=document.getElementById('managerLink');if(managerLink)managerLink.hidden=role!=='owner';
+  const actions=document.querySelector('.barista-actions');if(actions){for(const [label,action] of [['iPad Display',()=>location.href='display.html'],['Sign out',()=>cloud.logout()]]){const button=document.createElement('button');button.className='secondary';button.textContent=label;button.onclick=action;actions.append(button);}}
  }catch(e){ui.screen('Could not connect',e.message+' Check the database and staff setup steps.',[['Retry connection',start],['Sign in again',()=>location.href='sync-login.html']]);}}
  window.addEventListener('online',()=>{if(cloud.read(queueKey))retryUpdate();else if(cloud.read(draftKey))retryDraft();else poll();});window.addEventListener('focus',poll);setInterval(poll,cloud.config.pollMs);start();
 })();
