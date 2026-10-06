@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v86-barista-history';
+const CACHE='kbr-pos-v87-grouped-history';
 const ASSETS=[
   './',
   './index.html',

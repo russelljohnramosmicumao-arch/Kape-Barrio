@@ -1305,6 +1305,17 @@ function showCompletedReceipt(receipt){
   receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt"><div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${receipt.no}</div><div>${serviceLabel(receipt.serviceType)?serviceLabel(receipt.serviceType)+' · ':''}${receipt.date} · ${receipt.time}</div>${receipt.note?`<div style="margin-top:5px;">📝 ${escapeHtml(receipt.note)}</div>`:''}</div><hr>${receipt.items.map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${escapeHtml(x.name)}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''}${x.discountPercent?` · ${x.discountPercent}% off`:''}</small></div><div>${peso(x.price)}</div></div>`).join('')}<hr><div class="receipt-line"><b>TOTAL</b><b>${peso(receipt.total)}</b></div>${receipt.payment==='cash'?`<div class="receipt-line"><span>Cash received</span><span>${peso(receipt.cashReceived||0)}</span></div><div class="receipt-line"><b>CHANGE</b><b>${peso(receipt.change||0)}</b></div>`:''}<hr><div class="center">Paid ${receipt.payment==='gcash'?'via GCash':'in Cash'}. Thank you!</div></div>`;
   receiptDrawer.classList.add('open');
 }
+function groupHistoryItems(items){
+  const grouped=new Map();
+  for(const item of items||[]){
+    const details=Object.fromEntries(Object.keys(item).filter(k=>!['qty','uid','sourceIndex'].includes(k)).sort().map(k=>[k,item[k]]));
+    const key=JSON.stringify(details);
+    const existing=grouped.get(key);
+    if(existing)existing.qty+=(Number(item.qty)||0);
+    else grouped.set(key,{...item,qty:Number(item.qty)||0});
+  }
+  return [...grouped.values()];
+}
 function renderHistory(){
   const period=document.getElementById('baristaHistoryPeriod')?.value||'today';
   const receipts=period==='all'?history:history.filter(r=>receiptDayKey(r)===localDayKey());
@@ -1329,7 +1340,7 @@ function renderHistory(){
     <div class="history-total-card"><small>Kape' Bar-Rio (Drinks + Siomai)</small><b>${peso(kapeBarRioTotal)}</b></div>
   </div>
   <div class="history-thumb-grid">${receipts.map(r=>{
-    const items=(r.items||[]).map(x=>{
+    const items=groupHistoryItems(r.items).map(x=>{
       const line=(Number(x.price)||0)*(Number(x.qty)||0);
       return `<div class="history-thumb-item"><span>${x.qty}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
     }).join('');
