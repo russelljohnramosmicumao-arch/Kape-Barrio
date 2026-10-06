@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v85-manager-page';
+const CACHE='kbr-pos-v86-barista-history';
 const ASSETS=[
   './',
   './index.html',
@@ -19,7 +19,6 @@ const ASSETS=[
   './sync.css',
   './sync-login.html',
   './display.html',
-  './display.js',
   './menu.html',
   './menu.js',
   './menu-defaults.js',

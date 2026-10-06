@@ -370,13 +370,13 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
         <button id="baristaServedUnpaidTab" class="barista-tab" onclick="setBaristaView('served-unpaid')">Served - Unpaid</button>
         <button id="baristaUnservedPaidTab" class="barista-tab" onclick="setBaristaView('unserved-paid')">Unserved - Paid</button>
         <button id="baristaKitchenTab" class="barista-tab kitchen-urgent-tab" onclick="setBaristaView('kitchen')">🍳 Kitchen</button>
-        <button id="baristaHistoryTab" style="display:none!important" class="barista-tab" onclick="setBaristaView('history')">Transaction History</button>
+        <button id="baristaHistoryTab" class="barista-tab" onclick="setBaristaView('history')">Transaction History</button>
       </div>
       <div id="baristaOrdersView"></div>
       <div id="baristaKitchenView" style="display:none"></div>
-      <div id="baristaHistoryView" style="display:none!important">
+      <div id="baristaHistoryView" style="display:none">
         <div class="history-title-row">
-          <h3 style="margin:0;color:var(--brown);font-family:Georgia,serif">Sales History</h3>
+          <h3 style="margin:0;color:var(--brown);font-family:Georgia,serif">Completed Transactions</h3><label>Period <select id="baristaHistoryPeriod" onchange="renderHistory()"><option value="today">Today</option><option value="all">All transactions</option></select></label>
           
         </div>
         <div class="history-tools" style="margin-top:10px">
@@ -822,7 +822,6 @@ function openBaristaPage(){
   setBaristaView('orders');
 }
 function setBaristaView(view){
-  if(view==='history'){location.href='manager.html';return;}
   baristaView=view;
   baristaDetailOpenNo="";
   selectedBaristaPayment="";
@@ -1307,8 +1306,9 @@ function showCompletedReceipt(receipt){
   receiptDrawer.classList.add('open');
 }
 function renderHistory(){
-  renderDailyCsvArchive();
-  if(!history.length){
+  const period=document.getElementById('baristaHistoryPeriod')?.value||'today';
+  const receipts=period==='all'?history:history.filter(r=>receiptDayKey(r)===localDayKey());
+  if(!receipts.length){
     baristaHistoryList.innerHTML='<div class="history-empty">No transactions yet.<br>Completed orders will appear here.</div>';
     baristaSalesReport.style.display='none';
     return;
@@ -1316,7 +1316,7 @@ function renderHistory(){
 
   const kitchenNames=new Set(['Fries','Shiang hai','Nachos','Samyang Buldak']);
   let kitchenFoodTotal=0, kapeBarRioTotal=0;
-  history.forEach(r=>{
+  receipts.forEach(r=>{
     (r.items||[]).forEach(x=>{
       const line=(Number(x.price)||0)*(Number(x.qty)||0);
       if(kitchenNames.has(x.name)) kitchenFoodTotal+=line;
@@ -1325,17 +1325,17 @@ function renderHistory(){
   });
 
   baristaHistoryList.innerHTML=`<div class="history-total-strip">
-    <div class="history-total-card"><small>Kitchen Food (Fries, Shiang Hai, Nachos, Samyang Buldak)</small><b>${peso(kitchenFoodTotal)}</b></div>
+    <div class="history-total-card"><small>Kitchen total · Fries, Shiang Hai, Nachos, Samyang Buldak · excludes siomai</small><b>${peso(kitchenFoodTotal)}</b></div>
     <div class="history-total-card"><small>Kape' Bar-Rio (Drinks + Siomai)</small><b>${peso(kapeBarRioTotal)}</b></div>
   </div>
-  <div class="history-thumb-grid">${history.map(r=>{
+  <div class="history-thumb-grid">${receipts.map(r=>{
     const items=(r.items||[]).map(x=>{
       const line=(Number(x.price)||0)*(Number(x.qty)||0);
       return `<div class="history-thumb-item"><span>${x.qty}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
     }).join('');
     return `<div class="history-thumb ${orderServiceClass(r)}">
       <div class="history-thumb-head"><span class="order-number-badge">Order #${String(r.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><span class="history-thumb-total">${peso(r.total)}</span></div>
-      <div class="history-thumb-meta">${serviceLabel(r.serviceType)||''} · ${(r.payment||'').toUpperCase()}</div>
+      <div class="history-thumb-meta">${escapeHtml(r.date||'')} · ${escapeHtml(r.time||'')}</div><div class="history-thumb-meta">${serviceLabel(r.serviceType)||''} · ${(r.payment||'').toUpperCase()}</div>
       <div class="history-thumb-items">${items}</div>
       ${r.note?`<div class="history-thumb-meta">📝 ${escapeHtml(r.note)}</div>`:''}
     </div>`;
