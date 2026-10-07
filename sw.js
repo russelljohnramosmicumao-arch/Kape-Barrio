@@ -1,8 +1,9 @@
-const CACHE='kbr-pos-v90-approved-transaction-cancellation';
+const CACHE='kbr-pos-v91-pay-later-split';
 const ASSETS=[
   './',
   './index.html',
   './comp-payments.js',
+  './pay-later.js',
   './app-update.js',
   './sales.html',
   './manager.html',
