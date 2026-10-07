@@ -1,10 +1,11 @@
-const CACHE='kbr-pos-v94-shifts-cash-drawer';
+const CACHE='kbr-pos-v95-shift-records-denominations';
 const ASSETS=[
   './',
   './index.html',
   './comp-payments.js',
   './pay-later.js',
   './shifts.js',
+  './shift-records.html',
   './app-update.js',
   './sales.html',
   './manager.html',
