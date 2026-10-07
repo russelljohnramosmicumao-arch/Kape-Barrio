@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v101-separate-manager";
+const CACHE="kbr-pos-v102-managerspage-url";
 const ASSETS=[
   "./",
   "./app-links.js",
