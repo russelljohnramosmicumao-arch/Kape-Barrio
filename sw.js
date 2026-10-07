@@ -1,7 +1,8 @@
-const CACHE='kbr-pos-v87-grouped-history';
+const CACHE='kbr-pos-v88-complimentary-payments';
 const ASSETS=[
   './',
   './index.html',
+  './comp-payments.js',
   './app-update.js',
   './sales.html',
   './manager.html',
