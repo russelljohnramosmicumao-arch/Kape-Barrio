@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v88-complimentary-payments';
+const CACHE='kbr-pos-v89-barista-drinks-yesterday';
 const ASSETS=[
   './',
   './index.html',

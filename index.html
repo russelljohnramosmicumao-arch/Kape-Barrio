@@ -376,8 +376,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
       <div id="baristaKitchenView" style="display:none"></div>
       <div id="baristaHistoryView" style="display:none">
         <div class="history-title-row">
-          <h3 style="margin:0;color:var(--brown);font-family:Georgia,serif">Completed Transactions</h3><label>Period <select id="baristaHistoryPeriod" onchange="renderHistory()"><option value="today">Today</option><option value="all">All transactions</option></select></label>
-          <label>Type <select id="baristaHistoryKind" onchange="renderHistory()"><option value="all">All transactions</option><option value="cash">Cash</option><option value="gcash">GCash</option><option value="barista-drink">Free Drinks</option><option value="kuya-john">Kuya John</option></select></label>
+          <h3 style="margin:0;color:var(--brown);font-family:Georgia,serif">Completed Transactions</h3><label>Period <select id="baristaHistoryPeriod" onchange="renderHistory()"><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="all">All transactions</option></select></label>
+          <label>Type <select id="baristaHistoryKind" onchange="renderHistory()"><option value="all">All transactions</option><option value="cash">Cash</option><option value="gcash">GCash</option><option value="barista-drink">Barista Drinks</option><option value="kuya-john">Kuya John</option></select></label>
         </div>
         <div class="history-tools" style="margin-top:10px">
           
@@ -1189,7 +1189,7 @@ function renderBaristaOrders(){
   if(baristaView==='unserved-paid')statusNote=KBRPayments.isNonSale(order)?`<div class="barista-status-note">${escapeHtml(KBRPayments.label(order))} confirmed · excluded from sales. Waiting for remaining items to be served.</div>`:'<div class="barista-status-note">💳 Payment completed. Waiting for remaining items to be served.</div>';
   const paymentBlock=baristaView==='unserved-paid'
     ? statusNote
-    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">GCash</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Free Drinks</button><button class="barista-pay-btn owner ${selectedBaristaPayment==='kuya-john'?'selected':''}" onclick="selectBaristaPayment('kuya-john')">Kuya John</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
+    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">GCash</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Barista Drinks</button><button class="barista-pay-btn owner ${selectedBaristaPayment==='kuya-john'?'selected':''}" onclick="selectBaristaPayment('kuya-john')">Kuya John</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
   const orderSvcClass=orderServiceClass(order);
   baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${orderSvcClass}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
@@ -1296,7 +1296,9 @@ function renderBaristaPaymentPanel(){
   }
   if(selectedBaristaPayment==='barista-drink'){
     const order=getCurrentBaristaOrder(),units=(order.units||[]).filter(u=>!u.cancelled),eligible=units.length===1&&!units[0].food;
-    host.innerHTML=`<div class="barista-pay-panel"><b>One free drink per barista per day</b><p>${eligible?'Choose the barista:':'Use an order containing exactly one drink and no food.'}</p><div class="comp-choice-list">${['James','Mark','Khenn'].map(name=>`<button ${eligible?'':'disabled'} onclick="authorizeCompPayment('barista-drink','${name}')">${name}</button>`).join('')}</div><p class="muted">Recorded in history and inventory usage. Sales amount: ₱0.</p></div>`;return;
+    const available=window.KBRBaristaDrinks?.available();
+    const message=available===null||available===undefined?'Checking today’s available barista drinks…':available.length?'Choose the barista:':'All barista drinks have been redeemed today.';
+    host.innerHTML=`<div class="barista-pay-panel"><b>One free drink per barista per day</b><p>${eligible?message:'Use an order containing exactly one drink and no food.'}</p><div class="comp-choice-list">${(available||[]).map(name=>`<button ${eligible?'':'disabled'} onclick="authorizeCompPayment('barista-drink','${name}')">${name}</button>`).join('')}</div><p class="muted">Recorded in history and inventory usage. Sales amount: ₱0.</p></div>`;return;
   }
   if(selectedBaristaPayment==='kuya-john'){
     host.innerHTML=`<form class="barista-pay-panel" onsubmit="event.preventDefault();authorizeCompPayment('kuya-john')"><b>Charge this order to Kuya John</b><p>Amount charged: ${peso(pendingOrderTotal(getCurrentBaristaOrder()))}</p><label for="ownerChargePin">Kuya John PIN</label><br><input class="owner-charge-pin" id="ownerChargePin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required><button type="submit" class="barista-close-pay">Confirm Kuya John charge</button><p class="muted">Recorded separately from sales. Inventory is deducted when the order is completed.</p></form>`;return;
@@ -1330,7 +1332,8 @@ function groupHistoryItems(items){
 function renderHistory(){
   const period=document.getElementById('baristaHistoryPeriod')?.value||'today';
   const kind=document.getElementById('baristaHistoryKind')?.value||'all';
-  const receipts=(period==='all'?history:history.filter(r=>receiptDayKey(r)===localDayKey())).filter(r=>kind==='all'||r.payment===kind);
+  const selectedDay=period==='yesterday'?previousDayKey():localDayKey();
+  const receipts=(period==='all'?history:history.filter(r=>receiptDayKey(r)===selectedDay)).filter(r=>kind==='all'||r.payment===kind);
   if(!receipts.length){
     baristaHistoryList.innerHTML='<div class="history-empty">No transactions yet.<br>Completed orders will appear here.</div>';
     baristaSalesReport.style.display='none';
@@ -1351,7 +1354,7 @@ function renderHistory(){
   baristaHistoryList.innerHTML=`<div class="history-total-strip">
     <div class="history-total-card"><small>Kitchen total · Fries, Shiang Hai, Nachos, Samyang Buldak · excludes siomai</small><b>${peso(kitchenFoodTotal)}</b></div>
     <div class="history-total-card"><small>Kape' Bar-Rio sales (Drinks + Siomai)</small><b>${peso(kapeBarRioTotal)}</b></div>
-    <div class="history-total-card"><small>Free Drinks · value excluded from sales</small><b>${peso(freeDrinkValue)}</b></div><div class="history-total-card"><small>Charged to Kuya John · excluded from sales</small><b>${peso(ownerChargeValue)}</b></div>
+    <div class="history-total-card"><small>Barista Drinks · value excluded from sales</small><b>${peso(freeDrinkValue)}</b></div><div class="history-total-card"><small>Charged to Kuya John · excluded from sales</small><b>${peso(ownerChargeValue)}</b></div>
   </div>
   <div class="history-thumb-grid">${receipts.map(r=>{
     const items=groupHistoryItems(r.items).map(x=>{

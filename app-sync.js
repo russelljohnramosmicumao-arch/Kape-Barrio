@@ -2,6 +2,19 @@
 (()=>{
  const cloud=KBRCloud,ui=KBRSyncUI,queueKey='kbr_order_write_v1',draftKey='kbr_order_draft_v1';
  let role='',ready=false,busy=false,polling=false,menuRevision=0,lastFinalized=null;const remote=new Map();
+ let claimDay='',claimedNames=null,claimRequest=null;
+ function shopDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null?['James','Mark','Khenn'].filter(name=>!claimedNames.has(name)):null};
+ async function refreshBaristaClaims(){
+  if(claimRequest)return claimRequest;
+  claimRequest=(async()=>{try{
+   const day=shopDay(),rows=await cloud.request('/rest/v1/kbr_barista_drinks?day=eq.'+day+'&select=person');
+   claimDay=day;claimedNames=new Set(rows.map(row=>row.person));
+  }catch(e){claimDay='';claimedNames=null;}finally{
+   claimRequest=null;
+   if(selectedBaristaPayment==='barista-drink'&&baristaDrawer.classList.contains('open'))renderBaristaPaymentPanel();
+  }})();return claimRequest;
+ }
  function snapshot(){return structuredClone({pending:pendingOrders,served:servedUnpaidOrders,paid:unservedPaidOrders,history,cart});}
  function restore(s){pendingOrders=s.pending;servedUnpaidOrders=s.served;unservedPaidOrders=s.paid;history=s.history;cart=s.cart;persist();renderOrder();saveOpenOrderBuckets();localStorage.setItem('kbr_history',JSON.stringify(history));renderBaristaOrders();renderHistory();render();}
  function all(s){return [...s.pending,...s.served,...s.paid];}
@@ -18,9 +31,9 @@
   const ids=new Set(rows.map(r=>r.id));for(const row of rows){if(remote.get(row.id)?.revision!==row.revision){const changed=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(row.id)+'&select=*');if(changed[0]){applyRow(changed[0]);changedUI=true;}}}
   // Fetch individual tombstones so cancelled or completed orders never resurrect.
   for(const [id,row] of [...remote])if(row.status==='open'&&!ids.has(id)){const changed=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(id)+'&select=*');if(changed[0]){applyRow(changed[0]);changedUI=true;}}
-  if(changedUI)display();cloud.status('Connected · updates every 3 sec');
+  await refreshBaristaClaims();if(changedUI)display();cloud.status('Connected · updates every 3 sec');
  }catch(e){cloud.status('Offline or disconnected · orders cannot be sent',true);}finally{polling=false;}}
- async function flushUpdate(operation){let row;try{row=await cloud.rpc('kbr_update_order',operation.args);}catch(e){const rejected=e.status===400&&e.code==='P0001'&&/Authorize this complimentary payment first|already has a free drink today|Order items changed|One drink only/.test(e.message);if(!rejected)throw e;localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Payment was not saved',e.message+' Choose the payment option again.',[['Review order',()=>ui.close()]]);return false;}if(row.conflict){localStorage.setItem('kbr_last_conflicting_change',JSON.stringify(operation));localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Another device changed this order','Your edit was not applied. The latest shared order has been loaded; check it before editing again.',[['Review order',()=>ui.close()]]);return false;}applyRow(row);if(operation.cartAfter){cart=operation.cartAfter;persist();renderOrder();}localStorage.removeItem(queueKey);display();ui.close();cloud.status('Connected · change saved');return true;}
+ async function flushUpdate(operation){let row;try{row=await cloud.rpc('kbr_update_order',operation.args);}catch(e){const rejected=e.status===400&&e.code==='P0001'&&/Authorize this complimentary payment first|already has a free drink today|Order items changed|One drink only/.test(e.message);if(!rejected)throw e;localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Payment was not saved',e.message+' Choose the payment option again.',[['Review order',()=>ui.close()]]);return false;}if(row.conflict){localStorage.setItem('kbr_last_conflicting_change',JSON.stringify(operation));localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Another device changed this order','Your edit was not applied. The latest shared order has been loaded; check it before editing again.',[['Review order',()=>ui.close()]]);return false;}applyRow(row);if(operation.cartAfter){cart=operation.cartAfter;persist();renderOrder();}localStorage.removeItem(queueKey);await refreshBaristaClaims();display();ui.close();cloud.status('Connected · change saved');return true;}
  async function retryUpdate(){if(busy)return;const op=cloud.read(queueKey);if(!op)return;busy=true;ui.screen('Retrying saved change…','Please wait.');try{await flushUpdate(op);}catch(e){ui.screen('Change still waiting to sync',e.message,[['Retry',()=>retryUpdate()],['Sign in again',()=>location.href='sync-login.html']]);}finally{busy=false;}}
  async function mutate(fn,args){if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){if(cloud.read(queueKey)||cloud.read(draftKey))showPending();else showActionToast('Connecting or saving… please try again in a moment.');return;}
   if(!['owner','operator'].includes(role)){alert('This account is read only.');return;}
@@ -64,7 +77,7 @@
  };
  clearHistory=()=>alert('Shared sales history is retained in the database. Export CSV to keep a separate copy.');
  async function start(){if(!cloud.requireLogin())return;ui.screen('Connecting this device…','Loading the shared shop menu and orders.');try{
-  ui.rememberBackup();role=await cloud.role();const menuRow=await ui.menuReady(role);ui.applyMenu(menuRow);menuRevision=menuRow.revision;refreshManagedMenu();await loadOrders();ready=true;display();ui.close();cloud.status('Connected · updates every 3 sec');showPending();
+  ui.rememberBackup();role=await cloud.role();const menuRow=await ui.menuReady(role);ui.applyMenu(menuRow);menuRevision=menuRow.revision;refreshManagedMenu();await loadOrders();await refreshBaristaClaims();ready=true;display();ui.close();cloud.status('Connected · updates every 3 sec');showPending();
   const managerLink=document.getElementById('managerLink');if(managerLink)managerLink.hidden=role!=='owner';
   const actions=document.querySelector('.barista-actions');if(actions){for(const [label,action] of [['Sign out',()=>cloud.logout()]]){const button=document.createElement('button');button.className='secondary';button.textContent=label;button.onclick=action;actions.insertBefore(button,document.getElementById('baristaUpdateTools'));}}
  }catch(e){ui.screen('Could not connect',e.message+' Check the database and staff setup steps.',[['Retry connection',start],['Sign in again',()=>location.href='sync-login.html']]);}}
