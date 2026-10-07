@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v91-pay-later-split';
+const CACHE='kbr-pos-v92-payment-quick-cash-keypads';
 const ASSETS=[
   './',
   './index.html',
