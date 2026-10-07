@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v102-managerspage-url";
+const CACHE="kbr-pos-v103-authoritative-menu";
 const ASSETS=[
   "./",
   "./app-links.js",
