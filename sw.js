@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v98-inventory-comparison';
+const CACHE='kbr-pos-v99-staff-password-controls';
 const ASSETS=[
   './',
   './index.html',
