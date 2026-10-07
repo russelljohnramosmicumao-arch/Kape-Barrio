@@ -628,10 +628,11 @@ products.addEventListener('touchend',e=>{
   goToCategory(dx<0?1:-1);
 },{passive:true});
 
+function productFlavors(p){if(p.name==='Fries')return ['Plain','Cheese','Sour Cream'];if(p.category==='Ice Cream'&&/^creambar$/i.test(p.name))return ['Cookies and Cream','Rocky Road','Ube'];if(p.category==='Ice Cream'&&/^pinipig(?: ice cream)?$/i.test(p.name))return ['Strawberry','Rocky Road'];return [];}
 function chooseProduct(p){
   if(p.availability==='not-available'||p.availability==='out-of-stock'){showActionToast('Not Available');return;}
   if(p.pricePending){showActionToast('Set this item’s price in Menu Manager first.');return;}
-  selected={p,type:p.premium?'premium':'standard',sizeIndex:p.category==='Frappe & Smoothies'&&p.sizes.length>1?1:0,qty:1,sweetness:'Normal',flavor:p.name==='Fries'?'Plain':''};
+  selected={p,type:p.premium?'premium':'standard',sizeIndex:p.category==='Frappe & Smoothies'&&p.sizes.length>1?1:0,qty:1,sweetness:'Normal',flavor:productFlavors(p)[0]||''};
   selName.textContent=p.name;
   selImage.src=p.image||"";
   selImage.alt=p.name;
@@ -665,10 +666,9 @@ function renderSizes(){
   selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
 }
 function renderFlavor(){
-  const show=selected.p.name==='Fries';
+  const flavors=productFlavors(selected.p);const show=flavors.length>0;
   flavorWrap.style.display=show?'block':'none';
   if(!show){flavorOptions.innerHTML='';return}
-  const flavors=['Plain','Cheese','Sour Cream'];
   flavorOptions.innerHTML=flavors.map(flavor=>`<button class="opt sweetness-option ${selected.flavor===flavor?'selected':''}" onclick="selected.flavor='${flavor}';renderFlavor()">${flavor}</button>`).join('');
 }
 function renderSweetness(){
@@ -686,7 +686,7 @@ function addSelected(){
 
   const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
   const prices=selected.type==='premium'?p.premium:p.prices;
-  const item={name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor:p.name==='Fries'?selected.flavor:''};
+  const item={name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor:productFlavors(p).length?selected.flavor:''};
   const key=JSON.stringify([item.name,item.type,item.size,item.price,item.sweetness,item.flavor]);
   const old=cart.find(x=>x.key===key);
   if(old) old.qty+=item.qty; else {item.key=key;cart.push(item)}
@@ -1117,6 +1117,7 @@ function toggleSiomaiGroupServed(orderNo, sourceIndex){
   units.forEach(u=>{u.served=makeServed});
   syncOpenOrderLifecycle(order);
 }
+function setSiomaiGroupService(no,index,service){const order=findOpenOrder(no);if(!order)return;for(const unit of order.units)if(unit.sourceIndex===index&&!unit.cancelled)unit.serviceType=service;setPendingOrderStorage();renderBaristaOrders();}
 function renderBaristaOrders(){
   ensureAllOpenUnits();
   updatePendingOrdersTab();
@@ -1164,7 +1165,7 @@ function renderBaristaOrders(){
     const isSiomai=String(x.name||'').trim().toLowerCase()==='siomai';
     const topPrice=peso(lineTotal);
 
-    const unitRows=units.map((u)=>{
+    const unitRows=(isSiomai?units.slice(0,1):units).map((u)=>{
       const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u);
       const discountUI=u.food
         ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`
@@ -1172,11 +1173,11 @@ function renderBaristaOrders(){
       const discountPrice=!u.food&&pct?`<div class="discount-price">Original ${peso(u.originalPrice)} · ${pct}% off · <b>${peso(net)}</b></div>`:'';
       return `<div class="barista-unit-details-row">
         <div class="barista-unit-details-name"><b>${isSiomai?`${units.length}× `:'1× '}${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small>${unitAddonLabel(u)?`<small style="display:block;color:#386944">+ ${escapeHtml(unitAddonLabel(u))}</small>`:''}</div>
-        <div class="barista-unit-details-price">${peso(net)}</div>
+        <div class="barista-unit-details-price">${peso(isSiomai?lineTotal:net)}</div>
         <div class="barista-unit-details-controls"><div class="unit-adjustments">${discountUI}${baristaAddonControls(u,order.paid)}</div>${discountPrice}
           <div class="order-service-toggle"><span>Order type:</span>
-            <button class="order-service-btn dine ${u.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','dine-in','${u.uid}')">Dine In</button>
-            <button class="order-service-btn takeout ${u.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','take-out','${u.uid}')">Take Out</button>
+            <button class="order-service-btn dine ${u.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();${isSiomai?`setSiomaiGroupService('${order.no}',${gi},'dine-in')`:`setOrderServiceType('${order.no}','dine-in','${u.uid}')`}">Dine In</button>
+            <button class="order-service-btn takeout ${u.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();${isSiomai?`setSiomaiGroupService('${order.no}',${gi},'take-out')`:`setOrderServiceType('${order.no}','take-out','${u.uid}')`}">Take Out</button>
           </div>
         </div>
       </div>`;
