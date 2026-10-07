@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v97-staff-passcodes-layout';
+const CACHE='kbr-pos-v98-inventory-comparison';
 const ASSETS=[
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS=[
   './sales.html',
   './manager.html',
   './manager.js',
+  './manager-inventory.js',
   './staff-manager.js',
   './sales.js',
   './sales-data.js',
