@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v104-icecream-flavors-siomai";
+const CACHE="kbr-pos-v105-menu-product-ids";
 const ASSETS=[
   "./",
   "./app-links.js",
