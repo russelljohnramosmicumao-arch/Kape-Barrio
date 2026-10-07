@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v95-shift-records-denominations';
+const CACHE='kbr-pos-v96-manager-drawer-corrections';
 const ASSETS=[
   './',
   './index.html',
