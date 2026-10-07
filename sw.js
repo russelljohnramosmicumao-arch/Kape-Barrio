@@ -1,9 +1,10 @@
-const CACHE='kbr-pos-v93-pay-later-customer-thumbnails';
+const CACHE='kbr-pos-v94-shifts-cash-drawer';
 const ASSETS=[
   './',
   './index.html',
   './comp-payments.js',
   './pay-later.js',
+  './shifts.js',
   './app-update.js',
   './sales.html',
   './manager.html',

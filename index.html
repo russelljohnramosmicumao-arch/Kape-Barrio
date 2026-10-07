@@ -371,11 +371,13 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
         <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Pending Orders</button>
         <button id="baristaServedUnpaidTab" class="barista-tab" onclick="setBaristaView('served-unpaid')">Served - Unpaid</button>
         <button id="baristaUnservedPaidTab" class="barista-tab" onclick="setBaristaView('unserved-paid')">Unserved - Paid</button>
+        <button id="baristaShiftTab" class="barista-tab" onclick="setBaristaView('shift')">Shift / Cash Drawer</button>
         <button id="baristaPayLaterTab" class="barista-tab" onclick="setBaristaView('pay-later')">Pay Later</button>
         <button id="baristaKitchenTab" class="barista-tab kitchen-urgent-tab" onclick="setBaristaView('kitchen')">🍳 Kitchen</button>
         <button id="baristaHistoryTab" class="barista-tab" onclick="setBaristaView('history')">Transaction History</button>
       </div>
       <div id="baristaOrdersView"></div>
+      <div id="baristaShiftView" style="display:none"></div>
       <div id="baristaPayLaterView" style="display:none"></div>
       <div id="baristaKitchenView" style="display:none"></div>
       <div id="baristaHistoryView" style="display:none">
@@ -828,6 +830,8 @@ function openBaristaPage(){
 }
 function setBaristaView(view){
   baristaView=view;
+  document.getElementById('baristaShiftTab')?.classList.toggle('active',view==='shift');
+  document.getElementById('baristaShiftView').style.display=view==='shift'?'block':'none';
   baristaDetailOpenNo="";
   selectedBaristaPayment="";
   cashReceived=0;
@@ -842,6 +846,7 @@ function setBaristaView(view){
   baristaKitchenView.style.display=view==='kitchen'?'block':'none';
   baristaHistoryView.style.display=view==='history'?'block':'none';
   if(['orders','served-unpaid','unserved-paid'].includes(view))renderBaristaOrders();
+  else if(view==='shift')KBRShift.refresh();
   else if(view==='pay-later')KBRDeferred.refresh();
   else if(view==='kitchen')renderKitchenAlerts();
   else renderHistory();
@@ -1700,5 +1705,5 @@ setInterval(()=>runDailyCsvCheck(),60000);
 render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
-<script src="sync-config.js"></script><script src="sync-core.js"></script><script src="sync-ui.js"></script><script src="pay-later.js"></script><script src="app-sync.js"></script>
+<script src="sync-config.js"></script><script src="sync-core.js"></script><script src="sync-ui.js"></script><script src="pay-later.js"></script><script src="shifts.js"></script><script src="app-sync.js"></script>
 <script src="app-update.js"></script></body></html>
