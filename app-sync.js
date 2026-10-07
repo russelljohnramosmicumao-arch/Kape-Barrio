@@ -2,13 +2,13 @@
 (()=>{
  const cloud=KBRCloud,ui=KBRSyncUI,queueKey='kbr_order_write_v1',draftKey='kbr_order_draft_v1';
  let role='',ready=false,busy=false,polling=false,menuRevision=0,lastFinalized=null;const remote=new Map();
- let claimDay='',claimedNames=null,claimRequest=null;
+ let rosterNames=[],claimDay='',claimedNames=null,claimRequest=null;
  function shopDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
- window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null?['James','Mark','Khenn'].filter(name=>!claimedNames.has(name)):null};
+ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null?rosterNames.filter(name=>!claimedNames.has(name)):null};
  async function refreshBaristaClaims(){
   if(claimRequest)return claimRequest;
   claimRequest=(async()=>{try{
-   const day=shopDay(),rows=await cloud.request('/rest/v1/kbr_barista_drinks?day=eq.'+day+'&select=person');
+   const day=shopDay(),[rows,roster]=await Promise.all([cloud.request('/rest/v1/kbr_barista_drinks?day=eq.'+day+'&select=person'),cloud.request('/rest/v1/kbr_baristas?active=eq.true&has_passcode=eq.true&duty_day=eq.'+day+'&select=name&order=name')]);rosterNames=roster.map(p=>p.name);
    claimDay=day;claimedNames=new Set(rows.map(row=>row.person));
   }catch(e){claimDay='';claimedNames=null;}finally{
    claimRequest=null;
@@ -33,7 +33,7 @@
   for(const [id,row] of [...remote])if(row.status==='open'&&!ids.has(id)){const changed=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(id)+'&select=*');if(changed[0]){applyRow(changed[0]);changedUI=true;}}
   await refreshBaristaClaims();if(baristaView==='pay-later')await KBRDeferred.refresh();if(changedUI)display();cloud.status('Connected · updates every 3 sec');
  }catch(e){cloud.status('Offline or disconnected · orders cannot be sent',true);}finally{polling=false;}}
- async function flushUpdate(operation){let row;try{row=await cloud.rpc(operation.rpcName||'kbr_update_order',operation.args);}catch(e){const rejected=(!!operation.rpcName&&e.status===400&&e.code==='P0001')||e.status===400&&e.code==='P0001'&&/Authorize this complimentary payment first|already has a free drink today|Order items changed|One drink only/.test(e.message);if(!rejected)throw e;localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Payment was not saved',e.message+' Choose the payment option again.',[['Review order',()=>ui.close()]]);return false;}if(row.conflict){localStorage.setItem('kbr_last_conflicting_change',JSON.stringify(operation));localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Another device changed this order','Your edit was not applied. The latest shared order has been loaded; check it before editing again.',[['Review order',()=>ui.close()]]);return false;}applyRow(row);if(operation.cartAfter){cart=operation.cartAfter;persist();renderOrder();}localStorage.removeItem(queueKey);await refreshBaristaClaims();selectedBaristaPayment='';display();ui.close();if(window.KBRDeferred)await KBRDeferred.refresh();cloud.status('Connected · change saved');return true;}
+ async function flushUpdate(operation){let row;try{row=await cloud.rpc(operation.rpcName||'kbr_update_order',operation.args);}catch(e){const rejected=(!!operation.rpcName&&e.status===400&&e.code==='P0001')||e.status===400&&e.code==='P0001'&&/Authorize this complimentary payment first|already has a free drink today|Order items changed|One drink only|not on duty today/.test(e.message);if(!rejected)throw e;localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Payment was not saved',e.message+' Choose the payment option again.',[['Review order',()=>ui.close()]]);return false;}if(row.conflict){localStorage.setItem('kbr_last_conflicting_change',JSON.stringify(operation));localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Another device changed this order','Your edit was not applied. The latest shared order has been loaded; check it before editing again.',[['Review order',()=>ui.close()]]);return false;}applyRow(row);if(operation.cartAfter){cart=operation.cartAfter;persist();renderOrder();}localStorage.removeItem(queueKey);await refreshBaristaClaims();selectedBaristaPayment='';display();ui.close();if(window.KBRDeferred)await KBRDeferred.refresh();cloud.status('Connected · change saved');return true;}
  async function retryUpdate(){if(busy)return;const op=cloud.read(queueKey);if(!op)return;busy=true;ui.screen('Retrying saved change…','Please wait.');try{await flushUpdate(op);}catch(e){ui.screen('Change still waiting to sync',e.message,[['Retry',()=>retryUpdate()],['Sign in again',()=>location.href='sync-login.html']]);}finally{busy=false;}}
  async function mutate(fn,args){if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){if(cloud.read(queueKey)||cloud.read(draftKey))showPending();else showActionToast('Connecting or saving… please try again in a moment.');return;}
   if(!['owner','operator'].includes(role)){alert('This account is read only.');return;}
@@ -66,15 +66,16 @@
  };
  const handlers={markKitchenDone,savePendingOrderNote,toggleUnitServed,toggleItemGroupServed,setOrderServiceType,cancelPendingTransaction,removeBaristaUnit,baristaAddon,baristaDiscount,completePendingPayment};
  for(const [name,fn] of Object.entries(handlers))window[name]=(...args)=>mutate(fn,args);
- window.authorizeCompPayment=async(kind,person='')=>{
+ window.authorizeCompPayment=async(kind,person='',drinkCode='')=>{
   if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Connecting or saving… please try again.');return;}
   const order=getCurrentBaristaOrder();if(!order?._cloudId)return;
-  const pinInput=document.getElementById('ownerChargePin');const pin=kind==='kuya-john'?String(pinInput?.value||''):'';if(pinInput)pinInput.value='';
+  const pinInput=document.getElementById('ownerChargePin');const pin=kind==='kuya-john'?String(pinInput?.value||''):drinkCode;if(pinInput)pinInput.value='';
   busy=true;let authorization;
   try{ui.screen('Authorizing payment…','Please wait.');authorization=await cloud.rpc('kbr_authorize_comp_payment',{p_order:order._cloudId,p_expected_revision:order._cloudRevision,p_kind:kind,p_person:person,p_pin:pin});if(authorization.error)throw Error(authorization.error);ui.close();}
   catch(e){ui.screen('Payment not authorized',e.message,[['Back to payment',()=>ui.close()]]);return;}finally{busy=false;}
   await mutate(handlers.completePendingPayment,[kind,authorization]);
  };
+ window.chooseBaristaDrink=person=>{ui.screen('Barista Drink — '+person,'Enter this barista’s own drink passcode.',[['Back',()=>ui.close()]]);const form=document.createElement('form');form.innerHTML='<label>Drink passcode<input name="code" type="password" inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" autocomplete="off" required></label><button type="submit">Redeem drink</button>';document.querySelector('#cloudScreen .cloud-box').append(form);form.onsubmit=e=>{e.preventDefault();const code=form.elements.code.value;form.elements.code.value='';window.authorizeCompPayment('barista-drink',person,code);};};
  window.savePaymentArrangement=async(rpcName,args)=>{
   if(!['kbr_arrange_payment','kbr_collect_payment'].includes(rpcName))return;
   if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Connecting or saving… please try again.');return;}
@@ -103,7 +104,7 @@
  };
  clearHistory=()=>alert('Shared sales history is retained in the database. Export CSV to keep a separate copy.');
  async function start(){if(!cloud.requireLogin())return;ui.screen('Connecting this device…','Loading the shared shop menu and orders.');try{
-  ui.rememberBackup();role=await cloud.role();const menuRow=await ui.menuReady(role);ui.applyMenu(menuRow);menuRevision=menuRow.revision;refreshManagedMenu();await loadOrders();await refreshBaristaClaims();ready=true;display();ui.close();cloud.status('Connected · updates every 3 sec');showPending();if(['owner','operator'].includes(role)&&!cloud.read(queueKey)&&!cloud.read(draftKey)){const openShifts=await cloud.request('/rest/v1/kbr_shifts?status=eq.open&select=id');if(!openShifts.length)location.href='shift-records.html?open=1';};
+  ui.rememberBackup();role=await cloud.role();if(['owner','operator'].includes(role))await cloud.rpc('kbr_barista_duty',{p_on:true});const menuRow=await ui.menuReady(role);ui.applyMenu(menuRow);menuRevision=menuRow.revision;refreshManagedMenu();await loadOrders();await refreshBaristaClaims();ready=true;display();ui.close();cloud.status('Connected · updates every 3 sec');showPending();if(['owner','operator'].includes(role)&&!cloud.read(queueKey)&&!cloud.read(draftKey)){const openShifts=await cloud.request('/rest/v1/kbr_shifts?status=eq.open&select=id');if(!openShifts.length)location.href='shift-records.html?open=1';};
   const managerLink=document.getElementById('managerLink');if(managerLink)managerLink.hidden=role!=='owner';
   const actions=document.querySelector('.barista-actions');if(actions){for(const [label,action] of [['Shift Records',()=>location.href='shift-records.html']]){const button=document.createElement('button');button.className='secondary';button.textContent=label;button.onclick=action;actions.insertBefore(button,document.getElementById('baristaUpdateTools'));}}
  }catch(e){ui.screen('Could not connect',e.message+' Check the database and staff setup steps.',[['Retry connection',start],['Sign in again',()=>location.href='sync-login.html']]);}}

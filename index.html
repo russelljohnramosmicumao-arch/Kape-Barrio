@@ -310,8 +310,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .unavailable-label{display:inline-block;color:#a32f24;background:#fff0ed;padding:5px 8px;border-radius:7px;font-weight:800;margin-bottom:5px}
 
 .barista-pay-panel label,.cloud-box form label{display:block;margin:12px 0;font-weight:700}.barista-pay-panel input,.cloud-box form input,.cloud-box form select{display:block;width:100%;min-height:46px;padding:10px;border:1px solid #d9c7b5;border-radius:10px;font-size:16px}
-</style>
-<link rel="stylesheet" href="sync.css">
+</style><link rel="stylesheet" href="sync.css">
+
 </head>
 <body>
 <header>
@@ -1306,8 +1306,8 @@ function renderBaristaPaymentPanel(){
   if(selectedBaristaPayment==='barista-drink'){
     const order=getCurrentBaristaOrder(),units=(order.units||[]).filter(u=>!u.cancelled),eligible=units.length===1&&!units[0].food;
     const available=window.KBRBaristaDrinks?.available();
-    const message=available===null||available===undefined?'Checking today’s available barista drinks…':available.length?'Choose the barista:':'All barista drinks have been redeemed today.';
-    host.innerHTML=`<div class="barista-pay-panel"><b>One free drink per barista per day</b><p>${eligible?message:'Use an order containing exactly one drink and no food.'}</p><div class="comp-choice-list">${(available||[]).map(name=>`<button ${eligible?'':'disabled'} onclick="authorizeCompPayment('barista-drink','${name}')">${name}</button>`).join('')}</div><p class="muted">Recorded in history and inventory usage. Sales amount: ₱0.</p></div>`;return;
+    const message=available===null||available===undefined?'Checking today’s available barista drinks…':available.length?'Choose the barista:':'No unredeemed on-duty baristas. The owner can update today’s duty list in Manager.';
+    host.innerHTML=`<div class="barista-pay-panel"><b>One free drink per barista per day</b><p>${eligible?message:'Use an order containing exactly one drink and no food.'}</p><div class="comp-choice-list">${(available||[]).map(name=>`<button ${eligible?'':'disabled'} onclick="chooseBaristaDrink('${name}')">${name}</button>`).join('')}</div><p class="muted">Recorded in history and inventory usage. Sales amount: ₱0.</p></div>`;return;
   }
   if(selectedBaristaPayment==='kuya-john'){
     host.innerHTML=`<form class="barista-pay-panel" onsubmit="event.preventDefault();authorizeCompPayment('kuya-john')"><b>Charge this order to Kuya John</b><p>Amount charged: ${peso(pendingOrderTotal(getCurrentBaristaOrder()))}</p><label for="ownerChargePin">Kuya John PIN</label><br><input class="owner-charge-pin" id="ownerChargePin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required><button type="submit" class="barista-close-pay">Confirm Kuya John charge</button><p class="muted">Recorded separately from sales. Inventory is deducted when the order is completed.</p></form>`;return;

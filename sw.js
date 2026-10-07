@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v96-manager-drawer-corrections';
+const CACHE='kbr-pos-v97-staff-passcodes-layout';
 const ASSETS=[
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS=[
   './sales.html',
   './manager.html',
   './manager.js',
+  './staff-manager.js',
   './sales.js',
   './sales-data.js',
   './sw.js',
