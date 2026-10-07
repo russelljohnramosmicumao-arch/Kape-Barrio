@@ -1,4 +1,4 @@
-const CACHE='kbr-pos-v89-barista-drinks-yesterday';
+const CACHE='kbr-pos-v90-approved-transaction-cancellation';
 const ASSETS=[
   './',
   './index.html',

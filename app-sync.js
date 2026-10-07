@@ -19,7 +19,7 @@
  function restore(s){pendingOrders=s.pending;servedUnpaidOrders=s.served;unservedPaidOrders=s.paid;history=s.history;cart=s.cart;persist();renderOrder();saveOpenOrderBuckets();localStorage.setItem('kbr_history',JSON.stringify(history));renderBaristaOrders();renderHistory();render();}
  function all(s){return [...s.pending,...s.served,...s.paid];}
  function clean(row){return {...structuredClone(row.data),_cloudId:row.id,_cloudRevision:row.revision};}
- function applyRow(row){remote.set(row.id,row);removeOpenOrderFromBuckets(row.data.no);history=history.filter(r=>r._cloudId ? r._cloudId!==row.id : String(r.no)!==String(row.data.no));if(row.status==='completed'&&row.receipt)history.unshift({...row.receipt,no:row.data.no,_cloudId:row.id});else if(row.status==='open'){
+ function applyRow(row){remote.set(row.id,row);removeOpenOrderFromBuckets(row.data.no);history=history.filter(r=>r._cloudId ? r._cloudId!==row.id : String(r.no)!==String(row.data.no));if((row.status==='completed'||(row.status==='cancelled'&&row.receipt?.cancelled))&&row.receipt)history.unshift({...row.receipt,no:row.data.no,_cloudId:row.id});else if(row.status==='open'){
   const order=clean(row);normalizeOpenOrder(order);ensurePendingUnits(order);ensureUnitServedFlags(order);if(isOrderFullyServed(order)&&!order.paid)servedUnpaidOrders.unshift(order);else if(order.paid)unservedPaidOrders.unshift(order);else pendingOrders.unshift(order);
  }saveOpenOrderBuckets();localStorage.setItem('kbr_history',JSON.stringify(history));}
  async function loadOrders(){const rows=await cloud.rows('/rest/v1/kbr_orders?select=*&order=order_number.desc');pendingOrders=[];servedUnpaidOrders=[];unservedPaidOrders=[];const backup=cloud.read('kbr_before_cloud_v1',{});history=structuredClone(backup.history||[]);remote.clear();rows.reverse().forEach(applyRow);}
@@ -74,6 +74,24 @@
   try{ui.screen('Authorizing payment…','Please wait.');authorization=await cloud.rpc('kbr_authorize_comp_payment',{p_order:order._cloudId,p_expected_revision:order._cloudRevision,p_kind:kind,p_person:person,p_pin:pin});if(authorization.error)throw Error(authorization.error);ui.close();}
   catch(e){ui.screen('Payment not authorized',e.message,[['Back to payment',()=>ui.close()]]);return;}finally{busy=false;}
   await mutate(handlers.completePendingPayment,[kind,authorization]);
+ };
+ window.cancelCompletedTransaction=id=>{
+  if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Connecting or saving… please try again.');return;}
+  const row=remote.get(id);if(!row||row.status!=='completed')return;
+  ui.screen('Cancel completed transaction','Manager approval required. This restores deducted inventory and releases any barista drink allowance.',[['Keep transaction',()=>ui.close()]]);
+  const box=document.querySelector('#cloudScreen .cloud-box'),form=document.createElement('form');
+  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
+  box.append(form);
+  form.onsubmit=async event=>{
+   event.preventDefault();if(busy)return;const pin=form.elements.pin.value,reason=form.elements.reason.value;form.elements.pin.value='';busy=true;
+   try{
+    ui.screen('Cancelling transaction…','Please wait for confirmation.');
+    const result=await cloud.rpc('kbr_cancel_completed_transaction',{p_order:id,p_expected_revision:row.revision,p_pin:pin,p_reason:reason});
+    if(result.error)throw Error(result.error);
+    if(result.conflict){await loadOrders();display();throw Error('Transaction changed on another device. Review it and try again.');}
+    applyRow(result);await refreshBaristaClaims();display();ui.close();showActionToast('Transaction cancelled. Barista allowance released and recorded stock deductions restored.');
+   }catch(e){ui.screen('Cancellation not confirmed',e.message+' Review the history before trying again. Repeating an approved cancellation will not return stock twice.',[['Review history',()=>{ui.close();poll();}]]);}finally{busy=false;}
+  };
  };
  clearHistory=()=>alert('Shared sales history is retained in the database. Export CSV to keep a separate copy.');
  async function start(){if(!cloud.requireLogin())return;ui.screen('Connecting this device…','Loading the shared shop menu and orders.');try{

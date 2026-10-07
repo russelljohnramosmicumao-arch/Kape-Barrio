@@ -738,9 +738,9 @@ function getDailyCsvArchives(){
 }
 function saveDailyCsvArchives(archives){localStorage.setItem('kbr_daily_csv_archive',JSON.stringify(archives))}
 function buildSalesCsvForHistory(rows){
-  const out=[['Order #','Order Type','Date','Time','Payment','Note','Category','Item','Type','Size','Flavor','Sweetness','Discount %','Discount Amount','Quantity','Unit Price','Item Value','Sales Line Total','Payment Details','Non-sale Value']];
+  const out=[['Order #','Order Type','Date','Time','Payment','Note','Category','Item','Type','Size','Flavor','Sweetness','Discount %','Discount Amount','Quantity','Unit Price','Item Value','Sales Line Total','Payment Details','Non-sale Value','Status','Cancellation Reason']];
   rows.slice().sort((a,b)=>String(a.no).localeCompare(String(b.no))).forEach(r=>{
-    (r.items||[]).forEach(x=>out.push([r.no,serviceLabel(r.serviceType)||'Not recorded',r.date,r.time,r.payment||'Not recorded',r.note||'',CATEGORY_LABELS[x.category]||x.category||'',x.name||'',x.type||'',x.size||'',x.flavor||'',x.sweetness||'',x.discountPercent||0,x.discountAmount||0,x.qty||0,x.price||0,(Number(x.qty)||0)*(Number(x.price)||0),KBRPayments.isNonSale(r)?0:(Number(x.qty)||0)*(Number(x.price)||0),KBRPayments.label(r),KBRPayments.isNonSale(r)?(Number(x.qty)||0)*(Number(x.price)||0):0]));
+    (r.items||[]).forEach(x=>out.push([r.no,serviceLabel(r.serviceType)||'Not recorded',r.date,r.time,r.payment||'Not recorded',r.note||'',CATEGORY_LABELS[x.category]||x.category||'',x.name||'',x.type||'',x.size||'',x.flavor||'',x.sweetness||'',x.discountPercent||0,x.discountAmount||0,x.qty||0,x.price||0,(Number(x.qty)||0)*(Number(x.price)||0),(r.cancelled||KBRPayments.isNonSale(r))?0:(Number(x.qty)||0)*(Number(x.price)||0),KBRPayments.label(r),KBRPayments.isNonSale(r)?(Number(x.qty)||0)*(Number(x.price)||0):0,r.cancelled?'Cancelled':'Completed',r.cancellationReason||'']));
   });
   return '\ufeff'+out.map(row=>row.map(csvEscape).join(',')).join('\r\n');
 }
@@ -1343,6 +1343,7 @@ function renderHistory(){
   const kitchenNames=new Set(['Fries','Shiang hai','Nachos','Samyang Buldak']);
   let kitchenFoodTotal=0, kapeBarRioTotal=0, freeDrinkValue=0, ownerChargeValue=0;
   receipts.forEach(r=>{
+    if(r.cancelled)return;
     if(r.payment==='barista-drink')freeDrinkValue+=KBRPayments.value(r);if(r.payment==='kuya-john')ownerChargeValue+=KBRPayments.value(r);
     (r.items||[]).forEach(x=>{
       const line=(Number(x.price)||0)*(Number(x.qty)||0);
@@ -1365,13 +1366,14 @@ function renderHistory(){
       <div class="history-thumb-head"><span class="order-number-badge">Order #${String(r.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><span class="history-thumb-total">${peso(KBRPayments.isNonSale(r)?KBRPayments.value(r):r.total)}</span></div>
       <div class="history-thumb-meta">${escapeHtml(r.date||'')} · ${escapeHtml(r.time||'')}</div><div class="history-thumb-meta">${serviceLabel(r.serviceType)||''} · ${escapeHtml(KBRPayments.label(r))}${KBRPayments.isNonSale(r)?' · Sales ₱0':''}</div>
       <div class="history-thumb-items">${items}</div>
+      ${r.cancelled?`<div class="history-thumb-meta"><b>Cancelled</b> · ${escapeHtml(r.cancellationReason||'')}<br>${escapeHtml(r.cancelledAt?new Date(r.cancelledAt).toLocaleString('en-PH',{timeZone:'Asia/Manila'}):'')}</div>`:r._cloudId?`<button class="secondary" onclick="cancelCompletedTransaction('${r._cloudId}')">Cancel transaction</button>`:''}
       ${r.note?`<div class="history-thumb-meta">📝 ${escapeHtml(r.note)}</div>`:''}
     </div>`;
   }).join('')}</div>`;
 }
 function getSalesStats(){
-  const stats={transactions:history.filter(r=>!KBRPayments.isNonSale(r)).length,totalSales:0,totalDrinkCups:0,totalFoodQty:0,byDrink:{},bySize:{},byGroup:{},bySweetness:{}};
-  history.filter(r=>!KBRPayments.isNonSale(r)).forEach(r=>{
+  const stats={transactions:history.filter(r=>!r.cancelled&&!KBRPayments.isNonSale(r)).length,totalSales:0,totalDrinkCups:0,totalFoodQty:0,byDrink:{},bySize:{},byGroup:{},bySweetness:{}};
+  history.filter(r=>!r.cancelled&&!KBRPayments.isNonSale(r)).forEach(r=>{
     stats.totalSales+=Number(r.total)||0;
     (r.items||[]).forEach(x=>{
       const qty=Number(x.qty)||0;
