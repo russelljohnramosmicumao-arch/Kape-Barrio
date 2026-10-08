@@ -686,7 +686,7 @@ function addSelected(){
 
   const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
   const prices=selected.type==='premium'?p.premium:p.prices;
-  const item={name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor:productFlavors(p).length?selected.flavor:''};
+  const item={productId:p.productId||null,name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor:productFlavors(p).length?selected.flavor:''};
   const key=JSON.stringify([item.name,item.type,item.size,item.price,item.sweetness,item.flavor]);
   const old=cart.find(x=>x.key===key);
   if(old) old.qty+=item.qty; else {item.key=key;cart.push(item)}
@@ -998,7 +998,7 @@ function ensurePendingUnits(order){
   order.units=[];
   (order.items||[]).forEach((x,itemIndex)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
-      order.units.push({uid:`${order.no}-${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:itemIndex,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
+      order.units.push({uid:`${order.no}-${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:itemIndex,productId:x.productId||null,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
     }
   });
   setPendingOrderStorage();
@@ -1017,7 +1017,7 @@ function appendItemsToOrder(order,newItems){
   order.items=(order.items||[]).concat(stampedItems);
   (stampedItems||[]).forEach((x,offset)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
-      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,name:x.name,category:x.category,type:x.type,serviceType:x.serviceType,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
+      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,productId:x.productId||null,name:x.name,category:x.category,type:x.type,serviceType:x.serviceType,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
     }
   });
 }
