@@ -85,7 +85,7 @@
   cart=[];persist();saveOpenOrderBuckets();render();renderOrder();closeOrder();display();showOrderSentMessage(currentReceipt);queuedStatus();void flushOutbox();
 
  };
- const handlers={markKitchenDone,savePendingOrderNote,toggleUnitServed,toggleItemGroupServed,setOrderServiceType,cancelPendingTransaction,removeBaristaUnit,baristaAddon,baristaDiscount,completePendingPayment};
+ const handlers={markKitchenDone,savePendingOrderNote,toggleUnitServed,toggleItemGroupServed,toggleDisplayGroupServed,toggleSiomaiGroupServed,setSiomaiGroupService,setOrderServiceType,cancelPendingTransaction,removeBaristaUnit,baristaAddon,baristaDiscount,completePendingPayment};
  for(const [name,fn] of Object.entries(handlers))window[name]=(...args)=>mutate(fn,args);
  window.authorizeCompPayment=async(kind,person='',drinkCode='')=>{
   if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Connecting or saving… please try again.');return;}

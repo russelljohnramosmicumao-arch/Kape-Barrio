@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v115-compact-coffee-addons";
+const CACHE="kbr-pos-v116-confirm-served-sync";
 const ASSETS=["./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
@@ -28,7 +28,7 @@ const IMAGE_REVISIONS={"./images/frappe-de-choco.jpg": "1bb9f98c93cd1ec7", "./im
 function imageKey(url){const relative='./'+url.pathname.slice(new URL(self.registration.scope).pathname.length);const revision=IMAGE_REVISIONS[relative];if(revision)url.searchParams.set('kbr-image-revision',revision);return url.href;}
 async function imageResponse(request){const cache=await caches.open(IMAGE_CACHE),key=imageKey(new URL(request.url));const saved=await cache.match(key);if(saved)return saved;const response=await fetch(request);if(response.ok)await cache.put(key,response.clone());return response;}
 async function warmImages(){const entries=Object.keys(IMAGE_REVISIONS);let cursor=0;await Promise.all(Array.from({length:3},async()=>{while(cursor<entries.length){const path=entries[cursor++];try{await imageResponse(new Request(new URL(path,self.registration.scope)));}catch{ /* Retry missing pictures on the next warmup or request. */ }}}));}
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([...new Set(ASSETS.map(path=>new URL(path,self.registration.scope).href))].map(url=>new Request(url,{cache:'reload'}))))));
 self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting();if(e.data?.type==='WARM_IMAGES')e.waitUntil(warmImages());});
 self.addEventListener('activate',e=>e.waitUntil((async()=>{await caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('kbr-pos-')&&k!==CACHE&&k!==IMAGE_CACHE).map(k=>caches.delete(k))));await self.clients.claim();await warmImages();})()));
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin||!u.href.startsWith(self.registration.scope))return;if(e.request.destination==='image'||IMAGE_REVISIONS['./'+u.pathname.slice(new URL(self.registration.scope).pathname.length)]){e.respondWith(imageResponse(e.request));return;}e.respondWith(caches.open(CACHE).then(async c=>{const saved=await c.match(e.request);if(saved)return saved;try{const response=await fetch(e.request);if(response.ok)c.put(e.request,response.clone()).catch(()=>{});return response;}catch(error){if(e.request.mode==='navigate')return c.match('./index.html');throw error;}}));});
