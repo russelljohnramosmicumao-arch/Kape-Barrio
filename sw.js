@@ -1,5 +1,6 @@
-const CACHE="kbr-pos-v107-grouped-open-orders";
+const CACHE="kbr-pos-v108-management-access";
 const ASSETS=[
+  "manager-access.js",
   "./",
   "./app-links.js",
   "./app-sync.js",

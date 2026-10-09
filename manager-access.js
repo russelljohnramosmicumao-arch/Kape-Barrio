@@ -1,0 +1,5 @@
+async function openManagerAccess(){
+KBRSyncUI.screen('Manager access','Owner: enter the owner PIN. Manager or Assistant Manager: use your own drink passcode. Sign in with your own account first.',[['Back',()=>KBRSyncUI.close()]]);
+const form=document.createElement('form');form.innerHTML='<label>PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" autocomplete="off" required></label><p role="status" data-error></p><button type="submit">Open manager page</button>';document.querySelector('#cloudScreen .cloud-box').append(form);
+form.onsubmit=async e=>{e.preventDefault();const button=form.querySelector('button');button.disabled=true;try{const result=await KBRCloud.rpc('kbr_open_management',{p_pin:form.elements.pin.value});form.elements.pin.value='';if(result.error)throw Error(result.error);if(!result.ok)throw Error('Access was not approved.');location.href='https://russelljohnramosmicumao-arch.github.io/ManagersPage/';}catch(e){form.querySelector('[data-error]').textContent=e.message;button.disabled=false;}};
+}
