@@ -310,6 +310,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .unavailable-label{display:inline-block;color:#a32f24;background:#fff0ed;padding:5px 8px;border-radius:7px;font-weight:800;margin-bottom:5px}
 
 .barista-pay-panel label,.cloud-box form label{display:block;margin:12px 0;font-weight:700}.barista-pay-panel input,.cloud-box form input,.cloud-box form select{display:block;width:100%;min-height:46px;padding:10px;border:1px solid #d9c7b5;border-radius:10px;font-size:16px}
+.addon-menu{font-size:11px;max-width:100%}.addon-menu summary{cursor:pointer;border:1px solid #d2e1ca;border-radius:8px;background:#f2f7ef;padding:7px 10px;font-size:11px;font-weight:700;color:#45652b;width:max-content}.addon-menu[open] summary{margin-bottom:6px}.addon-menu .addon-controls{display:flex;flex-direction:column;align-items:stretch;gap:5px}.addon-menu .addon-control{padding:5px 7px;gap:6px}.addon-menu .addon-control span{font-size:11px;flex:1}.addon-menu .addon-control button{font-size:12px;min-width:32px;min-height:32px;padding:4px 7px}.addon-menu .addon-control b{font-size:11px;min-width:14px;text-align:center}
 </style><link rel="stylesheet" href="sync.css">
 
 <link rel="stylesheet" href="page-tools.css"></head>
@@ -1023,19 +1024,26 @@ function appendItemsToOrder(order,newItems){
 }
 function ensureUnitServedFlags(order){if(!order||!Array.isArray(order.units))return;order.units.forEach(u=>{if(typeof u.served!=='boolean')u.served=!!order.baristaDone})}
 function ensureAllOpenUnits(){getAllOpenOrders().forEach(o=>{ensurePendingUnits(o);ensureUnitServedFlags(o)})}
-const BARISTA_ADDONS={iceCream:{name:'Ice cream scoop',price:25},pearl:{name:'Extra pearl',price:20}};
+const BARISTA_ADDONS={iceCream:{name:'Ice cream scoop',price:25},pearl:{name:'Extra pearl',price:20},espressoShot:{name:'Extra espresso shot',price:40,coffeeOnly:true},extraSyrup:{name:'Extra syrup (per pump)',price:15,coffeeOnly:true}};
+const openAddonUnits=new Set();
+function isCoffeeUnit(unit){return !unit.food&&(/coffee/i.test(unit.category||'')||/espresso|americano|cappuccino|macchiato|latte|mocha|dirty matcha/i.test(unit.name||'')&&!/matcha latte|taro latte|chocolate latte/i.test(unit.name||''));}
+function allowedUnitAddons(unit){return Object.entries(BARISTA_ADDONS).filter(([,a])=>!a.coffeeOnly||isCoffeeUnit(unit));}
+function toggleBaristaAddons(uid,open){if(open)openAddonUnits.add(uid);else openAddonUnits.delete(uid);}
+
 function unitAddonTotal(unit){return Object.entries(BARISTA_ADDONS).reduce((sum,[key,a])=>sum+(Number(unit.addons?.[key])||0)*a.price,0);}
 function unitAddonLabel(unit){return Object.entries(BARISTA_ADDONS).filter(([key])=>Number(unit.addons?.[key])>0).map(([key,a])=>`${unit.addons[key]}× ${a.name}`).join(' + ');}
 function baristaAddon(uid,key,delta){
   const order=getCurrentBaristaOrder();if(!order||order.paid||!BARISTA_ADDONS[key])return;
-  ensurePendingUnits(order);const unit=order.units.find(u=>u.uid===uid&&!u.cancelled);if(!unit)return;
+  ensurePendingUnits(order);const unit=order.units.find(u=>u.uid===uid&&!u.cancelled);if(!unit||!allowedUnitAddons(unit).some(([allowed])=>allowed===key))return;
   unit.addons=unit.addons||{};unit.addons[key]=Math.max(0,Math.min(20,(Number(unit.addons[key])||0)+delta));
   setPendingOrderStorage();renderBaristaOrders();
 }
 function baristaAddonControls(unit,paid){
   const locked=paid?'disabled':'';
-  return `<div class="addon-controls">${Object.entries(BARISTA_ADDONS).map(([key,a])=>`<div class="addon-control"><span>${a.name} · ${peso(a.price)}</span><button class="discount-btn" ${locked} ${!unit.addons?.[key]?'disabled':''} aria-label="Remove ${a.name}" onclick="event.stopPropagation();baristaAddon('${unit.uid}','${key}',-1)">−</button><b>${Number(unit.addons?.[key])||0}</b><button class="discount-btn" ${locked} aria-label="Add ${a.name}" onclick="event.stopPropagation();baristaAddon('${unit.uid}','${key}',1)">+</button></div>`).join('')}</div>`;
+  const count=Object.values(unit.addons||{}).reduce((sum,n)=>sum+(Number(n)||0),0);
+  return `<details class="addon-menu" ${openAddonUnits.has(unit.uid)?'open':''} ontoggle="toggleBaristaAddons('${unit.uid}',this.open)"><summary onclick="event.stopPropagation()">Add-ons${count?' · '+count:''}</summary><div class="addon-controls">${allowedUnitAddons(unit).map(([key,a])=>`<div class="addon-control"><span>${a.name} · ${peso(a.price)}</span><button class="discount-btn" ${locked} ${!unit.addons?.[key]?'disabled':''} aria-label="Remove ${a.name}" onclick="event.stopPropagation();baristaAddon('${unit.uid}','${key}',-1)">−</button><b>${Number(unit.addons?.[key])||0}</b><button class="discount-btn" ${locked} aria-label="Add ${a.name}" onclick="event.stopPropagation();baristaAddon('${unit.uid}','${key}',1)">+</button></div>`).join('')}</div></details>`;
 }
+
 function orderUnitTotal(unit){
   const original=Number(unit.originalPrice||unit.price||0);
   const pct=unit.food?0:(Number(unit.discountPercent)||0);
