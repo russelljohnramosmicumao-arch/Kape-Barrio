@@ -365,7 +365,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div id="baristaAppView">
       <div class="barista-top">
         <div><h2>Barista Page</h2><div class="muted">Orders, kitchen alerts, add-ons, discounts and payment</div></div>
-        <div class="barista-actions"><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
+        <div class="barista-actions"><a class="secondary" href="https://russelljohnramosmicumao-arch.github.io/KapeBarrioHomeScreen/" style="text-decoration:none">Home</a><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
       </div>
       <div class="barista-tabs">
         <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Pending Orders</button>
@@ -1323,7 +1323,7 @@ function renderBaristaPaymentPanel(){
   if(selectedBaristaPayment==='barista-drink'){
     const order=getCurrentBaristaOrder(),units=(order.units||[]).filter(u=>!u.cancelled),eligible=units.length===1&&!units[0].food;
     const available=window.KBRBaristaDrinks?.available();
-    const message=available===null||available===undefined?'Checking today’s available barista drinks…':available.length?'Choose the barista:':'No unredeemed on-duty baristas. The owner can update today’s duty list in Manager.';
+    const message=available===null||available===undefined?(window.KBRBaristaDrinkError||'Checking today’s available barista drinks…'):available.length?'Choose the barista:':'No available free drinks. Clock in first; each employee can redeem one drink per day.';
     host.innerHTML=`<div class="barista-pay-panel"><b>One free drink per barista per day</b><p>${eligible?message:'Use an order containing exactly one drink and no food.'}</p><div class="comp-choice-list">${(available||[]).map(name=>`<button ${eligible?'':'disabled'} onclick="chooseBaristaDrink('${name}')">${name}</button>`).join('')}</div><p class="muted">Recorded in history and inventory usage. Sales amount: ₱0.</p></div>`;return;
   }
   if(selectedBaristaPayment==='kuya-john'){

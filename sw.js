@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v109-clock-and-shop-tabs";
+const CACHE="kbr-pos-v110-home-separated-pages";
 const ASSETS=[
   "manager-access.js",
   "worker-clock.js",
