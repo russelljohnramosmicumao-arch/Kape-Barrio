@@ -1118,6 +1118,23 @@ function toggleSiomaiGroupServed(orderNo, sourceIndex){
   syncOpenOrderLifecycle(order);
 }
 function setSiomaiGroupService(no,index,service){const order=findOpenOrder(no);if(!order)return;for(const unit of order.units)if(unit.sourceIndex===index&&!unit.cancelled)unit.serviceType=service;setPendingOrderStorage();renderBaristaOrders();}
+function baristaDisplayGroups(order){
+  const groups=new Map();
+  for(const u of order.units||[]){
+    if(u.cancelled)continue;
+    const key=JSON.stringify([u.productId||u.name,u.name,u.category||'',u.type||'',u.size||'',u.flavor||'',u.sweetness||'',u.serviceType||'',!!u.food,Number(u.originalPrice||u.price)||0]);
+    if(!groups.has(key))groups.set(key,{item:u,units:[]});
+    groups.get(key).units.push(u);
+  }
+  return [...groups.values()];
+}
+function toggleDisplayGroupServed(no,index){
+  const order=findOpenOrder(no);if(!order)return;
+  ensurePendingUnits(order);ensureUnitServedFlags(order);
+  const group=baristaDisplayGroups(order)[index];if(!group)return;
+  const served=!group.units.every(u=>u.served);group.units.forEach(u=>u.served=served);
+  syncOpenOrderLifecycle(order);
+}
 function renderBaristaOrders(){
   ensureAllOpenUnits();
   updatePendingOrdersTab();
@@ -1135,9 +1152,9 @@ function renderBaristaOrders(){
     const thumbnails=orders.map(o=>{
       const total=pendingOrderTotal(o);
       const displayNo=String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0');
-      const items=buildHistoryItemsFromPending(o).map(x=>{
-        const line=(Number(x.price)||0)*(Number(x.qty)||0);
-        return `<div class="barista-order-thumb-item"><span>${Number(x.qty)||0}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
+      const items=baristaDisplayGroups(o).map(({item:x,units})=>{
+        const line=units.reduce((sum,u)=>sum+orderUnitTotal(u),0);
+        return `<div class="barista-order-thumb-item"><span>${units.length}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
       }).join('');
       const svcClass=orderServiceClass(o);
       return `<button class="barista-order-thumb ${svcClass}" onclick="selectOpenOrder('${o.no}')">
@@ -1154,8 +1171,7 @@ function renderBaristaOrders(){
 
   const originalTotal=order.units.filter(u=>!u.cancelled).reduce((s,u)=>s+(Number(u.originalPrice)||0)+unitAddonTotal(u),0);
   const total=pendingOrderTotal(order);
-  const groups=order.items.map((x,gi)=>{
-    const units=order.units.filter(u=>u.sourceIndex===gi&&!u.cancelled);
+  const groups=baristaDisplayGroups(order).map(({item:x,units},gi)=>{
     if(!units.length)return '';
     const details=[x.type&&x.type!=='standard'?x.type:'',x.size,x.flavor,x.sweetness].filter(Boolean).join(' · ');
     const lineTotal=units.reduce((s,u)=>s+orderUnitTotal(u),0);
@@ -1165,19 +1181,19 @@ function renderBaristaOrders(){
     const isSiomai=String(x.name||'').trim().toLowerCase()==='siomai';
     const topPrice=peso(lineTotal);
 
-    const unitRows=(isSiomai?units.slice(0,1):units).map((u)=>{
+    const unitRows=units.map((u)=>{
       const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u);
       const discountUI=u.food
         ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`
         : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',20)">20%</button><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`;
       const discountPrice=!u.food&&pct?`<div class="discount-price">Original ${peso(u.originalPrice)} · ${pct}% off · <b>${peso(net)}</b></div>`:'';
       return `<div class="barista-unit-details-row">
-        <div class="barista-unit-details-name"><b>${isSiomai?`${units.length}× `:'1× '}${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small>${unitAddonLabel(u)?`<small style="display:block;color:#386944">+ ${escapeHtml(unitAddonLabel(u))}</small>`:''}</div>
-        <div class="barista-unit-details-price">${peso(isSiomai?lineTotal:net)}</div>
+        <div class="barista-unit-details-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small>${unitAddonLabel(u)?`<small style="display:block;color:#386944">+ ${escapeHtml(unitAddonLabel(u))}</small>`:''}</div>
+        <div class="barista-unit-details-price">${peso(net)}</div>
         <div class="barista-unit-details-controls"><div class="unit-adjustments">${discountUI}${baristaAddonControls(u,order.paid)}</div>${discountPrice}
           <div class="order-service-toggle"><span>Order type:</span>
-            <button class="order-service-btn dine ${u.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();${isSiomai?`setSiomaiGroupService('${order.no}',${gi},'dine-in')`:`setOrderServiceType('${order.no}','dine-in','${u.uid}')`}">Dine In</button>
-            <button class="order-service-btn takeout ${u.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();${isSiomai?`setSiomaiGroupService('${order.no}',${gi},'take-out')`:`setOrderServiceType('${order.no}','take-out','${u.uid}')`}">Take Out</button>
+            <button class="order-service-btn dine ${u.serviceType==='dine-in'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','dine-in','${u.uid}')">Dine In</button>
+            <button class="order-service-btn takeout ${u.serviceType==='take-out'?'active':''}" onclick="event.stopPropagation();setOrderServiceType('${order.no}','take-out','${u.uid}')">Take Out</button>
           </div>
         </div>
       </div>`;
@@ -1185,7 +1201,7 @@ function renderBaristaOrders(){
 
     return `<div class="barista-group ${expanded?'open':''}" id="barista-group-${gi}">
       <div class="barista-group-label" onclick="toggleBaristaGroup('${order.no}',${gi})">
-        <button class="group-done-btn ${allServed?'done':''}" onclick="event.stopPropagation();toggleItemGroupServed('${order.no}',${gi})" aria-label="Mark ${escapeHtml(x.name)} served">${allServed?'✓ Served':'☐ Done?'}</button>
+        <button class="group-done-btn ${allServed?'done':''}" onclick="event.stopPropagation();toggleDisplayGroupServed('${order.no}',${gi})" aria-label="Mark ${escapeHtml(x.name)} served">${allServed?'✓ Served':'☐ Done?'}</button>
         <span class="barista-group-label-main"><b>${units.length}× ${escapeHtml(x.name)}</b>${details?`<small>${escapeHtml(details)}</small>`:''}</span>
         <span class="barista-group-label-price">${topPrice}<span class="group-chevron">${expanded?'▴':'▾'}</span></span>
       </div>

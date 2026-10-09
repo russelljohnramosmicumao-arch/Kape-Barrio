@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v106-recipe-id-links";
+const CACHE="kbr-pos-v107-grouped-open-orders";
 const ASSETS=[
   "./",
   "./app-links.js",
