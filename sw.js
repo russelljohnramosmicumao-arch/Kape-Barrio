@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v113-installable";
+const CACHE="kbr-pos-v114-offline-order-outbox";
 const ASSETS=["./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
