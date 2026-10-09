@@ -312,7 +312,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-pay-panel label,.cloud-box form label{display:block;margin:12px 0;font-weight:700}.barista-pay-panel input,.cloud-box form input,.cloud-box form select{display:block;width:100%;min-height:46px;padding:10px;border:1px solid #d9c7b5;border-radius:10px;font-size:16px}
 </style><link rel="stylesheet" href="sync.css">
 
-</head>
+<link rel="stylesheet" href="page-tools.css"></head>
 <body>
 <header>
   <div class="brand">
@@ -365,7 +365,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div id="baristaAppView">
       <div class="barista-top">
         <div><h2>Barista Page</h2><div class="muted">Orders, kitchen alerts, add-ons, discounts and payment</div></div>
-        <div class="barista-actions"><a class="secondary" href="https://russelljohnramosmicumao-arch.github.io/KapeBarrioHomeScreen/" style="text-decoration:none">Home</a><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
+        <div class="barista-actions"><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
       </div>
       <div class="barista-tabs">
         <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Pending Orders</button>
@@ -1718,4 +1718,4 @@ render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
 <script src="sync-config.js"></script><script src="sync-core.js"></script><script src="sync-ui.js"></script><script src="pay-later.js"></script><script src="app-sync.js"></script>
-<script src="app-links.js"></script><script src="app-update.js"></script></body></html>
+<script src="app-links.js"></script><script src="page-tools.js"></script></body></html>

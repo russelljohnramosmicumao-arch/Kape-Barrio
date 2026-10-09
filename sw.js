@@ -1,5 +1,5 @@
-const CACHE="kbr-pos-v110-home-separated-pages";
-const ASSETS=[
+const CACHE="kbr-pos-v110-home-separated-pages-ui6";
+const ASSETS=["./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
   "./",
