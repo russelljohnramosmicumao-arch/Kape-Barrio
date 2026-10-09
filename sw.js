@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v110-home-separated-pages-ui6";
+const CACHE="kbr-pos-v111-barista-only-tools";
 const ASSETS=["./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
