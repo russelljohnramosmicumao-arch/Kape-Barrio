@@ -90,7 +90,7 @@
  window.authorizeCompPayment=async(kind,person='',drinkCode='')=>{
   if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Connecting or saving… please try again.');return;}
   const order=getCurrentBaristaOrder();if(!order?._cloudId)return;
-  const pinInput=document.getElementById('ownerChargePin');const pin=kind==='kuya-john'?String(pinInput?.value||''):drinkCode;if(pinInput)pinInput.value='';
+  const pinInput=document.getElementById('ownerChargePin');const pin=kind==='kuya-john'?'':drinkCode;if(pinInput)pinInput.value='';
   busy=true;let authorization;
   try{ui.screen('Authorizing payment…','Please wait.');authorization=await cloud.rpc('kbr_authorize_comp_payment',{p_order:order._cloudId,p_expected_revision:order._cloudRevision,p_kind:kind,p_person:person,p_pin:pin});if(authorization.error)throw Error(authorization.error);ui.close();}
   catch(e){ui.screen('Payment not authorized',e.message,[['Back to payment',()=>ui.close()]]);return;}finally{busy=false;}
@@ -110,7 +110,7 @@
   const row=remote.get(id);if(!row||row.status!=='completed')return;
   ui.screen('Cancel completed transaction','Manager approval required. This restores deducted inventory and releases any barista drink allowance.',[['Keep transaction',()=>ui.close()]]);
   const box=document.querySelector('#cloudScreen .cloud-box'),form=document.createElement('form');
-  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
+  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager / Owner Drink PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
   box.append(form);
   form.onsubmit=async event=>{
    event.preventDefault();if(busy)return;const pin=form.elements.pin.value,reason=form.elements.reason.value;form.elements.pin.value='';busy=true;
