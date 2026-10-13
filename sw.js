@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v117-install-icon-sizes-manager-pin-pad-v2-symbol-only-mango-strawberry-photo-v2";
+const CACHE="kbr-pos-v117-install-icon-sizes-manager-pin-pad-v2-symbol-only-approval-clock-v1-mango-strawberry-photo-v2";
 const ASSETS=["./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
