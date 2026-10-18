@@ -1,5 +1,5 @@
-const CACHE="kbr-pos-v119-roll6-promo-codes";
-const ASSETS=["./promo.html","./promo.css?v=1","./promo.js?v=1","./promo-codes.html","./promo-admin.css?v=1","./promo-admin.js?v=1","./promo-barista.js?v=1","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
+const CACHE="kbr-pos-v120-promo-code-payment";
+const ASSETS=["./promo-code.js?v=1","./promo-code.css?v=1","./promo-codes.html","./promo-template.png","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
   "./",

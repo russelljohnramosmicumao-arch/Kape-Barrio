@@ -313,7 +313,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .addon-menu{font-size:11px;max-width:100%}.addon-menu summary{cursor:pointer;border:1px solid #d2e1ca;border-radius:8px;background:#f2f7ef;padding:7px 10px;font-size:11px;font-weight:700;color:#45652b;width:max-content}.addon-menu[open] summary{margin-bottom:6px}.addon-menu .addon-controls{display:flex;flex-direction:column;align-items:stretch;gap:5px}.addon-menu .addon-control{padding:5px 7px;gap:6px}.addon-menu .addon-control span{font-size:11px;flex:1}.addon-menu .addon-control button{font-size:12px;min-width:32px;min-height:32px;padding:4px 7px}.addon-menu .addon-control b{font-size:11px;min-width:14px;text-align:center}
 </style><link rel="stylesheet" href="sync.css">
 
-<link rel="stylesheet" href="page-tools.css"></head>
+<link rel="stylesheet" href="page-tools.css"><link rel="stylesheet" href="promo-code.css?v=1">
+</head>
 <body>
 <header>
   <div class="brand">
@@ -366,7 +367,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div id="baristaAppView">
       <div class="barista-top">
         <div><h2>Barista Page</h2><div class="muted">Orders, kitchen alerts, add-ons, discounts and payment</div></div>
-        <div class="barista-actions"><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
+        <div class="barista-actions"><button class="secondary promo-admin-link" onclick="KBRPromo.giveCode()">🎟 Give Code</button><button class="secondary promo-admin-link" onclick="KBRPromo.openList()">Promo Codes</button><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
       </div>
       <div class="barista-tabs">
         <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Pending Orders</button>
@@ -382,7 +383,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
       <div id="baristaHistoryView" style="display:none">
         <div class="history-title-row">
           <h3 style="margin:0;color:var(--brown);font-family:Georgia,serif">Completed Transactions</h3><label>Period <select id="baristaHistoryPeriod" onchange="renderHistory()"><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="all">All transactions</option></select></label>
-          <label>Type <select id="baristaHistoryKind" onchange="renderHistory()"><option value="all">All transactions</option><option value="cash">Cash</option><option value="gcash">GCash</option><option value="pay-later">Pay Later</option><option value="split">Cash + GCash</option><option value="barista-drink">Barista Drinks</option><option value="kuya-john">Kuya John</option></select></label>
+          <label>Type <select id="baristaHistoryKind" onchange="renderHistory()"><option value="all">All transactions</option><option value="cash">Cash</option><option value="gcash">GCash</option><option value="pay-later">Pay Later</option><option value="split">Cash + GCash</option><option value="barista-drink">Barista Drinks</option><option value="promo-code">Promo Code</option></select></label>
         </div>
         <div class="history-tools" style="margin-top:10px">
           
@@ -1223,7 +1224,7 @@ function renderBaristaOrders(){
   if(baristaView==='unserved-paid')statusNote=KBRPayments.isNonSale(order)?`<div class="barista-status-note">${escapeHtml(KBRPayments.label(order))} confirmed · excluded from sales. Waiting for remaining items to be served.</div>`:`<div class="barista-status-note">💳 ${escapeHtml(KBRPayments.label(order))} recorded. Waiting for remaining items to be served.</div>`;
   const paymentBlock=baristaView==='unserved-paid'
     ? statusNote
-    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">GCash</button><button class="barista-pay-btn ${selectedBaristaPayment==='pay-later'?'selected':''}" onclick="selectBaristaPayment('pay-later')">Pay Later</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Barista Drinks</button><button class="barista-pay-btn owner ${selectedBaristaPayment==='kuya-john'?'selected':''}" onclick="selectBaristaPayment('kuya-john')">Kuya John</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
+    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">GCash</button><button class="barista-pay-btn promo-code-btn ${selectedBaristaPayment==='promo-code'?'selected':''}" onclick="selectBaristaPayment('promo-code')">Promo Code</button><button class="barista-pay-btn ${selectedBaristaPayment==='pay-later'?'selected':''}" onclick="selectBaristaPayment('pay-later')">Pay Later</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Barista Drinks</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
   const orderSvcClass=orderServiceClass(order);
   baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${orderSvcClass}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
@@ -1329,14 +1330,12 @@ function renderBaristaPaymentPanel(){
     </div><button id="baristaCompleteCashBtn" class="barista-close-pay" ${insufficient?'disabled':''} onclick="completePendingPayment('cash')">Complete Cash Payment</button><button class="secondary" onclick="selectBaristaPayment('split')">Cash + GCash</button><button class="secondary" onclick="selectBaristaPayment('pay-later')">Cash + Pay Later</button></div>`;
     return;
   }
+  if(selectedBaristaPayment==='promo-code'){KBRPromo.renderPaymentPanel(host);return;}
   if(selectedBaristaPayment==='barista-drink'){
     const order=getCurrentBaristaOrder(),units=(order.units||[]).filter(u=>!u.cancelled),eligible=units.length===1&&!units[0].food;
     const available=window.KBRBaristaDrinks?.available();
     const message=available===null||available===undefined?(window.KBRBaristaDrinkError||'Checking today’s available barista drinks…'):available.length?'Choose the barista:':'No available free drinks. Clock in first; each employee can redeem one drink per day.';
     host.innerHTML=`<div class="barista-pay-panel"><b>One free drink per barista per day</b><p>${eligible?message:'Use an order containing exactly one drink and no food.'}</p><div class="comp-choice-list">${(available||[]).map(name=>`<button ${eligible?'':'disabled'} onclick="chooseBaristaDrink('${name}')">${name}</button>`).join('')}</div><p class="muted">Recorded in history and inventory usage. Sales amount: ₱0.</p></div>`;return;
-  }
-  if(selectedBaristaPayment==='kuya-john'){
-    host.innerHTML=`<form class="barista-pay-panel" onsubmit="event.preventDefault();authorizeCompPayment('kuya-john')"><b>Charge this order to Kuya John</b><p>Amount charged: ${peso(pendingOrderTotal(getCurrentBaristaOrder()))}</p><button type="submit" class="barista-close-pay">Confirm Kuya John charge</button><p class="muted">Recorded separately from sales. Inventory is deducted when the order is completed.</p></form>`;return;
   }
   host.innerHTML=`<div class="barista-pay-panel"><img class="barista-gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src='images/gcash-card.png';"><div class="gcash-number">GCash Number: 09672365176</div><div class="gcash-help">Confirm the customer has completed the GCash payment before pressing Complete.</div><button class="barista-close-pay" onclick="completePendingPayment('gcash')">Complete GCash Payment</button><button class="secondary" onclick="selectBaristaPayment('split')">Cash + GCash</button></div>`;
 }
@@ -1717,4 +1716,4 @@ render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
 <script src="sync-config.js"></script><script src="sync-core.js"></script><script src="sync-ui.js"></script><script src="pay-later.js"></script><script src="app-sync.js"></script>
-<script src="app-links.js"></script><script src="page-tools.js"></script><script src="promo-barista.js?v=1"></script></body></html>
+<script src="app-links.js"></script><script src="page-tools.js"></script><script src="promo-code.js?v=1"></script></body></html>
