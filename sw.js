@@ -1,5 +1,5 @@
-const CACHE="kbr-pos-v117-install-icon-sizes-manager-pin-pad-v2-symbol-only-approval-clock-v2-drink-pins-mango-strawberry-photo-v2-pin-home-cancel-v1-pending-cash-review-v1-ops-v118-receipt-drawer";
-const ASSETS=["./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
+const CACHE="kbr-pos-v119-roll6-promo-codes";
+const ASSETS=["./promo.html","./promo.css?v=1","./promo.js?v=1","./promo-codes.html","./promo-admin.css?v=1","./promo-admin.js?v=1","./promo-barista.js?v=1","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
   "./",
