@@ -1,0 +1,24 @@
+Kape' Bar-Rio — Cashier Turn Over Shift Update
+
+MONDAY–FRIDAY
+1st cashier shift -> Turn Over Shift -> 2nd cashier shift -> Close Shop
+
+SATURDAY–SUNDAY
+One cashier shift only -> Close Shop. Turn Over Shift is blocked.
+
+RULES
+- The opener becomes Cashier on Duty.
+- Only Cashier on Duty can save Cash In, Cash Out and Close Shop.
+- Turn Over Shift counts actual cash and records Expected / Counted / Difference for the outgoing cashier.
+- Incoming cashier is selected and both outgoing + incoming type their Drink PINs.
+- Every other person CURRENTLY CLOCKED IN must type their own Drink PIN to acknowledge the count.
+- Turnover cannot complete until every required acknowledgement is complete.
+- The counted amount becomes the incoming cashier's opening drawer.
+- The shop remains OPEN during turnover.
+
+INSTALL
+1. Run 01-cashier-turnover-shifts.sql ONCE in Supabase SQL Editor.
+2. Replace/add in Home/Open-End-Shift: shifts.js, turnover-shift.js, sync.css, open-end-shift.html, sw.js.
+3. Hard refresh once; for installed PWA, fully close and reopen.
+
+Requires your existing cashier verification and attendance system.
