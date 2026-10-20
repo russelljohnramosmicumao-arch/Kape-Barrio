@@ -1,4 +1,4 @@
-const CACHE="kbr-pos-v124-manager-pin-6digit";
+const CACHE="kbr-pos-v125-no-shift-records-button";
 const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html","./shifts.js?v=turnover-v3","./sync.css?v=turnover-v3","./promo-code.js?v=3","./promo-code.css?v=3","./promo-codes.html","./promo-template.png","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
