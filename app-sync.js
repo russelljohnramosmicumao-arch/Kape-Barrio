@@ -90,7 +90,7 @@
   const row=remote.get(id);if(!row||row.status!=='completed')return;
   ui.screen('Cancel completed transaction','Manager approval required. This restores deducted inventory and releases any barista drink allowance.',[['Keep transaction',()=>ui.close()]]);
   const box=document.querySelector('#cloudScreen .cloud-box'),form=document.createElement('form');
-  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
+  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
   box.append(form);
   form.onsubmit=async event=>{
    event.preventDefault();if(busy)return;const pin=form.elements.pin.value,reason=form.elements.reason.value;form.elements.pin.value='';busy=true;
@@ -99,8 +99,8 @@
     const result=await cloud.rpc('kbr_cancel_completed_transaction',{p_order:id,p_expected_revision:row.revision,p_pin:pin,p_reason:reason});
     if(result.error)throw Error(result.error);
     if(result.conflict){await loadOrders();display();throw Error('Transaction changed on another device. Review it and try again.');}
-    applyRow(result);await refreshBaristaClaims();display();ui.close();showActionToast('Transaction cancelled. Inventory restored and its recorded Cash/GCash payment was reversed from the Cash Registry.');
-   }catch(e){ui.screen('Cancellation not confirmed',e.message+' Review Transaction History and Cash Registry before trying again. Repeating an approved cancellation will not return stock or reverse cash twice.',[['Review history',()=>{ui.close();poll();}]]);}finally{busy=false;}
+    applyRow(result);await refreshBaristaClaims();display();ui.close();showActionToast('Transaction cancelled. Inventory restored and its Cash/GCash payment reversal will be reflected in Cash Registry.');
+   }catch(e){ui.screen('Cancellation not confirmed',e.message+' Review the history before trying again. Repeating an approved cancellation will not return stock twice.',[['Review history',()=>{ui.close();poll();}]]);}finally{busy=false;}
   };
  };
  clearHistory=()=>alert('Shared sales history is retained in the database. Export CSV to keep a separate copy.');
