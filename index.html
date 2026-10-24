@@ -810,6 +810,41 @@ function saveTransactionToHistory(receipt){
     alert('Storage is full. Please export your CSV and clear older history before saving more transactions.');
   }
 }
+
+const PROMO_DISCOUNT_SETTING_KEY='kbr-promo-discount-setting-v1';
+let promoDiscountSetting={enabled:true,percent:100};
+try{
+  const saved=JSON.parse(localStorage.getItem(PROMO_DISCOUNT_SETTING_KEY)||'null');
+  if(saved&&typeof saved.enabled==='boolean'&&[50,100].includes(Number(saved.percent))){
+    promoDiscountSetting={enabled:saved.enabled,percent:Number(saved.percent)};
+  }
+}catch(_){}
+async function refreshPromoDiscountSetting(rerender=true){
+  try{
+    const data=await KBRCloud.rpc('kbr_get_promo_discount_setting',{});
+    const next={enabled:!!data.enabled,percent:[50,100].includes(Number(data.percent))?Number(data.percent):100};
+    const changed=next.enabled!==promoDiscountSetting.enabled||next.percent!==promoDiscountSetting.percent;
+    promoDiscountSetting=next;
+    try{localStorage.setItem(PROMO_DISCOUNT_SETTING_KEY,JSON.stringify(next))}catch(_){}
+    if(changed&&rerender&&baristaDrawer?.classList.contains('open'))renderBaristaOrders();
+    return next;
+  }catch(_){
+    return promoDiscountSetting;
+  }
+}
+function promoDiscountButton(uid,pct){
+  if(!promoDiscountSetting.enabled)return '';
+  const promoPct=promoDiscountSetting.percent===50?50:100;
+  const label=promoPct===100?'Promo Free':'Promo 50%';
+  return `<button class="discount-btn promo-free ${pct===promoPct?'active':''}" onclick="event.stopPropagation();baristaDiscount('${uid}',${promoPct})">${label}</button>`;
+}
+function promoDiscountLabel(pct){
+  pct=Number(pct)||0;
+  if(pct===100)return 'Promo Free';
+  if(pct===50)return 'Promo 50%';
+  return pct?`${pct}% off`:'';
+}
+
 function closeBaristaPage(){
   baristaDrawer.classList.remove("open");
   if(!customerServiceType) showCustomerStart();
@@ -823,6 +858,7 @@ function updateKitchenAlertTab(){
   tab.innerHTML=unresolved>0 ? `🍳 Kitchen <span class=\"kitchen-count\">${unresolved}</span>` : '🍳 Kitchen';
 }
 function openBaristaPage(){
+  refreshPromoDiscountSetting(false);
   const start=document.getElementById('serviceStart');
   if(start) start.style.display='none';
   baristaDrawer.classList.add('open');
@@ -847,7 +883,9 @@ function setBaristaView(view){
   else if(view==='pay-later')KBRDeferred.refresh();
   else if(view==='kitchen')renderKitchenAlerts();
   else renderHistory();
-}function isKitchenUrgentItem(item){
+}
+setInterval(()=>{if(baristaDrawer?.classList.contains('open'))refreshPromoDiscountSetting();},30000);
+function isKitchenUrgentItem(item){
   const n=String(item?.name||'').trim().toLowerCase();
   return ['fries','shiang hai','nachos','samyang buldak'].includes(n);
 }
@@ -1074,7 +1112,7 @@ function buildHistoryItemsFromPending(order=getPendingOrder()){
     price:Math.round(orderUnitTotal(u)*100)/100,
     originalPrice:(Number(u.originalPrice)||0)+unitAddonTotal(u),
     discountPercent:u.food?0:Number(u.discountPercent)||0,
-    discountLabel:!u.food&&Number(u.discountPercent)===100?'Promo Free':'',
+    discountLabel:!u.food?promoDiscountLabel(Number(u.discountPercent)||0):'',
     discountAmount:u.food?0:Math.round((u.originalPrice+unitAddonTotal(u)-orderUnitTotal(u))*100)/100,
     food:!!u.food
   }));
@@ -1085,7 +1123,15 @@ function baristaDiscount(uid,pct){
   ensurePendingUnits(order);
   const u=order.units.find(x=>x.uid===uid);
   if(!u || u.food || order.paid)return;
-  u.discountPercent=Number(pct)||0;
+  const nextPct=Number(pct)||0;
+  if(nextPct===50||nextPct===100){
+    if(!promoDiscountSetting.enabled||nextPct!==promoDiscountSetting.percent){
+      showActionToast(promoDiscountSetting.enabled?`Current promo is ${promoDiscountSetting.percent}% off.`:'Promo discount is currently OFF.');
+      refreshPromoDiscountSetting();
+      return;
+    }
+  }
+  u.discountPercent=nextPct;
   setPendingOrderStorage();
   renderBaristaOrders();
 }
@@ -1196,8 +1242,8 @@ function renderBaristaOrders(){
       const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u);
       const discountUI=u.food
         ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`
-        : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',20)">20%</button><button class="discount-btn promo-free ${pct===100?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',100)">Promo Free</button><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`;
-      const discountPrice=!u.food&&pct?`<div class="discount-price">Original ${peso(u.originalPrice)} · ${pct===100?'Promo Free':pct+'% off'} · <b>${peso(net)}</b></div>`:'';
+        : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',20)">20%</button>${promoDiscountButton(u.uid,pct)}<button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`;
+      const discountPrice=!u.food&&pct?`<div class="discount-price">Original ${peso(u.originalPrice)} · ${promoDiscountLabel(pct)} · <b>${peso(net)}</b></div>`:'';
       return `<div class="barista-unit-details-row">
         <div class="barista-unit-details-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small>${unitAddonLabel(u)?`<small style="display:block;color:#386944">+ ${escapeHtml(unitAddonLabel(u))}</small>`:''}</div>
         <div class="barista-unit-details-price">${peso(net)}</div>
@@ -1349,7 +1395,7 @@ function completePendingPayment(method,authorization=null){
   if(isOrderFullyServed(order))finalizeOpenOrder(order);else{removeOpenOrderFromBuckets(order.no);unservedPaidOrders.unshift(order);activePendingOrderNo=order.no;setPendingOrderStorage();renderBaristaOrders();showActionToast(`Order #${order.no} is paid and waiting to be served`);}
 }
 function showCompletedReceipt(receipt){
-  receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt"><div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${receipt.no}</div><div>${serviceLabel(receipt.serviceType)?serviceLabel(receipt.serviceType)+' · ':''}${receipt.date} · ${receipt.time}</div>${receipt.note?`<div style="margin-top:5px;">📝 ${escapeHtml(receipt.note)}</div>`:''}</div><hr>${KBRReceiptLines.group(receipt.items).map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${escapeHtml(x.name)}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''}${x.discountPercent?` · ${x.discountPercent}% off`:''}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join('')}<hr><div class="receipt-line"><b>${KBRPayments.isNonSale(receipt)?'DRINK / ORDER VALUE':'TOTAL'}</b><b>${peso(KBRPayments.isNonSale(receipt)?KBRPayments.value(receipt):receipt.total)}</b></div>${receipt.payment==='cash'?`<div class="receipt-line"><span>Cash received</span><span>${peso(receipt.cashReceived||0)}</span></div><div class="receipt-line"><b>CHANGE</b><b>${peso(receipt.change||0)}</b></div>`:''}<hr><div class="center">${KBRPayments.isNonSale(receipt)?escapeHtml(KBRPayments.label(receipt))+' · Sales: ₱0':escapeHtml(KBRPayments.label(receipt))+'. Thank you!'}</div></div>`;
+  receiptArea.innerHTML=`<div id="receiptCanvas" class="receipt"><div class="center"><h3>KAPE' BAR-RIO</h3><div>SHOP & CAFE</div><div class="receipt-number">Order #${receipt.no}</div><div>${serviceLabel(receipt.serviceType)?serviceLabel(receipt.serviceType)+' · ':''}${receipt.date} · ${receipt.time}</div>${receipt.note?`<div style="margin-top:5px;">📝 ${escapeHtml(receipt.note)}</div>`:''}</div><hr>${KBRReceiptLines.group(receipt.items).map(x=>`<div class="receipt-line"><div class="item">${x.qty}× ${escapeHtml(x.name)}<br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''}${x.discountPercent?` · ${escapeHtml(x.discountLabel||promoDiscountLabel(x.discountPercent))}`:''}</small></div><div>${peso(x.qty*x.price)}</div></div>`).join('')}<hr><div class="receipt-line"><b>${KBRPayments.isNonSale(receipt)?'DRINK / ORDER VALUE':'TOTAL'}</b><b>${peso(KBRPayments.isNonSale(receipt)?KBRPayments.value(receipt):receipt.total)}</b></div>${receipt.payment==='cash'?`<div class="receipt-line"><span>Cash received</span><span>${peso(receipt.cashReceived||0)}</span></div><div class="receipt-line"><b>CHANGE</b><b>${peso(receipt.change||0)}</b></div>`:''}<hr><div class="center">${KBRPayments.isNonSale(receipt)?escapeHtml(KBRPayments.label(receipt))+' · Sales: ₱0':escapeHtml(KBRPayments.label(receipt))+'. Thank you!'}</div></div>`;
   receiptDrawer.classList.add('open');
 }
 function groupHistoryItems(items){return KBRReceiptLines.group(items);}
