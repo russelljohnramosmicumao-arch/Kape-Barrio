@@ -1,12 +1,10 @@
 'use strict';
 (()=>{
- window.KBRServedSyncFix={version:'served-sync-v3'};
  const cloud=KBRCloud,ui=KBRSyncUI,queueKey='kbr_order_write_v1',draftKey='kbr_order_draft_v1';
  let role='',ready=false,busy=false,polling=false,menuRevision=0,lastFinalized=null;const remote=new Map();
  let rosterNames=[],claimDay='',claimedNames=null,claimRequest=null;
  function shopDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
- window.KBRPromoSync={version:'promo-cash-fix-v3'};
- window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null?rosterNames.filter(name=>!claimedNames.has(name)):null};
+window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null?rosterNames.filter(name=>!claimedNames.has(name)):null};
  async function refreshBaristaClaims(){
   if(claimRequest)return claimRequest;
   claimRequest=(async()=>{try{
@@ -66,38 +64,7 @@
   try{localStorage.setItem(draftKey,JSON.stringify({p_id:id,p_data:data}));}catch(e){alert('Could not save the order for retry. Free some storage first.');return;}
   await retryDraft();
  };
- const originalToggleDisplayGroupServed=toggleDisplayGroupServed;
- const originalToggleSiomaiGroupServed=toggleSiomaiGroupServed;
- const originalToggleItemGroupServed=toggleItemGroupServed;
- const originalToggleUnitServed=toggleUnitServed;
- toggleDisplayGroupServed=(...args)=>mutate(originalToggleDisplayGroupServed,args);
- toggleSiomaiGroupServed=(...args)=>mutate(originalToggleSiomaiGroupServed,args);
- toggleItemGroupServed=(...args)=>mutate(originalToggleItemGroupServed,args);
- toggleUnitServed=(...args)=>mutate(originalToggleUnitServed,args);
- window.toggleDisplayGroupServed=toggleDisplayGroupServed;
- window.toggleSiomaiGroupServed=toggleSiomaiGroupServed;
- window.toggleItemGroupServed=toggleItemGroupServed;
- window.toggleUnitServed=toggleUnitServed;
-
- // v3: capture the real Barista Done button before its inline onclick runs.
- // This avoids stale/global-binding issues in installed PWAs.
- document.addEventListener('click',event=>{
-   const button=event.target?.closest?.('.group-done-btn');
-   if(!button)return;
-   const inline=String(button.getAttribute('onclick')||'');
-   let match=inline.match(/toggleDisplayGroupServed\('([^']+)',\s*(\d+)\)/);
-   let fn=originalToggleDisplayGroupServed;
-   if(!match){
-     match=inline.match(/toggleSiomaiGroupServed\('([^']+)',\s*(\d+)\)/);
-     fn=originalToggleSiomaiGroupServed;
-   }
-   if(!match)return;
-   event.preventDefault();
-   event.stopImmediatePropagation();
-   mutate(fn,[match[1],Number(match[2])]);
- },true);
-
- const handlers={markKitchenDone,savePendingOrderNote,setOrderServiceType,cancelPendingTransaction,removeBaristaUnit,baristaAddon,baristaDiscount,completePendingPayment};
+ const handlers={markKitchenDone,savePendingOrderNote,toggleUnitServed,toggleItemGroupServed,setOrderServiceType,cancelPendingTransaction,removeBaristaUnit,baristaAddon,baristaDiscount,completePendingPayment};
  for(const [name,fn] of Object.entries(handlers))window[name]=(...args)=>mutate(fn,args);
  window.authorizeCompPayment=async(kind,person='',drinkCode='')=>{
   if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Connecting or saving… please try again.');return;}
@@ -122,7 +89,7 @@
   const row=remote.get(id);if(!row||row.status!=='completed')return;
   ui.screen('Cancel completed transaction','Manager approval required. This restores deducted inventory and releases any barista drink allowance.',[['Keep transaction',()=>ui.close()]]);
   const box=document.querySelector('#cloudScreen .cloud-box'),form=document.createElement('form');
-  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
+  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
   box.append(form);
   form.onsubmit=async event=>{
    event.preventDefault();if(busy)return;const pin=form.elements.pin.value,reason=form.elements.reason.value;form.elements.pin.value='';busy=true;
@@ -131,7 +98,7 @@
     const result=await cloud.rpc('kbr_cancel_completed_transaction',{p_order:id,p_expected_revision:row.revision,p_pin:pin,p_reason:reason});
     if(result.error)throw Error(result.error);
     if(result.conflict){await loadOrders();display();throw Error('Transaction changed on another device. Review it and try again.');}
-    applyRow(result);await refreshBaristaClaims();display();ui.close();showActionToast('Transaction cancelled. Inventory restored and its Cash/GCash payment reversal will be reflected in Cash Registry.');
+    applyRow(result);await refreshBaristaClaims();display();ui.close();showActionToast('Transaction cancelled. Barista allowance released and recorded stock deductions restored.');
    }catch(e){ui.screen('Cancellation not confirmed',e.message+' Review the history before trying again. Repeating an approved cancellation will not return stock twice.',[['Review history',()=>{ui.close();poll();}]]);}finally{busy=false;}
   };
  };
@@ -139,6 +106,7 @@
  async function start(){if(!cloud.requireLogin())return;ui.screen('Connecting this device…','Loading the shared shop menu and orders.');try{
   ui.rememberBackup();role=await cloud.role();if(['owner','operator'].includes(role))await cloud.rpc('kbr_barista_duty',{p_on:true});const menuRow=await ui.menuReady(role);ui.applyMenu(menuRow);menuRevision=menuRow.revision;refreshManagedMenu();await loadOrders();await refreshBaristaClaims();ready=true;display();ui.close();cloud.status('Connected · updates every 3 sec');showPending();if(['owner','operator'].includes(role)&&!cloud.read(queueKey)&&!cloud.read(draftKey)){const openShifts=await cloud.request('/rest/v1/kbr_shifts?status=eq.open&select=id');if(!openShifts.length)location.href='shift-records.html?open=1';};
   const managerLink=document.getElementById('managerLink');if(managerLink)managerLink.hidden=role!=='owner';
+  const actions=document.querySelector('.barista-actions');if(actions){for(const [label,action] of [['Shift Records',()=>location.href='shift-records.html']]){const button=document.createElement('button');button.className='secondary';button.textContent=label;button.onclick=action;actions.insertBefore(button,document.getElementById('baristaUpdateTools'));}}
  }catch(e){ui.screen('Could not connect',e.message+' Check the database and staff setup steps.',[['Retry connection',start],['Sign in again',()=>location.href='sync-login.html']]);}}
  window.addEventListener('online',()=>{if(cloud.read(queueKey))retryUpdate();else if(cloud.read(draftKey))retryDraft();else poll();});window.addEventListener('focus',poll);setInterval(poll,cloud.config.pollMs);start();
 })();

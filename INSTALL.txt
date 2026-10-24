@@ -1,24 +1,21 @@
-Kape' Bar-Rio — Cashier Turn Over Shift Update
+Kape' Bar-Rio — Remove Promo Code UI + Promo Free Discount
 
-MONDAY–FRIDAY
-1st cashier shift -> Turn Over Shift -> 2nd cashier shift -> Close Shop
+Upload these files to the ORDERING repository:
+- index.html
+- app-sync.js
+- comp-payments.js
+- shifts.js
+- turnover-shift.js
+- sw.js
 
-SATURDAY–SUNDAY
-One cashier shift only -> Close Shop. Turn Over Shift is blocked.
+What changes:
+- Removes Promo Code / Give Code / Promo Codes UI from the Barista page.
+- Keeps Cash, GCash, Pay Later, and Barista Drinks.
+- Adds a per-drink discount button: Promo Free.
+- Promo Free applies 100% discount to the drink price, making the drink ₱0.
+- Inventory and ingredient deductions still happen because the item stays on the order.
+- Separate paid add-ons are not waived; they remain chargeable.
+- Receipt/history retains the discount and labels the item Promo Free.
+- Service worker cache version bumped so the PWA loads the new UI.
 
-RULES
-- The opener becomes Cashier on Duty.
-- Only Cashier on Duty can save Cash In, Cash Out and Close Shop.
-- Turn Over Shift counts actual cash and records Expected / Counted / Difference for the outgoing cashier.
-- Incoming cashier is selected and both outgoing + incoming type their Drink PINs.
-- Every other person CURRENTLY CLOCKED IN must type their own Drink PIN to acknowledge the count.
-- Turnover cannot complete until every required acknowledgement is complete.
-- The counted amount becomes the incoming cashier's opening drawer.
-- The shop remains OPEN during turnover.
-
-INSTALL
-1. Run 01-cashier-turnover-shifts.sql ONCE in Supabase SQL Editor.
-2. Replace/add in Home/Open-End-Shift: shifts.js, turnover-shift.js, sync.css, open-end-shift.html, sw.js.
-3. Hard refresh once; for installed PWA, fully close and reopen.
-
-Requires your existing cashier verification and attendance system.
+After GitHub Pages deploys, fully close and reopen the Ordering PWA.
