@@ -33,7 +33,84 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
   for(const [id,row] of [...remote])if(row.status==='open'&&!ids.has(id)){const changed=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(id)+'&select=*');if(changed[0]){applyRow(changed[0]);changedUI=true;}}
   await refreshBaristaClaims();if(baristaView==='pay-later')await KBRDeferred.refresh();if(changedUI)display();cloud.status('Connected · updates every 3 sec');
  }catch(e){cloud.status('Offline or disconnected · orders cannot be sent',true);}finally{polling=false;}}
- async function flushUpdate(operation){let row;try{row=await cloud.rpc(operation.rpcName||'kbr_update_order',operation.args);}catch(e){const rejected=(!!operation.rpcName&&e.status===400&&e.code==='P0001')||e.status===400&&e.code==='P0001'&&/Authorize this complimentary payment first|already has a free drink today|Order items changed|One drink only|not on duty today/.test(e.message);if(!rejected)throw e;localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Payment was not saved',e.message+' Choose the payment option again.',[['Review order',()=>ui.close()]]);return false;}if(row.conflict){localStorage.setItem('kbr_last_conflicting_change',JSON.stringify(operation));localStorage.removeItem(queueKey);await loadOrders();display();ui.screen('Another device changed this order','Your edit was not applied. The latest shared order has been loaded; check it before editing again.',[['Review order',()=>ui.close()]]);return false;}applyRow(row);if(operation.cartAfter){cart=operation.cartAfter;persist();renderOrder();}localStorage.removeItem(queueKey);await refreshBaristaClaims();selectedBaristaPayment='';display();ui.close();if(window.KBRDeferred)await KBRDeferred.refresh();cloud.status('Connected · change saved');return true;}
+ async function flushUpdate(operation){
+  let row;
+  try{
+   row=await cloud.rpc(operation.rpcName||'kbr_update_order',operation.args);
+  }catch(e){
+   const rejected=(!!operation.rpcName&&e.status===400&&e.code==='P0001')||e.status===400&&e.code==='P0001'&&/Authorize this complimentary payment first|already has a free drink today|Order items changed|One drink only|not on duty today/.test(e.message);
+   if(!rejected)throw e;
+   localStorage.removeItem(queueKey);await loadOrders();display();
+   ui.screen('Payment was not saved',e.message+' Choose the payment option again.',[['Review order',()=>ui.close()]]);
+   return false;
+  }
+
+  if(row.conflict && !operation.rpcName && operation.args?.p_status==='completed' && operation.args?.p_id){
+   try{
+    cloud.status('Refreshing order before completing…');
+    const latestRows=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(operation.args.p_id)+'&select=*');
+    const latest=latestRows?.[0];
+
+    if(latest){
+     if(latest.status==='completed'){
+      applyRow(latest);
+      localStorage.removeItem(queueKey);
+      await refreshBaristaClaims();
+      selectedBaristaPayment='';
+      display();ui.close();
+      if(window.KBRDeferred)await KBRDeferred.refresh();
+      cloud.status('Connected · order already completed');
+      return true;
+     }
+
+     if(latest.status==='open'){
+      applyRow(latest);
+      const retryArgs={
+       ...operation.args,
+       p_expected_revision:latest.revision,
+       p_operation:cloud.uuid(),
+       p_data:cloud.strip(latest.data)
+      };
+      const retryOperation={...operation,args:retryArgs,_completionRetry:true};
+      localStorage.setItem(queueKey,JSON.stringify(retryOperation));
+      row=await cloud.rpc('kbr_update_order',retryArgs);
+
+      if(!row.conflict){
+       applyRow(row);
+       if(operation.cartAfter){cart=operation.cartAfter;persist();renderOrder();}
+       localStorage.removeItem(queueKey);
+       await refreshBaristaClaims();
+       selectedBaristaPayment='';
+       display();ui.close();
+       if(window.KBRDeferred)await KBRDeferred.refresh();
+       cloud.status('Connected · order completed');
+       return true;
+      }
+     }
+    }
+   }catch(retryError){
+    console.warn('Completion retry failed',retryError);
+   }
+  }
+
+  if(row.conflict){
+   localStorage.setItem('kbr_last_conflicting_change',JSON.stringify(operation));
+   localStorage.removeItem(queueKey);
+   await loadOrders();display();
+   ui.screen('Order was not completed','Another device changed this order. The latest shared order has been loaded. Press Done again after reviewing it.',[['Review order',()=>ui.close()]]);
+   return false;
+  }
+
+  applyRow(row);
+  if(operation.cartAfter){cart=operation.cartAfter;persist();renderOrder();}
+  localStorage.removeItem(queueKey);
+  await refreshBaristaClaims();
+  selectedBaristaPayment='';
+  display();ui.close();
+  if(window.KBRDeferred)await KBRDeferred.refresh();
+  cloud.status('Connected · change saved');
+  return true;
+ }
  async function retryUpdate(){if(busy)return;const op=cloud.read(queueKey);if(!op)return;busy=true;ui.screen('Retrying saved change…','Please wait.');try{await flushUpdate(op);}catch(e){ui.screen('Change still waiting to sync',e.message,[['Retry',()=>retryUpdate()],['Sign in again',()=>location.href='sync-login.html']]);}finally{busy=false;}}
  async function mutate(fn,args){if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){if(cloud.read(queueKey)||cloud.read(draftKey))showPending();else showActionToast('Connecting or saving… please try again in a moment.');return;}
   if(!['owner','operator'].includes(role)){alert('This account is read only.');return;}

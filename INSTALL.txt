@@ -1,21 +1,26 @@
-Kape' Bar-Rio — Remove Promo Code UI + Promo Free Discount
+Kape' Bar-Rio Ordering — Done Button / Reappearing Order Fix
 
-Upload these files to the ORDERING repository:
-- index.html
+PROBLEM
+A paid order could look completed locally after pressing Done, but if the tablet had a stale order revision,
+Supabase returned a conflict and kept the server order OPEN. The next sync then downloaded the open order again,
+making it appear to come back.
+
+FIX
+- If Done hits a revision conflict, the Ordering app fetches the newest server order.
+- If the server already completed it, the local app accepts that completed state.
+- If it is still open, the app retries completion once using the newest server revision.
+- If it still cannot complete, it now clearly says "Order was not completed" instead of pretending it succeeded.
+- Completed orders therefore should no longer disappear locally and then resurrect.
+
+UPLOAD TO ORDERING REPOSITORY
+Replace:
 - app-sync.js
-- comp-payments.js
-- shifts.js
-- turnover-shift.js
 - sw.js
 
-What changes:
-- Removes Promo Code / Give Code / Promo Codes UI from the Barista page.
-- Keeps Cash, GCash, Pay Later, and Barista Drinks.
-- Adds a per-drink discount button: Promo Free.
-- Promo Free applies 100% discount to the drink price, making the drink ₱0.
-- Inventory and ingredient deductions still happen because the item stays on the order.
-- Separate paid add-ons are not waived; they remain chargeable.
-- Receipt/history retains the discount and labels the item Promo Free.
-- Service worker cache version bumped so the PWA loads the new UI.
+The rest of the files in this ZIP are included so this patch remains compatible with the current Manager-Controlled Promo build.
 
-After GitHub Pages deploys, fully close and reopen the Ordering PWA.
+AFTER DEPLOYMENT
+1. Open Ordering while online.
+2. Press Update if shown.
+3. Fully close the Ordering PWA.
+4. Reopen it before testing Done again.
