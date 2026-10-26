@@ -45,7 +45,7 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
    return false;
   }
 
-  if(row.conflict && !operation.rpcName && operation.args?.p_status==='completed' && operation.args?.p_id){
+  if(row.conflict && operation.rpcName==='kbr_complete_paid_order' && operation.args?.p_id){
    try{
     cloud.status('Refreshing order before completing…');
     const latestRows=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(operation.args.p_id)+'&select=*');
@@ -64,16 +64,14 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
      }
 
      if(latest.status==='open'){
-      applyRow(latest);
       const retryArgs={
        ...operation.args,
        p_expected_revision:latest.revision,
-       p_operation:cloud.uuid(),
-       p_data:cloud.strip(latest.data)
+       p_operation:cloud.uuid()
       };
       const retryOperation={...operation,args:retryArgs,_completionRetry:true};
       localStorage.setItem(queueKey,JSON.stringify(retryOperation));
-      row=await cloud.rpc('kbr_update_order',retryArgs);
+      row=await cloud.rpc('kbr_complete_paid_order',retryArgs);
 
       if(!row.conflict){
        applyRow(row);
@@ -122,7 +120,11 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
    }
    if(!affected.length){ui.close();return;}if(affected.length!==1)throw new Error('Only one order can be edited at a time.');
    const {order,next,receipt}=affected[0],base=remote.get(order._cloudId);if(!base)throw new Error('Refresh this order first.');
-   const op={cartAfter:after.cart,args:{p_id:order._cloudId,p_expected_revision:base.revision,p_operation:cloud.uuid(),p_data:cloud.strip(next||(lastFinalized?.no===order.no?lastFinalized:order)),p_status:next?'open':receipt?'completed':'cancelled',p_receipt:!next&&receipt?receipt:null}};
+   const completionData=cloud.strip(next||(lastFinalized?.no===order.no?lastFinalized:order));
+   const isCompleting=!next&&!!receipt;
+   const op=isCompleting
+    ? {rpcName:'kbr_complete_paid_order',cartAfter:after.cart,args:{p_id:order._cloudId,p_expected_revision:base.revision,p_operation:cloud.uuid(),p_data:completionData}}
+    : {cartAfter:after.cart,args:{p_id:order._cloudId,p_expected_revision:base.revision,p_operation:cloud.uuid(),p_data:completionData,p_status:next?'open':'cancelled',p_receipt:null}};
    localStorage.setItem(queueKey,JSON.stringify(op));ui.screen('Saving order…','Please wait for confirmation.');await flushUpdate(op);
   }catch(e){restore(before);if(cloud.read(queueKey)){cloud.status('Change waiting to sync',true);ui.screen('Change waiting to sync',e.message,[['Retry saved change',()=>retryUpdate()],['Sign in again',()=>location.href='sync-login.html']]);}else{ui.close();alert(e.message);}}finally{busy=false;}
  }

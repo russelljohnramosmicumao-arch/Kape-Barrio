@@ -1,26 +1,32 @@
-Kape' Bar-Rio Ordering — Done Button / Reappearing Order Fix
+Kape' Bar-Rio Ordering — Server-Side Done Fix v2
 
-PROBLEM
-A paid order could look completed locally after pressing Done, but if the tablet had a stale order revision,
-Supabase returned a conflict and kept the server order OPEN. The next sync then downloaded the open order again,
-making it appear to come back.
+ROOT CAUSE
+The old Done workflow depended on:
+1. browser removes the order locally
+2. browser writes the receipt into local History
+3. sync detects that local receipt
+4. browser sends receipt + completed status to Supabase
 
-FIX
-- If Done hits a revision conflict, the Ordering app fetches the newest server order.
-- If the server already completed it, the local app accepts that completed state.
-- If it is still open, the app retries completion once using the newest server revision.
-- If it still cannot complete, it now clearly says "Order was not completed" instead of pretending it succeeded.
-- Completed orders therefore should no longer disappear locally and then resurrect.
+If step 2/3 was missed, the server stayed OPEN with no receipt and the order came back.
+
+NEW BEHAVIOR
+- When the last active item is served, Ordering calls kbr_complete_paid_order directly.
+- Supabase validates that the order is paid.
+- Supabase validates that all active units are served.
+- Supabase builds and stores the receipt itself.
+- Supabase marks the order completed.
+- Normal inventory completion trigger still runs.
+- Revision conflicts refresh and retry using the latest server revision.
+
+BACKEND
+kbr_complete_paid_order() is already live in Supabase.
 
 UPLOAD TO ORDERING REPOSITORY
-Replace:
 - app-sync.js
 - sw.js
-
-The rest of the files in this ZIP are included so this patch remains compatible with the current Manager-Controlled Promo build.
 
 AFTER DEPLOYMENT
 1. Open Ordering while online.
 2. Press Update if shown.
 3. Fully close the Ordering PWA.
-4. Reopen it before testing Done again.
+4. Reopen it.

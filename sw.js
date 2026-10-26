@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v131-done-conflict-fix";
+const CACHE="kbr-ordering-v132-server-complete";
 const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html","./shifts.js?v=turnover-v3","./sync.css?v=turnover-v3","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
