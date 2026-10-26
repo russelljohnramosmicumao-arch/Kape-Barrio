@@ -1,32 +1,33 @@
-Kape' Bar-Rio Ordering — Server-Side Done Fix v2
+Kape' Bar-Rio Ordering — Forced Refresh + Completed Order Reconciliation v133
 
-ROOT CAUSE
-The old Done workflow depended on:
-1. browser removes the order locally
-2. browser writes the receipt into local History
-3. sync detects that local receipt
-4. browser sends receipt + completed status to Supabase
+WHY THIS UPDATE
+Supabase already showed order #100399 as COMPLETED with a receipt, but the tablet kept showing it as active.
+That means the installed PWA was using stale client code/state.
 
-If step 2/3 was missed, the server stayed OPEN with no receipt and the order came back.
+WHAT CHANGED
+- New file name: app-sync-v133.js
+  This prevents an old service-worker cache from serving an old app-sync.js.
+- index.html now loads app-sync-v133.js?v=133.
+- Service worker cache bumped to kbr-ordering-v133-forced-refresh.
+- Service worker immediately skip-waits and claims clients.
+- index.html and app-sync-v133.js are network-first / no-store when online.
+- When Supabase says an order is completed/cancelled, all local active copies are aggressively removed.
+- Active order pointers and append-order snapshots are cleared when they refer to a closed server order.
+- The live connection status will show:
+  Connected · v133 · updates every 3 sec
 
-NEW BEHAVIOR
-- When the last active item is served, Ordering calls kbr_complete_paid_order directly.
-- Supabase validates that the order is paid.
-- Supabase validates that all active units are served.
-- Supabase builds and stores the receipt itself.
-- Supabase marks the order completed.
-- Normal inventory completion trigger still runs.
-- Revision conflicts refresh and retry using the latest server revision.
-
-BACKEND
-kbr_complete_paid_order() is already live in Supabase.
-
-UPLOAD TO ORDERING REPOSITORY
-- app-sync.js
+UPLOAD TO THE ORDERING REPOSITORY
+- index.html
+- app-sync-v133.js
 - sw.js
 
-AFTER DEPLOYMENT
-1. Open Ordering while online.
-2. Press Update if shown.
-3. Fully close the Ordering PWA.
+IMPORTANT
+Do NOT rename app-sync-v133.js back to app-sync.js.
+
+AFTER GITHUB PAGES DEPLOYS
+1. Open Ordering in the browser while online.
+2. Reload once.
+3. Fully close the installed PWA.
 4. Reopen it.
+5. Confirm the connection line says "Connected · v133 · updates every 3 sec".
+If it does not say v133, the device is still running an old published/cached build.
