@@ -1,10 +1,10 @@
-const CACHE="kbr-ordering-v133-forced-refresh";
+const CACHE="kbr-ordering-v134-done-handler-fix";
 const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html","./shifts.js?v=turnover-v3","./sync.css?v=turnover-v3","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
   "./",
   "./app-links.js",
-  "./app-sync-v133.js?v=133",
+  "./app-sync-v134.js?v=134",
   "./app-update.js",
   "./comp-payments.js",
   "./index.html",
@@ -41,7 +41,7 @@ self.addEventListener('fetch',e=>{
  if(e.request.destination==='image'||IMAGE_REVISIONS['./'+u.pathname.slice(new URL(self.registration.scope).pathname.length)]){
   e.respondWith(imageResponse(e.request));return;
  }
- const critical=e.request.mode==='navigate'||u.pathname.endsWith('/index.html')||u.pathname.endsWith('/app-sync-v133.js')||u.pathname.endsWith('/sw.js');
+ const critical=e.request.mode==='navigate'||u.pathname.endsWith('/index.html')||u.pathname.endsWith('/app-sync-v134.js')||u.pathname.endsWith('/sw.js');
  if(critical){
   e.respondWith(caches.open(CACHE).then(async c=>{
    try{
