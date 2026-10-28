@@ -199,6 +199,46 @@ function renderSizeOptions(){
   `).join('');
 }
 
+
+function animateToCart(){
+  const source=$('itemImage');
+  const cartButton=$('cartButton');
+  if(!source||!cartButton||!source.src)return;
+
+  const srcRect=source.getBoundingClientRect();
+  const cartRect=cartButton.getBoundingClientRect();
+
+  const clone=document.createElement('img');
+  clone.src=source.src;
+  clone.className='fly-to-cart';
+  clone.style.left=`${srcRect.left}px`;
+  clone.style.top=`${srcRect.top}px`;
+  clone.style.width=`${srcRect.width}px`;
+  clone.style.height=`${srcRect.height}px`;
+  clone.style.opacity='1';
+  document.body.appendChild(clone);
+
+  const targetX=cartRect.left + cartRect.width/2 - srcRect.left - srcRect.width/2;
+  const targetY=cartRect.top + cartRect.height/2 - srcRect.top - srcRect.height/2;
+
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      clone.style.transform=`translate(${targetX}px,${targetY}px) scale(.18)`;
+      clone.style.width=`${srcRect.width*.55}px`;
+      clone.style.height=`${srcRect.height*.55}px`;
+      clone.style.opacity='.15';
+    });
+  });
+
+  setTimeout(()=>{
+    clone.remove();
+    cartButton.classList.remove('cart-bump');
+    void cartButton.offsetWidth;
+    cartButton.classList.add('cart-bump');
+    setTimeout(()=>cartButton.classList.remove('cart-bump'),450);
+  },720);
+}
+
 function addSelected(){
   if(!selected)return;
   const sizeEl=document.querySelector('#sizeOptions input[name="itemSize"]:checked');
@@ -231,7 +271,8 @@ function addSelected(){
 
   saveCart();
   renderCart();
-  $('itemDialog').close();
+  animateToCart();
+  setTimeout(()=>$('itemDialog').close(),120);
   toast('Added to cart.');
 }
 

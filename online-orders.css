@@ -325,3 +325,28 @@ button{cursor:pointer}
     padding:7px 4px;
   }
 }
+
+/* v3.6 fly-to-cart animation */
+.fly-to-cart{
+  position:fixed;
+  z-index:9999;
+  pointer-events:none;
+  object-fit:contain;
+  border-radius:14px;
+  box-shadow:0 12px 28px rgba(0,0,0,.22);
+  transition:
+    transform .7s cubic-bezier(.2,.8,.2,1),
+    width .7s cubic-bezier(.2,.8,.2,1),
+    height .7s cubic-bezier(.2,.8,.2,1),
+    opacity .7s ease;
+  will-change:transform,width,height,opacity;
+}
+.cart-button.cart-bump{
+  animation:cartBump .42s ease;
+}
+@keyframes cartBump{
+  0%{transform:scale(1)}
+  35%{transform:scale(1.13)}
+  65%{transform:scale(.96)}
+  100%{transform:scale(1)}
+}
