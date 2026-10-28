@@ -574,3 +574,61 @@ button{cursor:pointer}
     font-size:.78rem;
   }
 }
+
+/* v4.1 saved account details + order history */
+.saved-details-card,
+.order-history-section{
+  margin-top:12px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+}
+.saved-details-title{
+  font-weight:900;
+  font-size:.84rem;
+  margin-bottom:7px;
+}
+.saved-details-text{
+  color:var(--muted);
+  font-size:.8rem;
+  line-height:1.45;
+  white-space:pre-line;
+}
+.customer-order-history{
+  display:grid;
+  gap:8px;
+  max-height:240px;
+  overflow:auto;
+}
+.order-history-card{
+  border:1px solid var(--line);
+  border-radius:11px;
+  padding:9px 10px;
+  background:#fffdf9;
+}
+.order-history-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:.8rem;
+  font-weight:900;
+}
+.order-history-meta{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.74rem;
+}
+.order-history-items{
+  margin-top:6px;
+  font-size:.76rem;
+  line-height:1.35;
+}
+.order-status{
+  text-transform:capitalize;
+  color:var(--brown);
+}
+.empty-history{
+  color:var(--muted);
+  font-size:.8rem;
+}

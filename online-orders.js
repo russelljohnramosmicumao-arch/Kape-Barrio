@@ -8,6 +8,7 @@ const authClient=window.supabase?.createClient
   : null;
 let customerSession=null;
 let customerProfile=null;
+let customerOrders=[];
 
 let menu=[];
 let category='Frappe & Smoothies';
@@ -534,7 +535,21 @@ async function placeOrder(){
       ? `Your delivery order totaling ${money(result.total)} has been sent. Kape Bar-Rio will use your contact number to confirm delivery details.`
       : `Your pickup order totaling ${money(result.total)} has been sent to Kape Bar-Rio.`;
     $('successDialog').showModal();
-    if(customerSession?.user)loadCustomerProfile();
+
+    if(customerSession?.user){
+      try{
+        await rpc('kbr_save_customer_checkout_details',{
+          p_name:customerName,
+          p_phone:contact,
+          p_barangay:service==='delivery'?barangay:'',
+          p_address:service==='delivery'?address:''
+        });
+      }catch(error){
+        console.warn('Could not save customer details',error);
+      }
+
+      loadCustomerProfile();
+    }
   }catch(error){
     toast(error.message||'Could not send your order.');
   }finally{
@@ -556,38 +571,82 @@ function updateAccountUI(){
   $('guestAccountView').classList.toggle('hidden',signed);
   $('signedInAccountView').classList.toggle('hidden',!signed);
 
-  if(signed){
-    const user=customerSession.user;
-    $('customerDisplayName').textContent=
-      customerProfile?.name||
-      user.user_metadata?.full_name||
-      user.user_metadata?.name||
-      'KBR Customer';
-    $('customerEmail').textContent=customerProfile?.email||user.email||'';
-    $('customerPoints').textContent=Number(customerProfile?.points||0).toLocaleString('en-PH');
+  if(!signed)return;
 
-    const avatar=customerProfile?.avatarUrl||user.user_metadata?.avatar_url||'';
-    if(avatar){
-      $('customerAvatar').src=avatar;
-      $('customerAvatar').classList.remove('hidden');
-    }else{
-      $('customerAvatar').classList.add('hidden');
-    }
+  const user=customerSession.user;
+  $('customerDisplayName').textContent=
+    customerProfile?.name||
+    user.user_metadata?.full_name||
+    user.user_metadata?.name||
+    'KBR Customer';
+
+  $('customerEmail').textContent=customerProfile?.email||user.email||'';
+  $('customerPoints').textContent=Number(customerProfile?.points||0).toLocaleString('en-PH');
+
+  const avatar=customerProfile?.avatarUrl||user.user_metadata?.avatar_url||'';
+  if(avatar){
+    $('customerAvatar').src=avatar;
+    $('customerAvatar').classList.remove('hidden');
+  }else{
+    $('customerAvatar').classList.add('hidden');
+  }
+
+  const details=[];
+  if(customerProfile?.phone)details.push(`Phone: ${customerProfile.phone}`);
+  if(customerProfile?.barangay)details.push(`Barangay: ${customerProfile.barangay}`);
+  if(customerProfile?.address)details.push(`Address: ${customerProfile.address}`);
+  $('savedCustomerDetails').textContent=details.length
+    ? details.join('\n')
+    : 'No saved checkout details yet.';
+
+  if(!customerOrders.length){
+    $('customerOrderHistory').innerHTML='<div class="empty-history">No online orders yet.</div>';
+  }else{
+    $('customerOrderHistory').innerHTML=customerOrders.slice(0,10).map(order=>{
+      const items=(Array.isArray(order.items)?order.items:[])
+        .map(item=>`${item.qty||1}× ${esc(item.name||'Item')}`)
+        .join(', ');
+
+      const created=order.createdAt
+        ? new Date(order.createdAt).toLocaleString('en-PH',{
+            month:'short',day:'numeric',year:'numeric',
+            hour:'numeric',minute:'2-digit'
+          })
+        : '';
+
+      return `
+        <div class="order-history-card">
+          <div class="order-history-top">
+            <span>Online #${esc(order.orderNumber||'')}</span>
+            <span>${money(order.total||0)}</span>
+          </div>
+          <div class="order-history-meta">
+            <span class="order-status">${esc(order.status||'pending')}</span>
+            · ${esc(order.serviceType||'')}
+            ${created?` · ${esc(created)}`:''}
+          </div>
+          <div class="order-history-items">${items||'Order details'}</div>
+        </div>`;
+    }).join('');
   }
 }
 
 async function loadCustomerProfile(){
   if(!customerSession?.user){
     customerProfile=null;
+    customerOrders=[];
     updateAccountUI();
     return;
   }
 
   try{
-    customerProfile=await rpc('kbr_customer_loyalty_snapshot',{});
+    const snapshot=await rpc('kbr_customer_account_snapshot',{});
+    customerProfile=snapshot?.profile||null;
+    customerOrders=Array.isArray(snapshot?.orders)?snapshot.orders:[];
   }catch(error){
-    console.warn('Could not load loyalty profile',error);
+    console.warn('Could not load customer account',error);
     customerProfile=null;
+    customerOrders=[];
   }
   updateAccountUI();
 }
@@ -632,6 +691,7 @@ async function signOutCustomer(){
   }
   customerSession=null;
   customerProfile=null;
+  customerOrders=[];
   updateAccountUI();
   $('accountDialog')?.close();
 }
@@ -682,6 +742,22 @@ $('checkoutButton')?.addEventListener('click',()=>{
         customerSession.user.user_metadata?.full_name||
         customerSession.user.user_metadata?.name||
         '';
+    }
+
+    if(!$('contactNumber').value.trim()&&customerProfile?.phone){
+      $('contactNumber').value=customerProfile.phone;
+    }
+
+    if(customerProfile?.barangay&&$('deliveryBarangay')){
+      const exists=[...$('deliveryBarangay').options].some(opt=>opt.value===customerProfile.barangay);
+      if(exists){
+        $('deliveryBarangay').value=customerProfile.barangay;
+        updateDeliveryFee();
+      }
+    }
+
+    if(!$('deliveryAddress').value.trim()&&customerProfile?.address){
+      $('deliveryAddress').value=customerProfile.address;
     }
   }
 

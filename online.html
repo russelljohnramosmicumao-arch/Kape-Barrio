@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="manifest" href="online-manifest.webmanifest?v=40">
+  <link rel="manifest" href="online-manifest.webmanifest?v=41">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=40">
+  <link rel="stylesheet" href="online-orders.css?v=41">
 </head>
 <body>
   <header class="online-topbar">
@@ -226,7 +226,7 @@
         <div class="customer-profile">
           <img id="customerAvatar" class="customer-avatar hidden" alt="">
           <div>
-            <div class="eyebrow">KBR Rewards</div>
+            <div class="eyebrow">My Account</div>
             <h2 id="customerDisplayName">Customer</h2>
           </div>
         </div>
@@ -237,7 +237,20 @@
         </div>
 
         <p id="customerEmail" class="account-email"></p>
-        <p class="points-note">Points are added after your online order is paid and completed.</p>
+
+        <div class="saved-details-card">
+          <div class="saved-details-title">Saved details</div>
+          <div id="savedCustomerDetails" class="saved-details-text">No saved checkout details yet.</div>
+        </div>
+
+        <div class="order-history-section">
+          <div class="saved-details-title">Recent online orders</div>
+          <div id="customerOrderHistory" class="customer-order-history">
+            <div class="empty-history">No online orders yet.</div>
+          </div>
+        </div>
+
+        <p class="points-note">Your name, phone number and delivery address are saved after you place an order while signed in. Points are added after your order is paid and completed.</p>
 
         <button id="customerSignOutButton" class="guest-button" type="button">Sign out</button>
       </div>
@@ -257,6 +270,6 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=40" defer></script>
+  <script src="online-orders.js?v=41" defer></script>
 </body>
 </html>
