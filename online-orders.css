@@ -164,3 +164,116 @@ button{cursor:pointer}
 .menu-card-footer{display:none!important}
 .menu-card-body{padding:8px 9px 10px}
 .menu-card h3{text-align:center}
+
+/* v3.3 compact product-options modal */
+#itemDialog{
+  width:min(460px,92vw);
+  max-height:92dvh;
+}
+#itemDialog .modal-card{
+  padding:14px;
+  border-radius:18px;
+  max-height:92dvh;
+  overflow:auto;
+}
+#itemDialog .modal-close{
+  right:10px;
+  top:10px;
+  width:34px;
+  height:34px;
+  font-size:1.2rem;
+}
+#itemDialog .item-image{
+  display:block;
+  width:100%;
+  height:190px;
+  aspect-ratio:auto;
+  object-fit:contain;
+  object-position:center;
+  background:#fff;
+  border-radius:14px;
+  margin:0 0 9px;
+}
+#itemDialog .eyebrow{
+  font-size:.64rem;
+  margin-top:2px;
+}
+#itemDialog h2{
+  font-size:1.2rem;
+  line-height:1.15;
+  margin:4px 0 8px;
+}
+#itemDialog .option-group{
+  gap:6px;
+  margin:8px 0;
+}
+#itemDialog .option-choice{
+  min-height:42px;
+  padding:8px 10px;
+  border-radius:11px;
+  font-size:.9rem;
+}
+#itemDialog .field{
+  gap:5px;
+  margin:9px 0;
+}
+#itemDialog .field>span{
+  font-size:.82rem;
+}
+#itemDialog .field select,
+#itemDialog .field input{
+  padding:9px 10px;
+  border-radius:10px;
+}
+#itemDialog .qty-control{
+  grid-template-columns:38px 1fr 38px;
+  gap:6px;
+}
+#itemDialog .qty-control button{
+  border-radius:10px;
+}
+#itemDialog .primary-button{
+  padding:11px 14px;
+  border-radius:12px;
+  margin-top:5px;
+}
+
+@media(max-width:640px){
+  #itemDialog{
+    width:min(420px,94vw);
+    max-height:90dvh;
+  }
+  #itemDialog .modal-card{
+    padding:11px;
+    border-radius:16px;
+    max-height:90dvh;
+  }
+  #itemDialog .item-image{
+    height:145px;
+    border-radius:12px;
+    margin-bottom:7px;
+  }
+  #itemDialog h2{
+    font-size:1.05rem;
+    margin:3px 0 6px;
+  }
+  #itemDialog .option-choice{
+    min-height:38px;
+    padding:7px 9px;
+    font-size:.84rem;
+  }
+  #itemDialog .field{
+    margin:7px 0;
+  }
+  #itemDialog .field select,
+  #itemDialog .field input{
+    padding:8px 9px;
+    font-size:.9rem;
+  }
+  #itemDialog .qty-control{
+    grid-template-columns:36px 1fr 36px;
+  }
+  #itemDialog .primary-button{
+    padding:10px 12px;
+  }
+}
