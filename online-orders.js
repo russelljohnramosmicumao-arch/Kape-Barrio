@@ -3,7 +3,7 @@ const SUPABASE_URL='https://wkyyuyyfauyhpivebrdg.supabase.co';
 const SUPABASE_KEY='sb_publishable_AXZtXN81wyM_W7tVZuJ-zw_ohoaj-1M';
 
 let menu=[];
-let category='All';
+let category='Frappe & Smoothies';
 let cart=[];
 let selected=null;
 let selectedType='standard';
@@ -43,7 +43,19 @@ function esc(value=''){
 function attr(value=''){return esc(value)}
 
 function categories(){
-  return ['All',...new Set(menu.map(x=>x.category).filter(Boolean))];
+  const preferred=[
+    'Frappe & Smoothies',
+    'Specials',
+    'Coffee Series',
+    'Matcha Series',
+    'Milk Tea Series',
+    'Soda',
+    'Floats',
+    'Snackies',
+    'Ice Cream'
+  ];
+  const present=new Set(menu.map(x=>x.category).filter(Boolean));
+  return preferred.filter(x=>present.has(x));
 }
 
 function renderCategories(){
@@ -86,13 +98,25 @@ function resolveImage(item){
 
 function renderMenu(){
   const q=$('searchInput').value.trim().toLowerCase();
-  const filtered=menu.filter(item=>{
-    const cat=category==='All'||item.category===category;
-    const search=!q||`${item.name} ${item.category}`.toLowerCase().includes(q);
-    return cat&&search;
-  });
+  const indexed=menu.map((item,index)=>({item,index}));
+  const filtered=indexed
+    .filter(({item})=>{
+      const cat=item.category===category;
+      const search=!q||`${item.name} ${item.category}`.toLowerCase().includes(q);
+      return cat&&search;
+    })
+    .sort((a,b)=>{
+      if(category==='Frappe & Smoothies'){
+        const aMax=Math.max(...itemVariants(a.item).map(x=>x.price),0);
+        const bMax=Math.max(...itemVariants(b.item).map(x=>x.price),0);
+        if(bMax!==aMax)return bMax-aMax;
+        return b.index-a.index;
+      }
+      return a.index-b.index;
+    })
+    .map(x=>x.item);
 
-  $('categoryTitle').textContent=category==='All'?'All Items':category;
+  $('categoryTitle').textContent=category;
   $('emptyState').classList.toggle('hidden',filtered.length>0);
 
   $('menuGrid').innerHTML=filtered.map(item=>`
@@ -338,6 +362,8 @@ async function loadMenu(){
   try{
     const snapshot=await rpc('kbr_online_menu_snapshot');
     menu=Array.isArray(snapshot?.items)?snapshot.items:[];
+    const tabs=categories();
+    if(!tabs.includes(category))category=tabs[0]||'Frappe & Smoothies';
     $('shopStatus').textContent=snapshot?.shopOpen
       ? 'Open now · online ordering available'
       : 'Shop is currently closed · menu browsing only';
