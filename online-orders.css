@@ -310,3 +310,18 @@ button{cursor:pointer}
     font-size:.72rem;
   }
 }
+
+/* v3.5 three sweetness choices */
+#itemDialog .sweetness-row-3{
+  grid-template-columns:repeat(3,1fr);
+}
+#itemDialog .sweetness-row-3 .sweetness-option{
+  padding:8px 6px;
+  font-size:.76rem;
+}
+@media(max-width:640px){
+  #itemDialog .sweetness-row-3 .sweetness-option{
+    font-size:.7rem;
+    padding:7px 4px;
+  }
+}

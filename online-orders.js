@@ -7,7 +7,7 @@ let category='Frappe & Smoothies';
 let cart=[];
 let selected=null;
 let selectedType='standard';
-let selectedSweetness='100%';
+let selectedSweetness='Normal Sugar';
 
 const $=id=>document.getElementById(id);
 const money=v=>`₱${Number(v||0).toLocaleString('en-PH',{maximumFractionDigits:2})}`;
@@ -152,9 +152,9 @@ function openItem(key){
   $('itemName').textContent=selected.name||'';
   $('qtyInput').value=1;
   $('flavorInput').value='';
-  selectedSweetness='100%';
+  selectedSweetness='Normal Sugar';
   document.querySelectorAll('.sweetness-option').forEach(btn=>{
-    btn.classList.toggle('active',btn.dataset.sweetness==='100%');
+    btn.classList.toggle('active',btn.dataset.sweetness==='Normal Sugar');
   });
 
   const hasPremium=Array.isArray(selected.premium)&&selected.premium.length>0&&Array.isArray(selected.premiumSizes)&&selected.premiumSizes.length>0;
@@ -386,7 +386,7 @@ async function loadMenu(){
 
 document.querySelectorAll('.sweetness-option').forEach(btn=>{
   btn.addEventListener('click',()=>{
-    selectedSweetness=btn.dataset.sweetness||'100%';
+    selectedSweetness=btn.dataset.sweetness||'Normal Sugar';
     document.querySelectorAll('.sweetness-option').forEach(x=>x.classList.toggle('active',x===btn));
   });
 });
