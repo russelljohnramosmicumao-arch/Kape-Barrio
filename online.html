@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="manifest" href="online-manifest.webmanifest?v=45">
+  <link rel="manifest" href="online-manifest.webmanifest?v=46">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=45">
+  <link rel="stylesheet" href="online-orders.css?v=46">
 </head>
 <body>
   <header class="online-topbar">
@@ -211,26 +211,56 @@
       <button class="modal-close" id="accountClose" type="button" aria-label="Close">×</button>
 
       <div id="guestAccountView">
-        <div class="eyebrow">KBR Rewards</div>
-        <h2>Order as guest or earn points</h2>
-        <p class="account-copy">Continue as a guest, sign in with Google, or use a KBR phone account to collect points and keep your details.</p>
+        <div id="accountEntryChoice">
+          <div class="eyebrow">Welcome to Kape Bar-Rio</div>
+          <h2>How would you like to order?</h2>
+          <p class="account-copy">You can order right away as a guest, or create an account so your details, points and order history are saved.</p>
 
-        <button id="googleSignInButton" class="google-signin-button" type="button">
-          <span class="google-mark">G</span>
-          Sign in with Google
-        </button>
+          <button id="continueGuestButton" class="entry-choice-button guest-entry-button" type="button">
+            <span class="entry-choice-icon">🛍️</span>
+            <span>
+              <strong>Continue as Guest</strong>
+              <small>Order without creating an account</small>
+            </span>
+          </button>
 
-        <button id="phoneLoginOpenButton" class="phone-signin-button" type="button">
-          📱 Sign in with Phone
-        </button>
+          <button id="createPointsAccountButton" class="entry-choice-button points-entry-button" type="button">
+            <span class="entry-choice-icon">⭐</span>
+            <span>
+              <strong>Create Account for Points</strong>
+              <small>Save details, collect points and view orders</small>
+            </span>
+          </button>
+        </div>
 
-        <button id="phoneRegisterOpenButton" class="phone-register-button" type="button">
-          Create KBR Account
-        </button>
+        <div id="accountRegisterChoice" class="hidden">
+          <button id="backToEntryChoiceButton" class="auth-back-button" type="button">← Back</button>
 
-        <button id="continueGuestButton" class="guest-button" type="button">Continue as Guest</button>
+          <div class="eyebrow">KBR Rewards Account</div>
+          <h2>Create your account</h2>
+          <p class="account-copy">Choose how you want to register.</p>
 
-        <p class="points-note">Eligible drinks earn 1 KBR Point per ₱1 after the order is completed. Food and ice cream do not earn points.</p>
+          <button id="phoneRegisterOpenButton" class="entry-choice-button phone-entry-button" type="button">
+            <span class="entry-choice-icon">📱</span>
+            <span>
+              <strong>Register thru Phone Number</strong>
+              <small>Use your mobile number and password</small>
+            </span>
+          </button>
+
+          <button id="googleSignInButton" class="entry-choice-button google-entry-button" type="button">
+            <span class="google-mark">G</span>
+            <span>
+              <strong>Register thru Google Account</strong>
+              <small>Use your Google account to sign in</small>
+            </span>
+          </button>
+
+          <div class="existing-account-row">
+            <span>Already have a KBR account?</span>
+            <button id="phoneLoginOpenButton" class="text-link-button" type="button">Sign in with Phone</button>
+          </div>
+        </div>
       </div>
 
       <div id="signedInAccountView" class="hidden">
@@ -373,6 +403,6 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=45" defer></script>
+  <script src="online-orders.js?v=46" defer></script>
 </body>
 </html>

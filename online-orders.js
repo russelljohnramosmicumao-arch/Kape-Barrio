@@ -605,6 +605,12 @@ async function saveProfileDetails(){
 }
 
 
+function showAccountEntryStep(step='entry'){
+  const registration=step==='register';
+  $('accountEntryChoice')?.classList.toggle('hidden',registration);
+  $('accountRegisterChoice')?.classList.toggle('hidden',!registration);
+}
+
 function normalizePHPhone(value){
   const digits=String(value||'').replace(/\D/g,'');
   if(/^09\d{9}$/.test(digits))return `+63${digits.slice(1)}`;
@@ -884,6 +890,8 @@ document.querySelectorAll('.sweetness-option').forEach(btn=>{
   });
 });
 
+$('createPointsAccountButton')?.addEventListener('click',()=>showAccountEntryStep('register'));
+$('backToEntryChoiceButton')?.addEventListener('click',()=>showAccountEntryStep('entry'));
 $('phoneLoginOpenButton')?.addEventListener('click',()=>showPhoneAuth('login'));
 $('phoneRegisterOpenButton')?.addEventListener('click',()=>showPhoneAuth('register'));
 $('phoneAuthClose')?.addEventListener('click',()=>$('phoneAuthDialog')?.close());
@@ -900,7 +908,11 @@ $('saveProfileDetailsButton')?.addEventListener('click',e=>{
 });
 
 $('customerAccountButton')?.addEventListener('click',async()=>{
-  if(customerSession?.user)await loadCustomerProfile();
+  if(customerSession?.user){
+    await loadCustomerProfile();
+  }else{
+    showAccountEntryStep('entry');
+  }
   $('accountDialog')?.showModal();
 });
 $('pointsButton')?.addEventListener('click',()=>{

@@ -721,3 +721,74 @@ button{cursor:pointer}
 .account-link-google{
   margin-top:12px;
 }
+
+/* v4.6 two-step welcome/account flow */
+.entry-choice-button{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-align:left;
+  border-radius:16px;
+  padding:15px 16px;
+  margin-top:10px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--ink);
+}
+.entry-choice-button strong{display:block;font-size:.95rem}
+.entry-choice-button small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.75rem;
+  font-weight:600;
+}
+.entry-choice-icon{
+  width:40px;height:40px;
+  display:grid;place-items:center;
+  flex:0 0 40px;
+  border-radius:12px;
+  background:#f7efe7;
+  font-size:1.15rem;
+}
+.points-entry-button{
+  background:var(--brown);
+  border-color:var(--brown);
+  color:#fff;
+}
+.points-entry-button small{color:#f2dfd0}
+.points-entry-button .entry-choice-icon{background:rgba(255,255,255,.14)}
+.google-entry-button .google-mark{
+  width:40px;height:40px;
+  display:grid;place-items:center;
+  flex:0 0 40px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid var(--line);
+  font-size:1.05rem;
+}
+.auth-back-button{
+  border:0;
+  background:transparent;
+  color:var(--brown);
+  padding:0 0 12px;
+  font-weight:900;
+}
+.existing-account-row{
+  margin-top:14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px;
+  color:var(--muted);
+  font-size:.78rem;
+}
+.text-link-button{
+  border:0;
+  background:transparent;
+  color:var(--brown);
+  padding:3px;
+  font-weight:900;
+}
