@@ -160,6 +160,14 @@ function renderMenu(){
   });
 }
 
+function isFriesProduct(item){
+  return String(item?.name||'').toLowerCase().includes('fries');
+}
+
+function selectedFriesFlavor(){
+  return document.querySelector('input[name="friesFlavor"]:checked')?.value||'Cheese';
+}
+
 function openItem(key){
   selected=menu.find(x=>(x.productId||x.name)===key);
   if(!selected)return;
@@ -200,7 +208,14 @@ function openItem(key){
   $('sweetnessField').classList.toggle('hidden',!isDrink);
 
   const hasFlavor=cat.includes('ice cream');
+  const fries=isFriesProduct(selected);
   $('flavorField').classList.toggle('hidden',!hasFlavor);
+  $('friesFlavorField')?.classList.toggle('hidden',!fries);
+
+  if(fries){
+    const cheese=document.querySelector('input[name="friesFlavor"][value="Cheese"]');
+    if(cheese)cheese.checked=true;
+  }
 
   renderSizeOptions();
   $('itemDialog').showModal();
@@ -269,7 +284,9 @@ function addSelected(){
   const price=Number(prices[idx]);
   const qty=Math.max(1,Math.min(20,Number($('qtyInput').value)||1));
   const sweetness=$('sweetnessField').classList.contains('hidden')?'':selectedSweetness;
-  const flavor=$('flavorField').classList.contains('hidden')?'':$('flavorInput').value.trim();
+  const flavor=isFriesProduct(selected)
+    ? selectedFriesFlavor()
+    : ($('flavorField').classList.contains('hidden')?'':$('flavorInput').value.trim());
 
   const key=[selected.productId||selected.name,selectedType,size,sweetness,flavor].join('|');
   const existing=cart.find(x=>x.key===key);
@@ -1077,6 +1094,7 @@ async function connectGoogleAccount(){
 function updateAccountUI(){
   const button=$('customerAccountButton');
   const signed=!!customerSession?.user;
+  $('pointsSignInHero')?.classList.toggle('hidden',signed);
 
   button.textContent='👤';
   button.classList.toggle('signed-in',signed);
@@ -1305,6 +1323,15 @@ $('savedDetailsButton')?.addEventListener('click',openSavedDetails);
 $('saveProfileDetailsButton')?.addEventListener('click',e=>{
   e.preventDefault();
   saveProfileDetails();
+});
+
+$('pointsSignInHero')?.addEventListener('click',()=>{
+  if(customerSession?.user){
+    $('accountDialog')?.showModal();
+    return;
+  }
+  showAccountEntryStep('entry');
+  $('accountDialog')?.showModal();
 });
 
 $('customerAccountButton')?.addEventListener('click',async()=>{

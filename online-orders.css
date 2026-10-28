@@ -1072,3 +1072,67 @@ button{cursor:pointer}
 .service-choice label.service-locked-on{
   box-shadow:0 0 0 2px rgba(107,63,36,.10);
 }
+
+/* v5.5 Fries flavor + prominent points sign in */
+.points-signin-wrap{
+  padding-top:10px;
+  padding-bottom:0;
+}
+.points-signin-hero{
+  width:100%;
+  border:0;
+  border-radius:16px;
+  padding:15px 18px;
+  background:#2f8f4e;
+  color:#fff;
+  font-weight:950;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(47,143,78,.15);
+}
+.points-signin-title{
+  display:block;
+  font-size:1.05rem;
+}
+.points-signin-hero small{
+  display:block;
+  margin-top:4px;
+  font-size:.72rem;
+  font-weight:650;
+  line-height:1.35;
+  opacity:.94;
+}
+.points-signin-hero.hidden{
+  display:none!important;
+}
+.fries-flavor-options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.fries-flavor-options label{
+  display:block;
+  cursor:pointer;
+}
+.fries-flavor-options input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.fries-flavor-options span{
+  display:block;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  text-align:center;
+  font-weight:900;
+}
+.fries-flavor-options input:checked + span{
+  border-color:var(--brown);
+  box-shadow:0 0 0 2px rgba(107,63,36,.09);
+  background:#fff8f1;
+}
+@media(max-width:520px){
+  .fries-flavor-options{grid-template-columns:1fr 1fr}
+}
