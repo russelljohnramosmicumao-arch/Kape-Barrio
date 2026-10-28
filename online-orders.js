@@ -604,6 +604,117 @@ async function saveProfileDetails(){
   }
 }
 
+
+function normalizePHPhone(value){
+  const digits=String(value||'').replace(/\D/g,'');
+  if(/^09\d{9}$/.test(digits))return `+63${digits.slice(1)}`;
+  if(/^639\d{9}$/.test(digits))return `+${digits}`;
+  if(/^\+639\d{9}$/.test(String(value||'').trim()))return String(value||'').trim();
+  return '';
+}
+
+function showPhoneAuth(mode='login'){
+  const register=mode==='register';
+  $('phoneLoginView').classList.toggle('hidden',register);
+  $('phoneRegisterView').classList.toggle('hidden',!register);
+  $('phoneAuthDialog')?.showModal();
+}
+
+async function phoneLogin(){
+  if(!authClient)return toast('Phone sign-in is unavailable.');
+  const phone=normalizePHPhone($('phoneLoginNumber').value);
+  const password=$('phoneLoginPassword').value;
+
+  if(!phone)return toast('Please enter a valid Philippine mobile number.');
+  if(!password)return toast('Please enter your password.');
+
+  const button=$('phoneLoginButton');
+  button.disabled=true;
+  button.textContent='Signing in…';
+
+  try{
+    const {data,error}=await authClient.auth.signInWithPassword({phone,password});
+    if(error)throw error;
+    customerSession=data?.session||null;
+    await loadCustomerProfile();
+    $('phoneAuthDialog')?.close();
+    $('accountDialog')?.close();
+    toast('Signed in.');
+  }catch(error){
+    toast(error.message||'Could not sign in.');
+  }finally{
+    button.disabled=false;
+    button.textContent='Sign in';
+  }
+}
+
+async function phoneRegister(){
+  if(!authClient)return toast('Phone registration is unavailable.');
+
+  const name=$('phoneRegisterName').value.trim();
+  const phone=normalizePHPhone($('phoneRegisterNumber').value);
+  const password=$('phoneRegisterPassword').value;
+  const confirm=$('phoneRegisterConfirm').value;
+
+  if(name.length<2)return toast('Please enter your name.');
+  if(!phone)return toast('Please enter a valid Philippine mobile number.');
+  if(password.length<6)return toast('Password must be at least 6 characters.');
+  if(password!==confirm)return toast('Passwords do not match.');
+
+  const button=$('phoneRegisterButton');
+  button.disabled=true;
+  button.textContent='Creating account…';
+
+  try{
+    const {data,error}=await authClient.auth.signUp({
+      phone,
+      password,
+      options:{data:{full_name:name,name}}
+    });
+    if(error)throw error;
+
+    if(!data?.session){
+      toast('Account created, but phone confirmation is enabled in Supabase. Turn phone confirmation off for no-OTP signup.');
+      return;
+    }
+
+    customerSession=data.session;
+    await rpc('kbr_save_customer_checkout_details',{
+      p_name:name,
+      p_phone:phone.replace('+63','0'),
+      p_barangay:'',
+      p_address:''
+    }).catch(()=>{});
+    await loadCustomerProfile();
+
+    $('phoneAuthDialog')?.close();
+    $('accountDialog')?.close();
+    toast('KBR account created.');
+  }catch(error){
+    toast(error.message||'Could not create account.');
+  }finally{
+    button.disabled=false;
+    button.textContent='Create KBR Account';
+  }
+}
+
+function userHasGoogleIdentity(){
+  const identities=customerSession?.user?.identities||[];
+  return identities.some(identity=>identity.provider==='google');
+}
+
+async function connectGoogleAccount(){
+  if(!authClient||!customerSession?.user)return;
+  if(userHasGoogleIdentity())return toast('Google is already connected.');
+
+  const redirectTo=new URL('online.html',window.location.href).href;
+  const {error}=await authClient.auth.linkIdentity({
+    provider:'google',
+    options:{redirectTo}
+  });
+  if(error)toast(error.message||'Could not connect Google.');
+}
+
 function updateAccountUI(){
   const button=$('customerAccountButton');
   const signed=!!customerSession?.user;
@@ -621,6 +732,9 @@ function updateAccountUI(){
   if(!signed)return;
 
   const user=customerSession.user;
+  if($('connectGoogleButton')){
+    $('connectGoogleButton').classList.toggle('hidden',userHasGoogleIdentity());
+  }
   $('customerDisplayName').textContent=
     customerProfile?.name||
     user.user_metadata?.full_name||
@@ -769,6 +883,15 @@ document.querySelectorAll('.sweetness-option').forEach(btn=>{
     document.querySelectorAll('.sweetness-option').forEach(x=>x.classList.toggle('active',x===btn));
   });
 });
+
+$('phoneLoginOpenButton')?.addEventListener('click',()=>showPhoneAuth('login'));
+$('phoneRegisterOpenButton')?.addEventListener('click',()=>showPhoneAuth('register'));
+$('phoneAuthClose')?.addEventListener('click',()=>$('phoneAuthDialog')?.close());
+$('showPhoneRegisterButton')?.addEventListener('click',()=>showPhoneAuth('register'));
+$('showPhoneLoginButton')?.addEventListener('click',()=>showPhoneAuth('login'));
+$('phoneLoginButton')?.addEventListener('click',phoneLogin);
+$('phoneRegisterButton')?.addEventListener('click',phoneRegister);
+$('connectGoogleButton')?.addEventListener('click',connectGoogleAccount);
 
 $('savedDetailsButton')?.addEventListener('click',openSavedDetails);
 $('saveProfileDetailsButton')?.addEventListener('click',e=>{

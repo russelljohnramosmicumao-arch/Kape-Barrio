@@ -689,3 +689,35 @@ button{cursor:pointer}
 .saved-details-button:hover{
   background:#fffaf5;
 }
+
+/* v4.5 phone/password auth */
+.phone-signin-button,
+.phone-register-button,
+.auth-switch-button{
+  width:100%;
+  border-radius:13px;
+  padding:12px 14px;
+  font-weight:900;
+}
+.phone-signin-button{
+  margin-top:9px;
+  border:1px solid #b7c7d9;
+  background:#eef5fb;
+  color:#245277;
+}
+.phone-register-button{
+  margin-top:9px;
+  border:1px solid var(--brown);
+  background:#fff;
+  color:var(--brown);
+}
+.auth-switch-button{
+  margin-top:8px;
+  border:0;
+  background:transparent;
+  color:var(--brown);
+  padding:8px;
+}
+.account-link-google{
+  margin-top:12px;
+}

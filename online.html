@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="manifest" href="online-manifest.webmanifest?v=44">
+  <link rel="manifest" href="online-manifest.webmanifest?v=45">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=44">
+  <link rel="stylesheet" href="online-orders.css?v=45">
 </head>
 <body>
   <header class="online-topbar">
@@ -213,16 +213,24 @@
       <div id="guestAccountView">
         <div class="eyebrow">KBR Rewards</div>
         <h2>Order as guest or earn points</h2>
-        <p class="account-copy">You can continue ordering without an account, or sign in with Google to earn KBR Points on completed online orders.</p>
+        <p class="account-copy">Continue as a guest, sign in with Google, or use a KBR phone account to collect points and keep your details.</p>
 
         <button id="googleSignInButton" class="google-signin-button" type="button">
           <span class="google-mark">G</span>
           Sign in with Google
         </button>
 
+        <button id="phoneLoginOpenButton" class="phone-signin-button" type="button">
+          📱 Sign in with Phone
+        </button>
+
+        <button id="phoneRegisterOpenButton" class="phone-register-button" type="button">
+          Create KBR Account
+        </button>
+
         <button id="continueGuestButton" class="guest-button" type="button">Continue as Guest</button>
 
-        <p class="points-note">Signed-in customers earn 1 KBR Point for every ₱1 on completed orders.</p>
+        <p class="points-note">Eligible drinks earn 1 KBR Point per ₱1 after the order is completed. Food and ice cream do not earn points.</p>
       </div>
 
       <div id="signedInAccountView" class="hidden">
@@ -256,11 +264,69 @@
 
         <p class="points-note">Your name, phone number and delivery address are saved after you place an order while signed in. Points are added after your order is paid and completed.</p>
 
+        <button id="connectGoogleButton" class="google-signin-button account-link-google hidden" type="button">
+          <span class="google-mark">G</span>
+          Connect Google Account
+        </button>
+
         <button id="customerSignOutButton" class="guest-button" type="button">Sign out</button>
       </div>
     </div>
   </dialog>
 
+
+
+  <dialog id="phoneAuthDialog" class="modal">
+    <div class="modal-card">
+      <button class="modal-close" id="phoneAuthClose" type="button" aria-label="Close">×</button>
+
+      <div id="phoneLoginView">
+        <div class="eyebrow">KBR Account</div>
+        <h2>Sign in with Phone</h2>
+
+        <label class="field">
+          <span>Phone number</span>
+          <input id="phoneLoginNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="09XX XXX XXXX">
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input id="phoneLoginPassword" type="password" autocomplete="current-password" placeholder="Password">
+        </label>
+
+        <button id="phoneLoginButton" class="primary-button" type="button">Sign in</button>
+        <button id="showPhoneRegisterButton" class="auth-switch-button" type="button">Create an account instead</button>
+      </div>
+
+      <div id="phoneRegisterView" class="hidden">
+        <div class="eyebrow">KBR Account</div>
+        <h2>Create Account</h2>
+
+        <label class="field">
+          <span>Name</span>
+          <input id="phoneRegisterName" type="text" maxlength="80" autocomplete="name" placeholder="Your name">
+        </label>
+
+        <label class="field">
+          <span>Phone number</span>
+          <input id="phoneRegisterNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="09XX XXX XXXX">
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input id="phoneRegisterPassword" type="password" autocomplete="new-password" minlength="6" placeholder="At least 6 characters">
+        </label>
+
+        <label class="field">
+          <span>Confirm password</span>
+          <input id="phoneRegisterConfirm" type="password" autocomplete="new-password" minlength="6" placeholder="Repeat password">
+        </label>
+
+        <button id="phoneRegisterButton" class="primary-button" type="button">Create KBR Account</button>
+        <button id="showPhoneLoginButton" class="auth-switch-button" type="button">I already have an account</button>
+      </div>
+    </div>
+  </dialog>
 
   <dialog id="savedDetailsDialog" class="modal">
     <form method="dialog" class="modal-card" id="savedDetailsForm">
@@ -307,6 +373,6 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=44" defer></script>
+  <script src="online-orders.js?v=45" defer></script>
 </body>
 </html>
