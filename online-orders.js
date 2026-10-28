@@ -375,21 +375,21 @@ async function loadMenu(){
   }
 }
 
-$('cartButton').addEventListener('click',openCart);
+$('cartButton')?.addEventListener('click',openCart);
 document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('click',closeCart));
-$('checkoutButton').addEventListener('click',()=>{
+$('checkoutButton')?.addEventListener('click',()=>{
   if(!cart.length)return;
   closeCart();
   $('checkoutTotal').textContent=money(total());
   updateServiceFields();
   $('checkoutDialog').showModal();
 });
-$('addToCartButton').addEventListener('click',e=>{e.preventDefault();addSelected()});
-$('qtyMinus').addEventListener('click',()=>{$('qtyInput').value=Math.max(1,Number($('qtyInput').value||1)-1)});
-$('qtyPlus').addEventListener('click',()=>{$('qtyInput').value=Math.min(20,Number($('qtyInput').value||1)+1)});
+$('addToCartButton')?.addEventListener('click',e=>{e.preventDefault();addSelected()});
+$('qtyMinus')?.addEventListener('click',()=>{$('qtyInput').value=Math.max(1,Number($('qtyInput').value||1)-1)});
+$('qtyPlus')?.addEventListener('click',()=>{$('qtyInput').value=Math.min(20,Number($('qtyInput').value||1)+1)});
 document.querySelectorAll('input[name="serviceType"]').forEach(el=>el.addEventListener('change',updateServiceFields));
-$('placeOrderButton').addEventListener('click',e=>{e.preventDefault();placeOrder()});
-$('successClose').addEventListener('click',()=>$('successDialog').close());
+$('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrder()});
+$('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 
 loadCart();
 renderCart();
