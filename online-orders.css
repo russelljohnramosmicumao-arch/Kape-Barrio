@@ -1059,3 +1059,16 @@ button{cursor:pointer}
 #scheduledTimeField{
   margin-top:0;
 }
+
+/* v5.4 lock service type chosen at preorder start */
+.service-choice label.service-locked-off{
+  opacity:.42;
+  filter:grayscale(1);
+  cursor:not-allowed;
+}
+.service-choice label.service-locked-off *{
+  cursor:not-allowed!important;
+}
+.service-choice label.service-locked-on{
+  box-shadow:0 0 0 2px rgba(107,63,36,.10);
+}

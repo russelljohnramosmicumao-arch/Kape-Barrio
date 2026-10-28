@@ -22,6 +22,7 @@ let selectedDeliveryFee=0;
 let currentShopOpen=false;
 let closedPreorderConfigured=false;
 let closedPreorderService='pickup';
+let lockedServiceType='';
 const GUEST_CLAIM_KEY='kbrPendingGuestOrderClaim';
 
 let selectedSweetness='Normal Sugar';
@@ -441,8 +442,25 @@ function updateCheckoutTotals(){
   }
 }
 
+
+function applyServiceLock(){
+  const radios=[...document.querySelectorAll('input[name="serviceType"]')];
+  radios.forEach(radio=>{
+    const label=radio.closest('label');
+    const locked=!!lockedServiceType;
+    const isSelected=!locked||radio.value===lockedServiceType;
+
+    radio.disabled=locked&&!isSelected;
+    label?.classList.toggle('service-locked-off',locked&&!isSelected);
+    label?.classList.toggle('service-locked-on',locked&&isSelected);
+
+    if(locked&&isSelected)radio.checked=true;
+  });
+}
+
 function updateServiceFields(){
-  const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
+  applyServiceLock();
+  const service=document.querySelector('input[name="serviceType"]:checked')?.value||lockedServiceType||'pickup';
   const delivery=service==='delivery';
   $('deliveryAddressField').classList.toggle('hidden',!delivery);
   $('deliveryEta').classList.toggle('hidden',!delivery);
@@ -462,6 +480,7 @@ function updateServiceFields(){
 
   updateTimingFields();
   updateCheckoutTotals();
+  setPayment(selectedPayment);
 }
 
 function setPayment(method){
@@ -480,7 +499,11 @@ function setPayment(method){
   $('cashAmountField').classList.toggle('hidden',selectedPayment!=='cash');
   $('gcashDetails').classList.toggle('hidden',selectedPayment!=='gcash');
   if($('gcashNumber'))$('gcashNumber').textContent=GCASH_NUMBER;
+
+  const service=document.querySelector('input[name="serviceType"]:checked')?.value||lockedServiceType||'pickup';
+  $('cashAmountField')?.classList.toggle('hidden',!(method==='cash'&&service==='delivery'));
 }
+
 
 
 
@@ -726,8 +749,10 @@ function finishClosedPreorder(){
   const check=scheduledValueIsValid(value,closedPreorderService);
   if(!check.ok)return toast(check.message);
 
-  const serviceRadio=document.querySelector(`input[name="serviceType"][value="${closedPreorderService}"]`);
+  lockedServiceType=closedPreorderService;
+  const serviceRadio=document.querySelector(`input[name="serviceType"][value="${lockedServiceType}"]`);
   if(serviceRadio)serviceRadio.checked=true;
+  applyServiceLock();
 
   if($('scheduledTime'))$('scheduledTime').value=value;
 
@@ -803,7 +828,7 @@ async function placeOrder(){
   let notes=$('orderNotes').value.trim();
   const cashAmount=Number($('cashAmount')?.value||0);
 
-  if(payment==='cash'){
+  if(payment==='cash'&&service==='delivery'){
     if(!cashAmount||cashAmount<(total()+(service==='delivery'?selectedDeliveryFee:0)))return toast('Please enter enough cash for the order total.');
     notes=[notes,`Cash tendered: ₱${cashAmount}`].filter(Boolean).join(' | ');
   }else{
@@ -1307,6 +1332,8 @@ document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('
 $('checkoutButton')?.addEventListener('click',()=>{
   if(!cart.length)return;
   closeCart();
+  if(currentShopOpen)lockedServiceType='';
+  applyServiceLock();
   updateCheckoutTotals();
   updateServiceFields();
   updateTimingFields();
