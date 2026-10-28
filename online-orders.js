@@ -120,20 +120,24 @@ function renderMenu(){
   $('emptyState').classList.toggle('hidden',filtered.length>0);
 
   $('menuGrid').innerHTML=filtered.map(item=>`
-    <article class="menu-card">
+    <article class="menu-card" data-product="${attr(item.productId||item.name)}"
+             tabindex="0" role="button" aria-label="Choose ${attr(item.name||'item')}">
       <img src="${attr(resolveImage(item))}" alt="${attr(item.name)}" loading="lazy"
            onerror="this.style.visibility='hidden'">
       <div class="menu-card-body">
         <h3>${esc(item.name||'')}</h3>
-        <div class="menu-card-footer">
-          <button type="button" class="add-button" data-product="${attr(item.productId||item.name)}">Add</button>
-        </div>
       </div>
     </article>
   `).join('');
 
-  $('menuGrid').querySelectorAll('[data-product]').forEach(btn=>{
-    btn.addEventListener('click',()=>openItem(btn.dataset.product));
+  $('menuGrid').querySelectorAll('[data-product]').forEach(card=>{
+    card.addEventListener('click',()=>openItem(card.dataset.product));
+    card.addEventListener('keydown',event=>{
+      if(event.key==='Enter'||event.key===' '){
+        event.preventDefault();
+        openItem(card.dataset.product);
+      }
+    });
   });
 }
 

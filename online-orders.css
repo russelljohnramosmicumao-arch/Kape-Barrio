@@ -156,3 +156,11 @@ button{cursor:pointer}
   .menu-card h3{font-size:.74rem}
   .add-button{padding:7px 9px;font-size:.72rem}
 }
+
+/* v3.2: whole product tile is the button */
+.menu-card{cursor:pointer}
+.menu-card:active{transform:scale(.985)}
+.menu-card:focus-visible{outline:3px solid rgba(107,63,36,.28);outline-offset:2px}
+.menu-card-footer{display:none!important}
+.menu-card-body{padding:8px 9px 10px}
+.menu-card h3{text-align:center}
