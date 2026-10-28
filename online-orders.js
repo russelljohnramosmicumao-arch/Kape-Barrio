@@ -8,7 +8,7 @@ let cart=[];
 let selected=null;
 let selectedType='standard';
 let selectedPayment='cash';
-const GCASH_NUMBER='09XX XXX XXXX';
+const GCASH_NUMBER='09672365176';
 let deliveryZones=[];
 let selectedDeliveryFee=0;
 let selectedSweetness='Normal Sugar';
@@ -348,7 +348,11 @@ function closeCart(){
 async function loadDeliveryZones(){
   try{
     const zones=await rpc('kbr_delivery_zones_snapshot');
-    deliveryZones=Array.isArray(zones)?zones:[];
+    deliveryZones=(Array.isArray(zones)?zones:[]).sort((a,b)=>{
+      if(a.barangay==='Ungib')return -1;
+      if(b.barangay==='Ungib')return 1;
+      return String(a.barangay||'').localeCompare(String(b.barangay||''));
+    });
     const select=$('deliveryBarangay');
     if(!select)return;
 
@@ -398,8 +402,30 @@ function updateCheckoutTotals(){
   const subtotal=total();
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
   const fee=service==='delivery'?selectedDeliveryFee:0;
+  const finalTotal=subtotal+fee;
+
   if($('checkoutSubtotal'))$('checkoutSubtotal').textContent=money(subtotal);
-  if($('checkoutTotal'))$('checkoutTotal').textContent=money(subtotal+fee);
+  if($('checkoutTotal'))$('checkoutTotal').textContent=money(finalTotal);
+
+  const cashBtn=$('cashPaymentButton');
+  if(cashBtn){
+    cashBtn.disabled=finalTotal>300;
+    cashBtn.title=finalTotal>300?'Orders above ₱300 require GCash.':'';
+  }
+
+  let note=document.getElementById('paymentLimitNote');
+  if(finalTotal>300){
+    if(!note){
+      note=document.createElement('div');
+      note.id='paymentLimitNote';
+      note.className='payment-limit-note';
+      document.querySelector('.payment-buttons')?.insertAdjacentElement('afterend',note);
+    }
+    note.textContent='Orders above ₱300 require GCash payment.';
+    if(selectedPayment!=='gcash')setPayment('gcash');
+  }else if(note){
+    note.remove();
+  }
 }
 
 function updateServiceFields(){
@@ -424,10 +450,18 @@ function updateServiceFields(){
 }
 
 function setPayment(method){
-  selectedPayment=method==='gcash'?'gcash':'cash';
+  const finalTotal=total()+((document.querySelector('input[name="serviceType"]:checked')?.value||'pickup')==='delivery'?selectedDeliveryFee:0);
+  if(method==='cash'&&finalTotal>300){
+    selectedPayment='gcash';
+    toast('Orders above ₱300 require GCash.');
+  }else{
+    selectedPayment=method==='gcash'?'gcash':'cash';
+  }
+
   document.querySelectorAll('.payment-choice').forEach(btn=>{
     btn.classList.toggle('active',btn.dataset.payment===selectedPayment);
   });
+
   $('cashAmountField').classList.toggle('hidden',selectedPayment!=='cash');
   $('gcashDetails').classList.toggle('hidden',selectedPayment!=='gcash');
   if($('gcashNumber'))$('gcashNumber').textContent=GCASH_NUMBER;

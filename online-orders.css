@@ -455,3 +455,18 @@ button{cursor:pointer}
   font-size:1.08rem;
   font-weight:900;
 }
+
+/* v3.9 payment threshold */
+.payment-choice:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+}
+.payment-limit-note{
+  margin-top:8px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:#edf7ff;
+  color:#075c9f;
+  font-size:.78rem;
+  font-weight:800;
+}
