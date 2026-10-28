@@ -671,3 +671,21 @@ button{cursor:pointer}
     font-size:.78rem;
   }
 }
+
+/* v4.3 editable saved profile details */
+.saved-details-button{
+  width:100%;
+  text-align:left;
+  cursor:pointer;
+  font:inherit;
+  color:inherit;
+}
+.saved-details-edit-hint{
+  margin-top:8px;
+  font-size:.72rem;
+  font-weight:800;
+  color:var(--brown);
+}
+.saved-details-button:hover{
+  background:#fffaf5;
+}

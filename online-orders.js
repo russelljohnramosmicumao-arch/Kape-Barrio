@@ -559,6 +559,51 @@ async function placeOrder(){
 }
 
 
+
+function populateProfileBarangays(){
+  const select=$('profileBarangay');
+  if(!select)return;
+  const current=customerProfile?.barangay||'';
+  select.innerHTML='<option value="">Select barangay</option>'+deliveryZones
+    .filter(zone=>zone.available)
+    .map(zone=>`<option value="${attr(zone.barangay)}">${esc(zone.barangay)}</option>`)
+    .join('');
+  if(current)select.value=current;
+}
+
+function openSavedDetails(){
+  if(!customerSession?.user)return;
+  $('profileName').value=customerProfile?.name||'';
+  $('profilePhone').value=customerProfile?.phone||'';
+  populateProfileBarangays();
+  $('profileAddress').value=customerProfile?.address||'';
+  $('savedDetailsDialog')?.showModal();
+}
+
+async function saveProfileDetails(){
+  const name=$('profileName').value.trim();
+  const phone=$('profilePhone').value.trim();
+  const barangay=$('profileBarangay').value.trim();
+  const address=$('profileAddress').value.trim();
+
+  if(name.length<2)return toast('Please enter your name.');
+  if(phone.replace(/\D/g,'').length<7)return toast('Please enter a valid phone number.');
+
+  try{
+    await rpc('kbr_save_customer_checkout_details',{
+      p_name:name,
+      p_phone:phone,
+      p_barangay:barangay,
+      p_address:address
+    });
+    await loadCustomerProfile();
+    $('savedDetailsDialog')?.close();
+    toast('Saved details updated.');
+  }catch(error){
+    toast(error.message||'Could not save your details.');
+  }
+}
+
 function updateAccountUI(){
   const button=$('customerAccountButton');
   const signed=!!customerSession?.user;
@@ -594,9 +639,10 @@ function updateAccountUI(){
   }
 
   const details=[];
+  if(customerProfile?.name)details.push(`Name: ${customerProfile.name}`);
   if(customerProfile?.phone)details.push(`Phone: ${customerProfile.phone}`);
   if(customerProfile?.barangay)details.push(`Barangay: ${customerProfile.barangay}`);
-  if(customerProfile?.address)details.push(`Address: ${customerProfile.address}`);
+  if(customerProfile?.address)details.push(`Location: ${customerProfile.address}`);
   $('savedCustomerDetails').textContent=details.length
     ? details.join('\n')
     : 'No saved checkout details yet.';
@@ -722,6 +768,12 @@ document.querySelectorAll('.sweetness-option').forEach(btn=>{
     selectedSweetness=btn.dataset.sweetness||'Normal Sugar';
     document.querySelectorAll('.sweetness-option').forEach(x=>x.classList.toggle('active',x===btn));
   });
+});
+
+$('savedDetailsButton')?.addEventListener('click',openSavedDetails);
+$('saveProfileDetailsButton')?.addEventListener('click',e=>{
+  e.preventDefault();
+  saveProfileDetails();
 });
 
 $('customerAccountButton')?.addEventListener('click',async()=>{
