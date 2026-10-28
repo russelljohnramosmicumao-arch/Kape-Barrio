@@ -7,6 +7,7 @@ let category='Frappe & Smoothies';
 let cart=[];
 let selected=null;
 let selectedType='standard';
+let selectedSweetness='100%';
 
 const $=id=>document.getElementById(id);
 const money=v=>`₱${Number(v||0).toLocaleString('en-PH',{maximumFractionDigits:2})}`;
@@ -151,6 +152,10 @@ function openItem(key){
   $('itemName').textContent=selected.name||'';
   $('qtyInput').value=1;
   $('flavorInput').value='';
+  selectedSweetness='100%';
+  document.querySelectorAll('.sweetness-option').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.sweetness==='100%');
+  });
 
   const hasPremium=Array.isArray(selected.premium)&&selected.premium.length>0&&Array.isArray(selected.premiumSizes)&&selected.premiumSizes.length>0;
   selectedType='standard';
@@ -205,7 +210,7 @@ function addSelected(){
   const idx=sizes.indexOf(size);
   const price=Number(prices[idx]);
   const qty=Math.max(1,Math.min(20,Number($('qtyInput').value)||1));
-  const sweetness=$('sweetnessField').classList.contains('hidden')?'':$('sweetnessSelect').value;
+  const sweetness=$('sweetnessField').classList.contains('hidden')?'':selectedSweetness;
   const flavor=$('flavorField').classList.contains('hidden')?'':$('flavorInput').value.trim();
 
   const key=[selected.productId||selected.name,selectedType,size,sweetness,flavor].join('|');
@@ -378,6 +383,13 @@ async function loadMenu(){
     toast(error.message||'Could not load the menu.');
   }
 }
+
+document.querySelectorAll('.sweetness-option').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    selectedSweetness=btn.dataset.sweetness||'100%';
+    document.querySelectorAll('.sweetness-option').forEach(x=>x.classList.toggle('active',x===btn));
+  });
+});
 
 $('cartButton')?.addEventListener('click',openCart);
 document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('click',closeCart));

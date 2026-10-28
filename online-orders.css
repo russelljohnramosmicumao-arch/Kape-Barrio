@@ -277,3 +277,36 @@ button{cursor:pointer}
     padding:10px 12px;
   }
 }
+
+/* v3.4 one-line sweetness control */
+#itemDialog .sweetness-row{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:5px;
+  width:100%;
+}
+#itemDialog .sweetness-option{
+  min-width:0;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--ink);
+  border-radius:999px;
+  padding:8px 4px;
+  font-size:.78rem;
+  font-weight:800;
+}
+#itemDialog .sweetness-option.active{
+  background:var(--brown);
+  border-color:var(--brown);
+  color:#fff;
+}
+#itemDialog .sweetness-option:active{
+  transform:scale(.97);
+}
+@media(max-width:640px){
+  #itemDialog .sweetness-row{gap:4px}
+  #itemDialog .sweetness-option{
+    padding:7px 2px;
+    font-size:.72rem;
+  }
+}

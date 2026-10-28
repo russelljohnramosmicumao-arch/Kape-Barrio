@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="stylesheet" href="online-orders.css?v=33">
+  <link rel="stylesheet" href="online-orders.css?v=34">
 </head>
 <body>
   <header class="online-topbar">
@@ -68,16 +68,16 @@
       <div id="typeOptions" class="option-group hidden"></div>
       <div id="sizeOptions" class="option-group"></div>
 
-      <label id="sweetnessField" class="field hidden">
+      <div id="sweetnessField" class="field hidden">
         <span>Sweetness</span>
-        <select id="sweetnessSelect">
-          <option value="Normal">Normal</option>
-          <option value="Less Sweet">Less Sweet</option>
-          <option value="Half Sweet">Half Sweet</option>
-          <option value="No Sweetener">No Sweetener</option>
-          <option value="Diabeties">Diabeties</option>
-        </select>
-      </label>
+        <div class="sweetness-row" role="group" aria-label="Sweetness level">
+          <button type="button" class="sweetness-option" data-sweetness="0%">0%</button>
+          <button type="button" class="sweetness-option" data-sweetness="25%">25%</button>
+          <button type="button" class="sweetness-option" data-sweetness="50%">50%</button>
+          <button type="button" class="sweetness-option" data-sweetness="75%">75%</button>
+          <button type="button" class="sweetness-option active" data-sweetness="100%">100%</button>
+        </div>
+      </div>
 
       <label id="flavorField" class="field hidden">
         <span>Flavor</span>
@@ -177,6 +177,6 @@
 
   <div id="toast" class="toast" role="status"></div>
 
-  <script src="online-orders.js?v=33" defer></script>
+  <script src="online-orders.js?v=34" defer></script>
 </body>
 </html>
