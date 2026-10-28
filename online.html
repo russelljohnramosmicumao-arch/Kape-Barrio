@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#6b3f24">
+  <title>Kape Bar-Rio Online Orders</title>
+  <link rel="stylesheet" href="online-orders.css?v=1">
+</head>
+<body>
+  <header class="online-topbar">
+    <div>
+      <div class="eyebrow">Kape Bar-Rio</div>
+      <h1>Order Online</h1>
+      <p id="shopStatus" class="shop-status">Loading live menu…</p>
+    </div>
+    <button id="cartButton" class="cart-button" type="button">
+      Cart <span id="cartCount">0</span>
+    </button>
+  </header>
+
+  <main class="page-shell">
+    <section class="intro-card">
+      <div>
+        <span class="badge">Customer Ordering</span>
+        <h2>Same KBR menu, ordered from your phone.</h2>
+        <p>Choose your drinks or snacks, then select Pickup or Delivery before sending your order.</p>
+      </div>
+    </section>
+
+    <nav id="categoryBar" class="category-bar" aria-label="Menu categories"></nav>
+
+    <section class="menu-section">
+      <div class="menu-heading">
+        <div>
+          <div class="eyebrow">Menu</div>
+          <h2 id="categoryTitle">All Items</h2>
+        </div>
+        <input id="searchInput" class="search-input" type="search" placeholder="Search menu…">
+      </div>
+
+      <div id="menuGrid" class="menu-grid"></div>
+      <div id="emptyState" class="empty-state hidden">No matching items found.</div>
+    </section>
+  </main>
+
+  <aside id="cartDrawer" class="drawer" aria-hidden="true">
+    <div class="drawer-backdrop" data-close-cart></div>
+    <section class="drawer-panel">
+      <div class="drawer-header">
+        <div>
+          <div class="eyebrow">Your order</div>
+          <h2>Cart</h2>
+        </div>
+        <button type="button" class="icon-button" data-close-cart aria-label="Close">×</button>
+      </div>
+
+      <div id="cartItems" class="cart-items"></div>
+
+      <div class="cart-footer">
+        <div class="total-row">
+          <span>Subtotal</span>
+          <strong id="cartTotal">₱0</strong>
+        </div>
+        <button id="checkoutButton" class="primary-button" type="button">Continue</button>
+      </div>
+    </section>
+  </aside>
+
+  <dialog id="itemDialog" class="modal">
+    <form method="dialog" class="modal-card" id="itemForm">
+      <button class="modal-close" value="cancel" aria-label="Close">×</button>
+      <img id="itemImage" class="item-image" alt="">
+      <div id="itemCategory" class="eyebrow"></div>
+      <h2 id="itemName"></h2>
+
+      <div id="typeOptions" class="option-group hidden"></div>
+      <div id="sizeOptions" class="option-group"></div>
+
+      <label id="sweetnessField" class="field hidden">
+        <span>Sweetness</span>
+        <select id="sweetnessSelect">
+          <option value="Normal">Normal</option>
+          <option value="Less Sweet">Less Sweet</option>
+          <option value="Half Sweet">Half Sweet</option>
+          <option value="No Sweetener">No Sweetener</option>
+          <option value="Diabeties">Diabeties</option>
+        </select>
+      </label>
+
+      <label id="flavorField" class="field hidden">
+        <span>Flavor</span>
+        <input id="flavorInput" type="text" maxlength="60" placeholder="Flavor">
+      </label>
+
+      <label class="field">
+        <span>Quantity</span>
+        <div class="qty-control">
+          <button id="qtyMinus" type="button">−</button>
+          <input id="qtyInput" type="number" min="1" max="20" value="1">
+          <button id="qtyPlus" type="button">+</button>
+        </div>
+      </label>
+
+      <button id="addToCartButton" class="primary-button" value="default">Add to cart</button>
+    </form>
+  </dialog>
+
+  <dialog id="checkoutDialog" class="modal">
+    <form method="dialog" class="modal-card checkout-card" id="checkoutForm">
+      <button class="modal-close" value="cancel" aria-label="Close">×</button>
+
+      <div class="eyebrow">Order details</div>
+      <h2>How will you get your order?</h2>
+
+      <div class="service-choice">
+        <label>
+          <input type="radio" name="serviceType" value="pickup" checked>
+          <span>
+            <strong>Pickup</strong>
+            <small>Pick up your order at Kape Bar-Rio.</small>
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="serviceType" value="delivery">
+          <span>
+            <strong>Delivery</strong>
+            <small>Have your order delivered to your address.</small>
+          </span>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Customer name</span>
+        <input id="customerName" type="text" maxlength="80" autocomplete="name" required placeholder="Your name">
+      </label>
+
+      <label class="field">
+        <span>Contact number</span>
+        <input id="contactNumber" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" required placeholder="09XX XXX XXXX">
+      </label>
+
+      <label id="deliveryAddressField" class="field hidden">
+        <span>Delivery address</span>
+        <textarea id="deliveryAddress" rows="3" maxlength="250" placeholder="House/Building, street, barangay, municipality"></textarea>
+      </label>
+
+      <label class="field">
+        <span id="timeLabel">Preferred pickup time (optional)</span>
+        <input id="requestedTime" type="datetime-local">
+      </label>
+
+      <fieldset class="payment-box">
+        <legend>Payment</legend>
+        <label><input type="radio" name="paymentMethod" value="cash" checked> Cash</label>
+        <label><input type="radio" name="paymentMethod" value="gcash"> GCash</label>
+      </fieldset>
+
+      <label class="field">
+        <span>Notes (optional)</span>
+        <textarea id="orderNotes" rows="3" maxlength="300" placeholder="Anything the barista should know?"></textarea>
+      </label>
+
+      <div class="total-row checkout-total">
+        <span>Menu subtotal</span>
+        <strong id="checkoutTotal">₱0</strong>
+      </div>
+
+      <p id="deliveryNote" class="notice hidden">
+        Delivery fee is not included yet. Kape Bar-Rio will confirm delivery details with you.
+      </p>
+
+      <button id="placeOrderButton" class="primary-button" value="default">Send order</button>
+    </form>
+  </dialog>
+
+  <dialog id="successDialog" class="modal">
+    <div class="modal-card success-card">
+      <div class="success-mark">✓</div>
+      <div class="eyebrow">Order sent</div>
+      <h2 id="successOrderNo">Online #500001</h2>
+      <p id="successText">Your order has been sent to Kape Bar-Rio.</p>
+      <button id="successClose" class="primary-button" type="button">Back to menu</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="online-orders.js?v=1" defer></script>
+</body>
+</html>
