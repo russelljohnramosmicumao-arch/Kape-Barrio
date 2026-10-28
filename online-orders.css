@@ -887,3 +887,163 @@ button{cursor:pointer}
   line-height:1.35;
 }
 .shop-closed-gate{display:none!important}
+
+/* v4.9 scheduled ordering */
+.order-timing-section{
+  margin:14px 0;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fffaf5;
+}
+.timing-choice{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:9px;
+}
+.timing-choice label{display:block;cursor:pointer}
+.timing-choice input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.timing-choice span{
+  display:block;
+  height:100%;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
+.timing-choice input:checked + span{
+  border-color:var(--brown);
+  box-shadow:0 0 0 2px rgba(107,63,36,.08);
+}
+.timing-choice input:disabled + span{
+  opacity:.45;
+  cursor:not-allowed;
+}
+.timing-choice strong{display:block;font-size:.85rem}
+.timing-choice small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.7rem;
+  line-height:1.3;
+}
+.closed-schedule-note{
+  margin-top:9px;
+  padding:10px 11px;
+  border-radius:12px;
+  background:#fff0ec;
+  border:1px solid #efc8bc;
+  color:#7a3524;
+  font-size:.78rem;
+}
+.closed-schedule-note strong,
+.closed-schedule-note span{display:block}
+.closed-schedule-note span{
+  margin-top:2px;
+  color:#87594b;
+}
+#scheduledTimeField{margin-top:10px}
+@media(max-width:520px){
+  .timing-choice{grid-template-columns:1fr}
+}
+
+/* v5.0 closed-shop preorder entry */
+.closed-preorder-gate{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(246,239,231,.98);
+}
+.closed-preorder-card{
+  width:min(440px,100%);
+  max-height:calc(100vh - 40px);
+  overflow:auto;
+  padding:25px 20px;
+  border:1px solid var(--line);
+  border-radius:24px;
+  background:#fffdf9;
+  box-shadow:0 20px 60px rgba(73,43,25,.16);
+}
+.closed-preorder-card h1,
+.closed-preorder-card h2{
+  margin:.35rem 0 .55rem;
+  color:var(--brown);
+}
+.closed-preorder-card p{
+  margin:0 0 16px;
+  color:var(--muted);
+  line-height:1.45;
+}
+.closed-shop-icon{
+  width:68px;
+  height:68px;
+  display:grid;
+  place-items:center;
+  margin:0 auto 13px;
+  border-radius:50%;
+  background:#f4e6d9;
+  font-size:2rem;
+}
+#closedPreorderIntro{
+  text-align:center;
+}
+.closed-hours{
+  display:grid;
+  gap:6px;
+  margin:0 0 17px;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:#fff;
+  font-size:.78rem;
+}
+.closed-hours span{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+}
+.closed-service-grid{
+  display:grid;
+  gap:9px;
+  margin-top:12px;
+}
+#closedPreorderTimeStep .field{
+  margin-top:11px;
+}
+.guest-claim-offer{
+  margin:16px 0 12px;
+  padding:13px;
+  border-radius:15px;
+  border:1px solid #ead5b9;
+  background:#fff7e8;
+  text-align:left;
+}
+.guest-claim-offer strong,
+.guest-claim-offer span{
+  display:block;
+}
+.guest-claim-offer span{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.78rem;
+  line-height:1.4;
+}
+.claim-account-button,
+.claim-signin-button{
+  width:100%;
+  margin-top:9px;
+}
+.claim-account-button{
+  border:0;
+  border-radius:13px;
+  padding:12px 14px;
+  font-weight:950;
+}

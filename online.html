@@ -5,25 +5,65 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="manifest" href="online-manifest.webmanifest?v=48">
+  <link rel="manifest" href="online-manifest.webmanifest?v=52">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=48">
+  <link rel="stylesheet" href="online-orders.css?v=52">
 </head>
 <body>
-<div class="eyebrow">Kape Bar-Rio</div>
-      <h1>Shop Closed</h1>
-      <p>Online ordering is available only while the shop is open in our system.</p>
-
-      <div class="hours-card">
-        <div><strong>Monday – Friday</strong><span>11:00 AM – 11:00 PM</span></div>
-        <div><strong>Saturday – Sunday</strong><span>3:00 PM – 11:00 PM</span></div>
+  <div id="closedPreorderGate" class="closed-preorder-gate hidden">
+    <div class="closed-preorder-card">
+      <div id="closedPreorderIntro">
+        <div class="closed-shop-icon">☕</div>
+        <div class="eyebrow">Kape Bar-Rio</div>
+        <h1>Sorry, we’re closed right now.</h1>
+        <p>You can still place your order now and schedule it for when we’re open.</p>
+        <div class="closed-hours">
+          <span><strong>Mon–Fri Pickup</strong> 11:00 AM–10:45 PM</span>
+          <span><strong>Mon–Fri Delivery</strong> 11:30 AM–10:30 PM</span>
+          <span><strong>Sat–Sun Pickup</strong> 3:00 PM–10:45 PM</span>
+          <span><strong>Sat–Sun Delivery</strong> 3:00 PM–10:30 PM</span>
+        </div>
+        <button id="closedOrderLaterButton" class="primary-button" type="button">Order for Later</button>
       </div>
 
-      <button id="checkShopStatusButton" class="primary-button" type="button">Check Again</button>
+      <div id="closedPreorderServiceStep" class="hidden">
+        <button id="closedPreorderBackIntro" class="auth-back-button" type="button">← Back</button>
+        <div class="eyebrow">Order for Later</div>
+        <h2>How will you receive your order?</h2>
+        <div class="closed-service-grid">
+          <button id="closedPickupButton" class="entry-choice-button" type="button">
+            <span class="entry-choice-icon">🛍️</span>
+            <span><strong>Pickup</strong><small>Pick up at Kape Bar-Rio</small></span>
+          </button>
+          <button id="closedDeliveryButton" class="entry-choice-button" type="button">
+            <span class="entry-choice-icon">🛵</span>
+            <span><strong>Delivery</strong><small>Deliver to an available San Quintin area</small></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="closedPreorderTimeStep" class="hidden">
+        <button id="closedPreorderBackService" class="auth-back-button" type="button">← Back</button>
+        <div class="eyebrow">Order for Later</div>
+        <h2 id="closedPreorderTimeTitle">Choose your pickup time</h2>
+
+        <label class="field">
+          <span>Date</span>
+          <input id="closedPreorderDate" type="date">
+        </label>
+
+        <label class="field">
+          <span>Time</span>
+          <select id="closedPreorderTime"></select>
+          <small id="closedPreorderTimeHelp"></small>
+        </label>
+
+        <button id="closedPreorderContinue" class="primary-button" type="button">Continue to Menu</button>
+      </div>
     </div>
   </div>
-  <header class="online-topbar">
+<header class="online-topbar">
     <div>
       <div class="eyebrow">Kape Bar-Rio</div>
       <h1>Order Online</h1>
@@ -45,7 +85,7 @@
   <div class="hours-notice" id="hoursNotice">
     <strong>Online Ordering Hours</strong>
     <span>Mon–Fri: 11:00 AM–11:00 PM · Sat–Sun: 3:00 PM–11:00 PM</span>
-    <small>Last delivery order: 10:30 PM. Orders sent outside these hours may be prepared when the shop opens.</small>
+    <small>Last delivery order: 10:30 PM. If we are closed, you can still place an Order for Later.</small>
   </div>
 
 
@@ -149,6 +189,34 @@
         </label>
       </div>
 
+      <section class="order-timing-section">
+        <div class="payment-title">When do you want your order?</div>
+
+                <div class="timing-choice">
+          <label>
+            <input type="radio" name="orderTiming" value="asap" checked>
+            <span>
+              <strong>ASAP</strong>
+              <small>Prepare my order as soon as possible.</small>
+            </span>
+          </label>
+
+          <label>
+            <input type="radio" name="orderTiming" value="later">
+            <span>
+              <strong>Order for Later</strong>
+              <small>Choose a pickup or delivery time.</small>
+            </span>
+          </label>
+        </div>
+
+        <label id="scheduledTimeField" class="field hidden">
+          <span>Choose date and time</span>
+          <input id="scheduledTime" type="datetime-local" step="900">
+          <small id="scheduledTimeHelp">Choose a time during Kape Bar-Rio opening hours.</small>
+        </label>
+      </section>
+
       <label class="field">
         <span>Customer name</span>
         <input id="customerName" type="text" maxlength="80" autocomplete="name" required placeholder="Your name">
@@ -180,8 +248,8 @@
       </p>
 
       <label class="field">
-        <span id="notesLabel">What time will you pick it up?</span>
-        <textarea id="orderNotes" rows="2" maxlength="300" placeholder="Example: Around 7:30 PM"></textarea>
+        <span id="notesLabel">Order notes (optional)</span>
+        <textarea id="orderNotes" rows="2" maxlength="300" placeholder="Special instructions, landmark, etc."></textarea>
       </label>
 
       <div class="total-row checkout-total">
@@ -440,6 +508,18 @@
       <div class="eyebrow">Order sent</div>
       <h2 id="successOrderNo">Online #500001</h2>
       <p id="successText">Your order has been sent to Kape Bar-Rio.</p>
+
+      <div id="guestClaimOffer" class="guest-claim-offer hidden">
+        <strong>Want KBR Points for this order?</strong>
+        <span>Create an account now and we’ll attach this order to it.</span>
+        <button id="claimCreateAccountButton" class="points-entry-button claim-account-button" type="button">
+          ⭐ Create Account & Get Points
+        </button>
+        <button id="claimSignInButton" class="sign-in-green-button claim-signin-button" type="button">
+          Sign In
+        </button>
+      </div>
+
       <button id="successClose" class="primary-button" type="button">Back to menu</button>
     </div>
   </dialog>
@@ -447,6 +527,6 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=48" defer></script>
+  <script src="online-orders.js?v=52" defer></script>
 </body>
 </html>

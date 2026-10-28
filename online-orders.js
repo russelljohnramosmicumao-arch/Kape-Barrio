@@ -19,6 +19,11 @@ let selectedPayment='cash';
 const GCASH_NUMBER='09672365176';
 let deliveryZones=[];
 let selectedDeliveryFee=0;
+let currentShopOpen=false;
+let closedPreorderConfigured=false;
+let closedPreorderService='pickup';
+const GUEST_CLAIM_KEY='kbrPendingGuestOrderClaim';
+
 let selectedSweetness='Normal Sugar';
 
 const $=id=>document.getElementById(id);
@@ -446,14 +451,16 @@ function updateServiceFields(){
     $('notesLabel').textContent='Delivery notes (optional)';
     $('orderNotes').placeholder='Landmark, gate color, special instructions, etc.';
   }else{
-    $('notesLabel').textContent='What time will you pick it up?';
-    $('orderNotes').placeholder='Example: Around 7:30 PM';
+    $('notesLabel').textContent='Pickup notes (optional)';
+    $('orderNotes').placeholder='Special instructions, etc.';
     $('deliveryAddress').value='';
     if($('deliveryBarangay'))$('deliveryBarangay').value='';
     selectedDeliveryFee=0;
     $('deliveryFeePreview')?.classList.add('hidden');
     $('deliveryFeeRow')?.classList.add('hidden');
   }
+
+  updateTimingFields();
   updateCheckoutTotals();
 }
 
@@ -476,6 +483,7 @@ function setPayment(method){
 }
 
 
+
 function getManilaNow(){
   const parts=new Intl.DateTimeFormat('en-CA',{
     timeZone:'Asia/Manila',
@@ -492,25 +500,340 @@ function getManilaNow(){
   };
 }
 
+function manilaPseudoDate(parts=getManilaNow()){
+  return new Date(Date.UTC(parts.year,parts.month-1,parts.day,parts.hour,parts.minute,parts.second||0));
+}
+
+function formatDateTimeLocal(date){
+  const pad=n=>String(n).padStart(2,'0');
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth()+1)}-${pad(date.getUTCDate())}T${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+}
+
+function openingHourFor(date){
+  const day=date.getUTCDay();
+  return (day===0||day===6)?15:11;
+}
+
+function earliestHourMinute(date,service){
+  const day=date.getUTCDay();
+  const weekend=day===0||day===6;
+
+  if(weekend){
+    return {hour:15,minute:0};
+  }
+
+  return service==='delivery'
+    ? {hour:11,minute:30}
+    : {hour:11,minute:0};
+}
+
+function latestHourMinute(service){
+  return service==='delivery'?{hour:22,minute:30}:{hour:22,minute:45};
+}
+
+function defaultScheduledTime(){
+  const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
+  const now=manilaPseudoDate();
+  let candidate=new Date(now.getTime()+30*60000);
+  candidate.setUTCSeconds(0,0);
+
+  let rounded=Math.ceil(candidate.getUTCMinutes()/15)*15;
+  if(rounded>=60){
+    candidate.setUTCHours(candidate.getUTCHours()+1);
+    rounded=0;
+  }
+  candidate.setUTCMinutes(rounded,0,0);
+
+  for(let i=0;i<8;i++){
+    const earliest=earliestHourMinute(candidate,service);
+    const latest=latestHourMinute(service);
+
+    const opening=new Date(candidate);
+    opening.setUTCHours(earliest.hour,earliest.minute,0,0);
+
+    const closing=new Date(candidate);
+    closing.setUTCHours(latest.hour,latest.minute,0,0);
+
+    if(candidate<opening)candidate=opening;
+    if(candidate<=closing)return formatDateTimeLocal(candidate);
+
+    candidate=new Date(candidate);
+    candidate.setUTCDate(candidate.getUTCDate()+1);
+    {
+      const nextEarliest=earliestHourMinute(candidate,service);
+      candidate.setUTCHours(nextEarliest.hour,nextEarliest.minute,0,0);
+    }
+  }
+  return '';
+}
+
+function scheduledValueIsValid(value,service){
+  if(!value)return {ok:false,message:'Please choose a date and time.'};
+
+  const m=value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+  if(!m)return {ok:false,message:'Please choose a valid date and time.'};
+
+  const selected=new Date(Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5]));
+  const now=manilaPseudoDate();
+
+  if(selected.getTime()<=now.getTime()+10*60000){
+    return {ok:false,message:'Please schedule at least 10 minutes from now.'};
+  }
+  if(selected.getTime()>now.getTime()+7*24*60*60000){
+    return {ok:false,message:'You can schedule up to 7 days ahead.'};
+  }
+
+  const earliest=earliestHourMinute(selected,service);
+  const latest=latestHourMinute(service);
+  const mins=selected.getUTCHours()*60+selected.getUTCMinutes();
+  const earliestMins=earliest.hour*60+earliest.minute;
+  const latestMins=latest.hour*60+latest.minute;
+
+  if(mins<earliestMins||mins>latestMins){
+    const earliestLabel=earliest.hour===15
+      ? '3:00 PM'
+      : (service==='delivery'?'11:30 AM':'11:00 AM');
+    return {
+      ok:false,
+      message:service==='delivery'
+        ? `Please choose a delivery time between ${earliestLabel} and 10:30 PM.`
+        : `Please choose a pickup time between ${earliestLabel} and 10:45 PM.`
+    };
+  }
+
+  return {ok:true,iso:`${value}:00+08:00`};
+}
+
+function updateTimingFields(){
+  const asap=document.querySelector('input[name="orderTiming"][value="asap"]');
+  const later=document.querySelector('input[name="orderTiming"][value="later"]');
+  const field=$('scheduledTimeField');
+  const input=$('scheduledTime');
+
+  if(!asap||!later||!field||!input)return;
+
+  if(!currentShopOpen){
+    asap.disabled=true;
+    later.checked=true;
+  }else{
+    asap.disabled=false;
+  }
+
+  const isLater=later.checked;
+  field.classList.toggle('hidden',!isLater);
+
+  const minDate=manilaPseudoDate();
+  minDate.setUTCMinutes(minDate.getUTCMinutes()+10);
+  input.min=formatDateTimeLocal(minDate);
+
+  const maxDate=manilaPseudoDate();
+  maxDate.setUTCDate(maxDate.getUTCDate()+7);
+  input.max=formatDateTimeLocal(maxDate);
+
+  if(isLater&&!input.value){
+    input.value=defaultScheduledTime();
+  }
+
+  const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
+  if($('scheduledTimeHelp')){
+    $('scheduledTimeHelp').textContent=service==='delivery'
+      ? 'Delivery: 11:30 AM weekdays / 3:00 PM weekends, until 10:30 PM.'
+      : 'Pickup: 11:00 AM weekdays / 3:00 PM weekends, until 10:45 PM.';
+  }
+}
+
 function deliveryCutoffPassed(){
   const now=getManilaNow();
   return now.hour>22 || (now.hour===22 && now.minute>=30);
 }
 
-async function placeOrder(){
-  const cutoffService=$('serviceType')?.value||document.querySelector('input[name="serviceType"]:checked')?.value||'';
-  if(cutoffService==='delivery'&&deliveryCutoffPassed()){
-    return toast('Last delivery order is 10:30 PM. Please choose Pickup instead.');
+
+function localDateString(date){
+  const pad=n=>String(n).padStart(2,'0');
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth()+1)}-${pad(date.getUTCDate())}`;
+}
+
+function closedPreorderShow(step){
+  $('closedPreorderIntro')?.classList.toggle('hidden',step!=='intro');
+  $('closedPreorderServiceStep')?.classList.toggle('hidden',step!=='service');
+  $('closedPreorderTimeStep')?.classList.toggle('hidden',step!=='time');
+}
+
+function configureClosedPreorderDate(){
+  const input=$('closedPreorderDate');
+  if(!input)return;
+
+  const now=manilaPseudoDate();
+  const max=new Date(now);
+  max.setUTCDate(max.getUTCDate()+7);
+
+  input.min=localDateString(now);
+  input.max=localDateString(max);
+
+  if(!input.value)input.value=localDateString(now);
+  populateClosedPreorderTimes();
+
+  if(!$('closedPreorderTime').value){
+    const tomorrow=new Date(now);
+    tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
+    input.value=localDateString(tomorrow);
+    populateClosedPreorderTimes();
   }
+}
+
+function populateClosedPreorderTimes(){
+  const dateInput=$('closedPreorderDate');
+  const select=$('closedPreorderTime');
+  if(!dateInput||!select||!dateInput.value)return;
+
+  const m=dateInput.value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m)return;
+
+  const date=new Date(Date.UTC(+m[1],+m[2]-1,+m[3],0,0));
+  const earliest=earliestHourMinute(date,closedPreorderService);
+  const latest=latestHourMinute(closedPreorderService);
+  const now=manilaPseudoDate();
+  const sameDay=localDateString(date)===localDateString(now);
+
+  const options=[];
+  for(let mins=earliest.hour*60+earliest.minute; mins<=latest.hour*60+latest.minute; mins+=15){
+    const hour=Math.floor(mins/60);
+    const minute=mins%60;
+    const slot=new Date(date);
+    slot.setUTCHours(hour,minute,0,0);
+
+    if(sameDay&&slot.getTime()<=now.getTime()+10*60000)continue;
+
+    const h12=hour%12||12;
+    const ampm=hour<12?'AM':'PM';
+    const label=`${h12}:${String(minute).padStart(2,'0')} ${ampm}`;
+    options.push(`<option value="${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}">${label}</option>`);
+  }
+
+  select.innerHTML=options.length
+    ? options.join('')
+    : '<option value="">No remaining times for this date</option>';
+
+  const earliestLabel=earliest.hour===15
+    ? '3:00 PM'
+    : (closedPreorderService==='delivery'?'11:30 AM':'11:00 AM');
+  $('closedPreorderTimeHelp').textContent=closedPreorderService==='delivery'
+    ? `Delivery times: ${earliestLabel}–10:30 PM`
+    : `Pickup times: ${earliestLabel}–10:45 PM`;
+}
+
+function startClosedPreorderService(service){
+  closedPreorderService=service;
+  $('closedPreorderTimeTitle').textContent=service==='delivery'
+    ? 'Choose your delivery time'
+    : 'Choose your pickup time';
+  closedPreorderShow('time');
+  configureClosedPreorderDate();
+}
+
+function finishClosedPreorder(){
+  const date=$('closedPreorderDate')?.value||'';
+  const time=$('closedPreorderTime')?.value||'';
+  if(!date||!time)return toast('Please choose an available date and time.');
+
+  const value=`${date}T${time}`;
+  const check=scheduledValueIsValid(value,closedPreorderService);
+  if(!check.ok)return toast(check.message);
+
+  const serviceRadio=document.querySelector(`input[name="serviceType"][value="${closedPreorderService}"]`);
+  if(serviceRadio)serviceRadio.checked=true;
+
+  const later=document.querySelector('input[name="orderTiming"][value="later"]');
+  if(later)later.checked=true;
+
+  if($('scheduledTime'))$('scheduledTime').value=value;
+
+  closedPreorderConfigured=true;
+  $('closedPreorderGate')?.classList.add('hidden');
+  updateServiceFields();
+  updateTimingFields();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function savePendingGuestClaim(orderId,phone){
+  try{
+    localStorage.setItem(GUEST_CLAIM_KEY,JSON.stringify({
+      orderId,
+      phone,
+      savedAt:Date.now()
+    }));
+  }catch(_){}
+}
+
+function getPendingGuestClaim(){
+  try{
+    const raw=localStorage.getItem(GUEST_CLAIM_KEY);
+    if(!raw)return null;
+    const parsed=JSON.parse(raw);
+    if(!parsed?.orderId||!parsed?.phone)return null;
+    if(Date.now()-Number(parsed.savedAt||0)>24*60*60*1000){
+      localStorage.removeItem(GUEST_CLAIM_KEY);
+      return null;
+    }
+    return parsed;
+  }catch(_){
+    return null;
+  }
+}
+
+async function tryClaimPendingGuestOrder(){
+  if(!customerSession?.user)return false;
+  const pending=getPendingGuestClaim();
+  if(!pending)return false;
+
+  try{
+    const result=await rpc('kbr_claim_guest_order',{
+      p_order_id:pending.orderId,
+      p_phone:pending.phone
+    });
+    localStorage.removeItem(GUEST_CLAIM_KEY);
+    await loadCustomerProfile();
+    if(Number(result?.pointsAwardedNow||0)>0){
+      toast(`Order linked. ${result.pointsAwardedNow} KBR Points added.`);
+    }else{
+      toast('Order linked to your KBR account. Points will be added when it is completed.');
+    }
+    return true;
+  }catch(error){
+    console.warn('Could not claim guest order',error);
+    return false;
+  }
+}
+
+async function placeOrder(){
+  const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
+  const timing=document.querySelector('input[name="orderTiming"]:checked')?.value||'asap';
+
+  if(!currentShopOpen&&timing!=='later'){
+    $('checkoutDialog')?.close();
+    $('closedPreorderGate')?.classList.remove('hidden');
+    closedPreorderShow('intro');
+    return toast('Sorry, we’re closed right now. Choose Order for Later first.');
+  }
+
+  if(timing==='asap'&&service==='delivery'&&deliveryCutoffPassed()){
+    return toast('Last delivery order is 10:30 PM. Please choose Order for Later or Pickup.');
+  }
+
+  let requested=null;
+  if(timing==='later'){
+    const check=scheduledValueIsValid($('scheduledTime')?.value||'',service);
+    if(!check.ok)return toast(check.message);
+    requested=check.iso;
+  }
+
   const customerName=$('customerName').value.trim();
   const contact=$('contactNumber').value.trim();
-  const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
   const barangay=$('deliveryBarangay')?.value||'';
   const address=$('deliveryAddress').value.trim();
   const payment=selectedPayment;
   let notes=$('orderNotes').value.trim();
   const cashAmount=Number($('cashAmount')?.value||0);
-  const requested=null;
 
   if(payment==='cash'){
     if(!cashAmount||cashAmount<(total()+(service==='delivery'?selectedDeliveryFee:0)))return toast('Please enter enough cash for the order total.');
@@ -557,9 +880,18 @@ async function placeOrder(){
     $('checkoutDialog').close();
 
     $('successOrderNo').textContent=`Online #${result.orderNumber}`;
+    const scheduledText=requested
+      ? ` Scheduled for ${new Date(requested).toLocaleString('en-PH',{timeZone:'Asia/Manila',dateStyle:'medium',timeStyle:'short'})}.`
+      : '';
     $('successText').textContent=result.serviceType==='delivery'
-      ? `Your delivery order totaling ${money(result.total)} has been sent. Kape Bar-Rio will use your contact number to confirm delivery details.`
-      : `Your pickup order totaling ${money(result.total)} has been sent to Kape Bar-Rio.`;
+      ? `Your delivery order totaling ${money(result.total)} has been sent.${scheduledText} Kape Bar-Rio will use your contact number to confirm delivery details.`
+      : `Your pickup order totaling ${money(result.total)} has been sent to Kape Bar-Rio.${scheduledText}`;
+    const guestOrder=!customerSession?.user;
+    $('guestClaimOffer')?.classList.toggle('hidden',!guestOrder);
+    if(guestOrder){
+      savePendingGuestClaim(result.id,contact);
+    }
+
     $('successDialog').showModal();
 
     if(customerSession?.user){
@@ -669,6 +1001,7 @@ async function phoneLogin(){
     if(error)throw error;
     customerSession=data?.session||null;
     await loadCustomerProfile();
+    await tryClaimPendingGuestOrder();
     $('phoneAuthDialog')?.close();
     $('accountDialog')?.close();
     toast('Signed in.');
@@ -718,6 +1051,7 @@ async function phoneRegister(){
       p_address:''
     }).catch(()=>{});
     await loadCustomerProfile();
+    await tryClaimPendingGuestOrder();
 
     $('phoneAuthDialog')?.close();
     $('accountDialog')?.close();
@@ -854,10 +1188,12 @@ async function initCustomerAuth(){
   const {data}=await authClient.auth.getSession();
   customerSession=data?.session||null;
   await loadCustomerProfile();
+  if(customerSession?.user)await tryClaimPendingGuestOrder();
 
   authClient.auth.onAuthStateChange(async(_event,session)=>{
     customerSession=session||null;
     await loadCustomerProfile();
+    if(customerSession?.user)await tryClaimPendingGuestOrder();
   });
 }
 
@@ -898,10 +1234,20 @@ async function loadMenu(){
     menu=Array.isArray(snapshot?.items)?snapshot.items:[];
     const tabs=categories();
     if(!tabs.includes(category))category=tabs[0]||'Frappe & Smoothies';
-    $('shopStatus').textContent=snapshot?.shopOpen
-      ? 'Open now · online ordering available'
-      : 'Shop is currently closed · menu browsing only';
-    $('shopStatus').className=`shop-status ${snapshot?.shopOpen?'open':'closed'}`;
+    currentShopOpen=!!snapshot?.shopOpen;
+    $('shopStatus').textContent=currentShopOpen
+      ? 'Open now · order ASAP or schedule for later'
+      : 'Sorry, we’re closed right now · Order for Later is available';
+    $('shopStatus').className=`shop-status ${currentShopOpen?'open':'closed'}`;
+
+    if(currentShopOpen){
+      $('closedPreorderGate')?.classList.add('hidden');
+    }else if(!closedPreorderConfigured){
+      $('closedPreorderGate')?.classList.remove('hidden');
+      closedPreorderShow('intro');
+    }
+
+    updateTimingFields();
     renderCategories();
     renderMenu();
   }catch(error){
@@ -916,6 +1262,24 @@ document.querySelectorAll('.sweetness-option').forEach(btn=>{
     selectedSweetness=btn.dataset.sweetness||'Normal Sugar';
     document.querySelectorAll('.sweetness-option').forEach(x=>x.classList.toggle('active',x===btn));
   });
+});
+
+$('closedOrderLaterButton')?.addEventListener('click',()=>closedPreorderShow('service'));
+$('closedPreorderBackIntro')?.addEventListener('click',()=>closedPreorderShow('intro'));
+$('closedPreorderBackService')?.addEventListener('click',()=>closedPreorderShow('service'));
+$('closedPickupButton')?.addEventListener('click',()=>startClosedPreorderService('pickup'));
+$('closedDeliveryButton')?.addEventListener('click',()=>startClosedPreorderService('delivery'));
+$('closedPreorderDate')?.addEventListener('change',populateClosedPreorderTimes);
+$('closedPreorderContinue')?.addEventListener('click',finishClosedPreorder);
+
+$('claimCreateAccountButton')?.addEventListener('click',()=>{
+  $('successDialog')?.close();
+  showAccountEntryStep('register');
+  $('accountDialog')?.showModal();
+});
+$('claimSignInButton')?.addEventListener('click',()=>{
+  $('successDialog')?.close();
+  $('signInChoiceDialog')?.showModal();
 });
 
 $('signInOpenButton')?.addEventListener('click',()=>{
@@ -976,6 +1340,7 @@ $('checkoutButton')?.addEventListener('click',()=>{
   closeCart();
   updateCheckoutTotals();
   updateServiceFields();
+  updateTimingFields();
 
   if(customerSession?.user){
     if(!$('customerName').value.trim()){
@@ -1009,6 +1374,8 @@ $('addToCartButton')?.addEventListener('click',e=>{e.preventDefault();addSelecte
 $('qtyMinus')?.addEventListener('click',()=>{$('qtyInput').value=Math.max(1,Number($('qtyInput').value||1)-1)});
 $('qtyPlus')?.addEventListener('click',()=>{$('qtyInput').value=Math.min(20,Number($('qtyInput').value||1)+1)});
 document.querySelectorAll('input[name="serviceType"]').forEach(el=>el.addEventListener('change',updateServiceFields));
+document.querySelectorAll('input[name="orderTiming"]').forEach(el=>el.addEventListener('change',updateTimingFields));
+$('scheduledTime')?.addEventListener('change',updateTimingFields);
 $('deliveryBarangay')?.addEventListener('change',updateDeliveryFee);
 $('cashPaymentButton')?.addEventListener('click',()=>setPayment('cash'));
 $('gcashPaymentButton')?.addEventListener('click',()=>setPayment('gcash'));
