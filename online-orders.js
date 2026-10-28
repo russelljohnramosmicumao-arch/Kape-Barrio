@@ -7,6 +7,8 @@ let category='Frappe & Smoothies';
 let cart=[];
 let selected=null;
 let selectedType='standard';
+let selectedPayment='cash';
+const GCASH_NUMBER='09XX XXX XXXX';
 let selectedSweetness='Normal Sugar';
 
 const $=id=>document.getElementById(id);
@@ -344,9 +346,26 @@ function updateServiceFields(){
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
   const delivery=service==='delivery';
   $('deliveryAddressField').classList.toggle('hidden',!delivery);
-  $('deliveryNote').classList.toggle('hidden',!delivery);
-  $('timeLabel').textContent=delivery?'Preferred delivery time (optional)':'Preferred pickup time (optional)';
-  if(!delivery)$('deliveryAddress').value='';
+  $('deliveryEta').classList.toggle('hidden',!delivery);
+
+  if(delivery){
+    $('notesLabel').textContent='Delivery notes (optional)';
+    $('orderNotes').placeholder='Landmark, gate color, special instructions, etc.';
+  }else{
+    $('notesLabel').textContent='What time will you pick it up?';
+    $('orderNotes').placeholder='Example: Around 7:30 PM';
+    $('deliveryAddress').value='';
+  }
+}
+
+function setPayment(method){
+  selectedPayment=method==='gcash'?'gcash':'cash';
+  document.querySelectorAll('.payment-choice').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.payment===selectedPayment);
+  });
+  $('cashAmountField').classList.toggle('hidden',selectedPayment!=='cash');
+  $('gcashDetails').classList.toggle('hidden',selectedPayment!=='gcash');
+  if($('gcashNumber'))$('gcashNumber').textContent=GCASH_NUMBER;
 }
 
 async function placeOrder(){
@@ -354,9 +373,17 @@ async function placeOrder(){
   const contact=$('contactNumber').value.trim();
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
   const address=$('deliveryAddress').value.trim();
-  const payment=document.querySelector('input[name="paymentMethod"]:checked')?.value||'cash';
-  const notes=$('orderNotes').value.trim();
-  const requested=$('requestedTime').value?new Date($('requestedTime').value).toISOString():null;
+  const payment=selectedPayment;
+  let notes=$('orderNotes').value.trim();
+  const cashAmount=Number($('cashAmount')?.value||0);
+  const requested=null;
+
+  if(payment==='cash'){
+    if(!cashAmount||cashAmount<total())return toast('Please enter enough cash for the order total.');
+    notes=[notes,`Cash tendered: ₱${cashAmount}`].filter(Boolean).join(' | ');
+  }else{
+    notes=[notes,'GCash selected. Customer instructed to send receipt to Kape Bar-Rio.'].filter(Boolean).join(' | ');
+  }
 
   if(customerName.length<2)return toast('Please enter your name.');
   if(contact.replace(/\D/g,'').length<7)return toast('Please enter a valid contact number.');
@@ -445,9 +472,12 @@ $('addToCartButton')?.addEventListener('click',e=>{e.preventDefault();addSelecte
 $('qtyMinus')?.addEventListener('click',()=>{$('qtyInput').value=Math.max(1,Number($('qtyInput').value||1)-1)});
 $('qtyPlus')?.addEventListener('click',()=>{$('qtyInput').value=Math.min(20,Number($('qtyInput').value||1)+1)});
 document.querySelectorAll('input[name="serviceType"]').forEach(el=>el.addEventListener('change',updateServiceFields));
+$('cashPaymentButton')?.addEventListener('click',()=>setPayment('cash'));
+$('gcashPaymentButton')?.addEventListener('click',()=>setPayment('gcash'));
 $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrder()});
 $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 
 loadCart();
 renderCart();
+setPayment('cash');
 loadMenu();

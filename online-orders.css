@@ -350,3 +350,82 @@ button{cursor:pointer}
   65%{transform:scale(.96)}
   100%{transform:scale(1)}
 }
+
+/* v3.7 checkout payment redesign */
+.payment-section{
+  margin:14px 0 12px;
+  padding-top:4px;
+}
+.payment-title{
+  font-weight:900;
+  font-size:.92rem;
+  margin-bottom:8px;
+}
+.payment-buttons{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+}
+.payment-choice{
+  flex:0 0 auto;
+  min-width:90px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--ink);
+  padding:8px 16px;
+  border-radius:999px;
+  font-weight:900;
+}
+.payment-choice.active{
+  background:var(--brown);
+  color:#fff;
+  border-color:var(--brown);
+}
+.payment-choice.gcash{
+  color:#0876d1;
+  border-color:#7db9ef;
+}
+.payment-choice.gcash.active{
+  background:#0876d1;
+  color:#fff;
+  border-color:#0876d1;
+}
+.payment-detail{
+  margin:8px 0 0;
+}
+.payment-detail small{
+  color:var(--muted);
+  font-size:.76rem;
+}
+.gcash-details{
+  margin-top:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#edf7ff;
+  border:1px solid #b9ddff;
+}
+.gcash-number-label{
+  font-size:.75rem;
+  font-weight:800;
+  color:#416078;
+}
+.gcash-number{
+  font-size:1.08rem;
+  font-weight:900;
+  color:#0876d1;
+  letter-spacing:.03em;
+  margin:3px 0 4px;
+}
+.gcash-details p{
+  margin:0;
+  font-size:.78rem;
+  color:#416078;
+  line-height:1.35;
+}
+@media(max-width:640px){
+  .payment-choice{
+    min-width:78px;
+    padding:7px 13px;
+    font-size:.8rem;
+  }
+}

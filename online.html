@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="stylesheet" href="online-orders.css?v=36">
+  <link rel="stylesheet" href="online-orders.css?v=37">
 </head>
 <body>
   <header class="online-topbar">
@@ -134,20 +134,13 @@
         <textarea id="deliveryAddress" rows="3" maxlength="250" placeholder="House/Building, street, barangay, municipality"></textarea>
       </label>
 
-      <label class="field">
-        <span id="timeLabel">Preferred pickup time (optional)</span>
-        <input id="requestedTime" type="datetime-local">
-      </label>
-
-      <fieldset class="payment-box">
-        <legend>Payment</legend>
-        <label><input type="radio" name="paymentMethod" value="cash" checked> Cash</label>
-        <label><input type="radio" name="paymentMethod" value="gcash"> GCash</label>
-      </fieldset>
+      <p id="deliveryEta" class="notice hidden">
+        Delivery usually takes around 15–30 minutes. Food orders may take longer because some items still need to be cooked.
+      </p>
 
       <label class="field">
-        <span>Notes (optional)</span>
-        <textarea id="orderNotes" rows="3" maxlength="300" placeholder="Anything the barista should know?"></textarea>
+        <span id="notesLabel">What time will you pick it up?</span>
+        <textarea id="orderNotes" rows="2" maxlength="300" placeholder="Example: Around 7:30 PM"></textarea>
       </label>
 
       <div class="total-row checkout-total">
@@ -155,9 +148,26 @@
         <strong id="checkoutTotal">₱0</strong>
       </div>
 
-      <p id="deliveryNote" class="notice hidden">
-        Delivery fee is not included yet. Kape Bar-Rio will confirm delivery details with you.
-      </p>
+      <section class="payment-section">
+        <div class="payment-title">Payment</div>
+
+        <div class="payment-buttons">
+          <button type="button" id="cashPaymentButton" class="payment-choice active" data-payment="cash">Cash</button>
+          <button type="button" id="gcashPaymentButton" class="payment-choice gcash" data-payment="gcash">GCash</button>
+        </div>
+
+        <label id="cashAmountField" class="field payment-detail">
+          <span>How much will you pay?</span>
+          <input id="cashAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="Amount of cash">
+          <small>So we can prepare your sukli/change.</small>
+        </label>
+
+        <div id="gcashDetails" class="gcash-details hidden">
+          <div class="gcash-number-label">Send GCash payment to</div>
+          <div id="gcashNumber" class="gcash-number">09XX XXX XXXX</div>
+          <p>Please send your GCash receipt to Kape Bar-Rio after payment.</p>
+        </div>
+      </section>
 
       <button id="placeOrderButton" class="primary-button" value="default">Send order</button>
     </form>
@@ -175,6 +185,6 @@
 
   <div id="toast" class="toast" role="status"></div>
 
-  <script src="online-orders.js?v=36" defer></script>
+  <script src="online-orders.js?v=37" defer></script>
 </body>
 </html>
