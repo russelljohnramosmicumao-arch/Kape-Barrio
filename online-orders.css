@@ -470,3 +470,107 @@ button{cursor:pointer}
   font-size:.78rem;
   font-weight:800;
 }
+
+/* v4.0 customer account + rewards */
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.account-button{
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fff;
+  color:var(--brown);
+  padding:10px 13px;
+  font-weight:900;
+  max-width:150px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.account-button.signed-in{
+  background:#fff8ef;
+  border-color:#d9b99e;
+}
+.account-card h2{margin:.3rem 0 .7rem}
+.account-copy{
+  color:var(--muted);
+  line-height:1.45;
+  margin:0 0 16px;
+}
+.google-signin-button,
+.guest-button{
+  width:100%;
+  border-radius:13px;
+  padding:12px 14px;
+  font-weight:900;
+}
+.google-signin-button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  border:1px solid #dadce0;
+  background:#fff;
+  color:#202124;
+}
+.google-mark{
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  font-weight:900;
+  color:#4285f4;
+}
+.guest-button{
+  border:1px solid var(--line);
+  background:#f4ece6;
+  color:var(--brown);
+  margin-top:9px;
+}
+.points-note{
+  margin:12px 0 0;
+  color:var(--muted);
+  font-size:.8rem;
+  line-height:1.4;
+}
+.customer-profile{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.customer-avatar{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  object-fit:cover;
+}
+.points-card{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:16px 0 8px;
+  padding:14px;
+  border-radius:15px;
+  background:#f7ede5;
+}
+.points-card span{font-weight:800}
+.points-card strong{
+  font-size:1.6rem;
+  color:var(--brown);
+}
+.account-email{
+  color:var(--muted);
+  font-size:.82rem;
+  word-break:break-word;
+}
+@media(max-width:640px){
+  .header-actions{gap:6px}
+  .account-button{
+    padding:9px 10px;
+    max-width:105px;
+    font-size:.78rem;
+  }
+}

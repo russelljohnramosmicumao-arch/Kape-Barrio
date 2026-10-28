@@ -1,6 +1,13 @@
 
 const SUPABASE_URL='https://wkyyuyyfauyhpivebrdg.supabase.co';
 const SUPABASE_KEY='sb_publishable_AXZtXN81wyM_W7tVZuJ-zw_ohoaj-1M';
+const authClient=window.supabase?.createClient
+  ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+    })
+  : null;
+let customerSession=null;
+let customerProfile=null;
 
 let menu=[];
 let category='Frappe & Smoothies';
@@ -21,7 +28,7 @@ async function rpc(name,payload={}){
     method:'POST',
     headers:{
       apikey:SUPABASE_KEY,
-      Authorization:`Bearer ${SUPABASE_KEY}`,
+      Authorization:`Bearer ${customerSession?.access_token||SUPABASE_KEY}`,
       'Content-Type':'application/json'
     },
     body:JSON.stringify(payload)
@@ -527,12 +534,106 @@ async function placeOrder(){
       ? `Your delivery order totaling ${money(result.total)} has been sent. Kape Bar-Rio will use your contact number to confirm delivery details.`
       : `Your pickup order totaling ${money(result.total)} has been sent to Kape Bar-Rio.`;
     $('successDialog').showModal();
+    if(customerSession?.user)loadCustomerProfile();
   }catch(error){
     toast(error.message||'Could not send your order.');
   }finally{
     button.disabled=false;
     button.textContent='Send order';
   }
+}
+
+
+function updateAccountUI(){
+  const button=$('customerAccountButton');
+  const signed=!!customerSession?.user;
+
+  button.textContent=signed
+    ? `${customerProfile?.points||0} pts`
+    : 'Guest';
+  button.classList.toggle('signed-in',signed);
+
+  $('guestAccountView').classList.toggle('hidden',signed);
+  $('signedInAccountView').classList.toggle('hidden',!signed);
+
+  if(signed){
+    const user=customerSession.user;
+    $('customerDisplayName').textContent=
+      customerProfile?.name||
+      user.user_metadata?.full_name||
+      user.user_metadata?.name||
+      'KBR Customer';
+    $('customerEmail').textContent=customerProfile?.email||user.email||'';
+    $('customerPoints').textContent=Number(customerProfile?.points||0).toLocaleString('en-PH');
+
+    const avatar=customerProfile?.avatarUrl||user.user_metadata?.avatar_url||'';
+    if(avatar){
+      $('customerAvatar').src=avatar;
+      $('customerAvatar').classList.remove('hidden');
+    }else{
+      $('customerAvatar').classList.add('hidden');
+    }
+  }
+}
+
+async function loadCustomerProfile(){
+  if(!customerSession?.user){
+    customerProfile=null;
+    updateAccountUI();
+    return;
+  }
+
+  try{
+    customerProfile=await rpc('kbr_customer_loyalty_snapshot',{});
+  }catch(error){
+    console.warn('Could not load loyalty profile',error);
+    customerProfile=null;
+  }
+  updateAccountUI();
+}
+
+async function initCustomerAuth(){
+  if(!authClient){
+    updateAccountUI();
+    return;
+  }
+
+  const {data}=await authClient.auth.getSession();
+  customerSession=data?.session||null;
+  await loadCustomerProfile();
+
+  authClient.auth.onAuthStateChange(async(_event,session)=>{
+    customerSession=session||null;
+    await loadCustomerProfile();
+  });
+}
+
+async function signInWithGoogle(){
+  if(!authClient){
+    toast('Google sign-in is not available yet.');
+    return;
+  }
+
+  const redirectTo=new URL('online.html',window.location.href).href;
+  const {error}=await authClient.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo}
+  });
+
+  if(error)toast(error.message||'Could not start Google sign-in.');
+}
+
+async function signOutCustomer(){
+  if(!authClient)return;
+  const {error}=await authClient.auth.signOut();
+  if(error){
+    toast(error.message||'Could not sign out.');
+    return;
+  }
+  customerSession=null;
+  customerProfile=null;
+  updateAccountUI();
+  $('accountDialog')?.close();
 }
 
 async function loadMenu(){
@@ -561,6 +662,11 @@ document.querySelectorAll('.sweetness-option').forEach(btn=>{
   });
 });
 
+$('customerAccountButton')?.addEventListener('click',()=>$('accountDialog')?.showModal());
+$('accountClose')?.addEventListener('click',()=>$('accountDialog')?.close());
+$('continueGuestButton')?.addEventListener('click',()=>$('accountDialog')?.close());
+$('googleSignInButton')?.addEventListener('click',signInWithGoogle);
+$('customerSignOutButton')?.addEventListener('click',signOutCustomer);
 $('cartButton')?.addEventListener('click',openCart);
 document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('click',closeCart));
 $('checkoutButton')?.addEventListener('click',()=>{
@@ -568,6 +674,17 @@ $('checkoutButton')?.addEventListener('click',()=>{
   closeCart();
   updateCheckoutTotals();
   updateServiceFields();
+
+  if(customerSession?.user){
+    if(!$('customerName').value.trim()){
+      $('customerName').value=
+        customerProfile?.name||
+        customerSession.user.user_metadata?.full_name||
+        customerSession.user.user_metadata?.name||
+        '';
+    }
+  }
+
   $('checkoutDialog').showModal();
 });
 $('addToCartButton')?.addEventListener('click',e=>{e.preventDefault();addSelected()});
@@ -583,5 +700,13 @@ $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 loadCart();
 renderCart();
 setPayment('cash');
+initCustomerAuth();
 loadDeliveryZones();
 loadMenu();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./online-sw.js?v=40',{scope:'./online.html'})
+      .catch(error=>console.warn('Online PWA worker registration failed',error));
+  });
+}
