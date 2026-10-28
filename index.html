@@ -314,6 +314,37 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 </style><link rel="stylesheet" href="sync.css">
 
 <link rel="stylesheet" href="page-tools.css">
+
+<style id="kbr-online-order-blue-style">
+/* Online orders are blue so staff can distinguish them instantly */
+.online-order-card,
+.order-card.online-order-card,
+.pending-order-card.online-order-card{
+  background:#dbeafe !important;
+  border-color:#2563eb !important;
+  color:#123b74 !important;
+}
+.online-order-card *{
+  border-color:rgba(37,99,235,.32);
+}
+.online-order-card .order-number,
+.online-order-card .order-total,
+.online-order-card strong{
+  color:#174ea6 !important;
+}
+.online-order-badge{
+  display:inline-block;
+  background:#2563eb;
+  color:#fff;
+  border-radius:999px;
+  padding:3px 8px;
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.03em;
+  margin:4px 0 6px;
+}
+</style>
+
 </head>
 <body>
 <header>
@@ -1762,4 +1793,36 @@ render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
 <script src="sync-config.js"></script><script src="sync-core.js"></script><script src="sync-ui.js"></script><script src="pay-later.js"></script><script src="app-sync-v135.js?v=135"></script>
-<script src="app-links.js"></script><script src="page-tools.js"></script></body></html>
+<script src="app-links.js"></script><script src="page-tools.js"></script>
+<script id="kbr-online-order-blue-script">
+(()=>{
+  function markOnlineOrders(){
+    const cards=[...document.querySelectorAll(
+      '.order-card,.pending-order-card,[data-order-no],.order-tile,.orderCard'
+    )];
+
+    cards.forEach(card=>{
+      const text=(card.textContent||'').toUpperCase();
+      if(text.includes('ONLINE ORDER #')){
+        card.classList.add('online-order-card');
+
+        if(!card.querySelector('.online-order-badge')){
+          const badge=document.createElement('div');
+          badge.className='online-order-badge';
+          badge.textContent='🌐 ONLINE ORDER';
+          const first=card.firstElementChild;
+          if(first) first.insertAdjacentElement('afterend',badge);
+          else card.prepend(badge);
+        }
+      }
+    });
+  }
+
+  const observer=new MutationObserver(()=>markOnlineOrders());
+  observer.observe(document.body,{childList:true,subtree:true});
+  document.addEventListener('DOMContentLoaded',markOnlineOrders);
+  setInterval(markOnlineOrders,1500);
+})();
+</script>
+
+</body></html>
