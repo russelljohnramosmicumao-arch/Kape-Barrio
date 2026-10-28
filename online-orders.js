@@ -864,6 +864,29 @@ async function signOutCustomer(){
   $('accountDialog')?.close();
 }
 
+
+let currentShopOpen=false;
+
+function setShopAccess(open){
+  currentShopOpen=!!open;
+  $('shopClosedGate')?.classList.toggle('hidden',currentShopOpen);
+  document.documentElement.classList.toggle('shop-is-closed',!currentShopOpen);
+}
+
+async function checkShopAccess(){
+  try{
+    const snapshot=await rpc('kbr_online_menu_snapshot',{});
+    setShopAccess(!!snapshot?.shopOpen);
+    const open=!!snapshot?.shopOpen;
+    setShopAccess(open);
+    return snapshot;
+  }catch(error){
+    console.warn('Could not verify shop status',error);
+    setShopAccess(false);
+    return null;
+  }
+}
+
 async function loadMenu(){
   try{
     const snapshot=await rpc('kbr_online_menu_snapshot');
@@ -890,9 +913,32 @@ document.querySelectorAll('.sweetness-option').forEach(btn=>{
   });
 });
 
+$('signInOpenButton')?.addEventListener('click',()=>{
+  $('accountDialog')?.close();
+  $('signInChoiceDialog')?.showModal();
+});
+$('signInChoiceClose')?.addEventListener('click',()=>$('signInChoiceDialog')?.close());
+$('signInPhoneButton')?.addEventListener('click',()=>{
+  $('signInChoiceDialog')?.close();
+  showPhoneAuth('login');
+});
+$('signInGoogleButton')?.addEventListener('click',()=>{
+  $('signInChoiceDialog')?.close();
+  $('googleSignInButton')?.click();
+});
+$('checkShopStatusButton')?.addEventListener('click',async()=>{
+  const snapshot=await checkShopAccess();
+  if(snapshot?.shopOpen){
+    toast('Shop is open. Online ordering is available.');
+    if(typeof loadMenu==='function')loadMenu();
+  }else{
+    toast('Shop is still closed.');
+  }
+});
+
 $('createPointsAccountButton')?.addEventListener('click',()=>showAccountEntryStep('register'));
 $('backToEntryChoiceButton')?.addEventListener('click',()=>showAccountEntryStep('entry'));
-$('phoneLoginOpenButton')?.addEventListener('click',()=>showPhoneAuth('login'));
+
 $('phoneRegisterOpenButton')?.addEventListener('click',()=>showPhoneAuth('register'));
 $('phoneAuthClose')?.addEventListener('click',()=>$('phoneAuthDialog')?.close());
 $('showPhoneRegisterButton')?.addEventListener('click',()=>showPhoneAuth('register'));
@@ -974,8 +1020,13 @@ $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrde
 $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 
 document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)checkShopAccess();
   if(!document.hidden&&customerSession?.user)loadCustomerProfile();
 });
+setInterval(()=>{
+  if(!document.hidden)checkShopAccess();
+},30000);
+
 window.addEventListener('focus',()=>{
   if(customerSession?.user)loadCustomerProfile();
 });

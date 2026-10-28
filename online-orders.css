@@ -792,3 +792,72 @@ button{cursor:pointer}
   padding:3px;
   font-weight:900;
 }
+
+/* v4.7 Sign In + shop-open gate */
+.sign-in-green-button{
+  width:100%;
+  margin-top:14px;
+  border:0;
+  border-radius:14px;
+  padding:13px 16px;
+  background:#2f8f4e;
+  color:#fff;
+  font-weight:950;
+  font-size:.95rem;
+}
+.sign-in-green-button:hover{background:#267a42}
+
+.shop-closed-gate{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:#f6efe7;
+}
+.shop-closed-card{
+  width:min(430px,100%);
+  padding:28px 22px;
+  text-align:center;
+  background:#fffdf9;
+  border:1px solid var(--line);
+  border-radius:24px;
+  box-shadow:0 20px 55px rgba(73,43,25,.15);
+}
+.shop-closed-icon{
+  width:70px;
+  height:70px;
+  margin:0 auto 14px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#f4e6d9;
+  font-size:2rem;
+}
+.shop-closed-card h1{
+  margin:.3rem 0 .5rem;
+  color:var(--brown);
+}
+.shop-closed-card p{
+  margin:0 auto 18px;
+  color:var(--muted);
+  line-height:1.45;
+  font-size:.9rem;
+}
+.hours-card{
+  margin:0 0 18px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  overflow:hidden;
+  text-align:left;
+}
+.hours-card div{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  padding:11px 12px;
+  font-size:.8rem;
+}
+.hours-card div+div{border-top:1px solid var(--line)}
+.hours-card span{color:var(--muted);text-align:right}
