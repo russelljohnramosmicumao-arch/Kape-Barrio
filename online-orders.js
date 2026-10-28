@@ -9,6 +9,8 @@ let selected=null;
 let selectedType='standard';
 let selectedPayment='cash';
 const GCASH_NUMBER='09XX XXX XXXX';
+let deliveryZones=[];
+let selectedDeliveryFee=0;
 let selectedSweetness='Normal Sugar';
 
 const $=id=>document.getElementById(id);
@@ -296,7 +298,7 @@ function total(){
 function renderCart(){
   $('cartCount').textContent=cart.reduce((s,x)=>s+x.qty,0);
   $('cartTotal').textContent=money(total());
-  $('checkoutTotal').textContent=money(total());
+  updateCheckoutTotals();
   $('checkoutButton').disabled=!cart.length;
 
   if(!cart.length){
@@ -342,6 +344,64 @@ function closeCart(){
   $('cartDrawer').setAttribute('aria-hidden','true');
 }
 
+
+async function loadDeliveryZones(){
+  try{
+    const zones=await rpc('kbr_delivery_zones_snapshot');
+    deliveryZones=Array.isArray(zones)?zones:[];
+    const select=$('deliveryBarangay');
+    if(!select)return;
+
+    select.innerHTML='<option value="">Select barangay</option>'+deliveryZones.map(zone=>{
+      const label=zone.available
+        ? `${zone.barangay} — ${Number(zone.fee||0)===0?'FREE':money(zone.fee)}`
+        : `${zone.barangay} — No delivery`;
+      return `<option value="${attr(zone.barangay)}" ${zone.available?'':'disabled'}>${esc(label)}</option>`;
+    }).join('');
+  }catch(error){
+    console.warn('Could not load delivery zones',error);
+  }
+}
+
+function updateDeliveryFee(){
+  const barangay=$('deliveryBarangay')?.value||'';
+  const zone=deliveryZones.find(x=>x.barangay===barangay);
+  selectedDeliveryFee=zone&&zone.available?Number(zone.fee||0):0;
+
+  const preview=$('deliveryFeePreview');
+  const row=$('deliveryFeeRow');
+
+  if(!barangay||!zone){
+    preview.classList.add('hidden');
+    row.classList.add('hidden');
+    selectedDeliveryFee=0;
+  }else if(!zone.available){
+    preview.textContent='Delivery is not available to this barangay.';
+    preview.classList.remove('hidden');
+    preview.classList.add('no-delivery');
+    row.classList.add('hidden');
+    selectedDeliveryFee=0;
+  }else{
+    preview.classList.remove('no-delivery');
+    preview.textContent=selectedDeliveryFee===0
+      ? `${zone.barangay}: FREE delivery`
+      : `${zone.barangay}: Delivery fee ${money(selectedDeliveryFee)}`;
+    preview.classList.remove('hidden');
+    row.classList.remove('hidden');
+  }
+
+  $('deliveryFeeAmount').textContent=money(selectedDeliveryFee);
+  updateCheckoutTotals();
+}
+
+function updateCheckoutTotals(){
+  const subtotal=total();
+  const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
+  const fee=service==='delivery'?selectedDeliveryFee:0;
+  if($('checkoutSubtotal'))$('checkoutSubtotal').textContent=money(subtotal);
+  if($('checkoutTotal'))$('checkoutTotal').textContent=money(subtotal+fee);
+}
+
 function updateServiceFields(){
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
   const delivery=service==='delivery';
@@ -355,7 +415,12 @@ function updateServiceFields(){
     $('notesLabel').textContent='What time will you pick it up?';
     $('orderNotes').placeholder='Example: Around 7:30 PM';
     $('deliveryAddress').value='';
+    if($('deliveryBarangay'))$('deliveryBarangay').value='';
+    selectedDeliveryFee=0;
+    $('deliveryFeePreview')?.classList.add('hidden');
+    $('deliveryFeeRow')?.classList.add('hidden');
   }
+  updateCheckoutTotals();
 }
 
 function setPayment(method){
@@ -372,6 +437,7 @@ async function placeOrder(){
   const customerName=$('customerName').value.trim();
   const contact=$('contactNumber').value.trim();
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
+  const barangay=$('deliveryBarangay')?.value||'';
   const address=$('deliveryAddress').value.trim();
   const payment=selectedPayment;
   let notes=$('orderNotes').value.trim();
@@ -379,7 +445,7 @@ async function placeOrder(){
   const requested=null;
 
   if(payment==='cash'){
-    if(!cashAmount||cashAmount<total())return toast('Please enter enough cash for the order total.');
+    if(!cashAmount||cashAmount<(total()+(service==='delivery'?selectedDeliveryFee:0)))return toast('Please enter enough cash for the order total.');
     notes=[notes,`Cash tendered: ₱${cashAmount}`].filter(Boolean).join(' | ');
   }else{
     notes=[notes,'GCash selected. Customer instructed to send receipt to Kape Bar-Rio.'].filter(Boolean).join(' | ');
@@ -387,7 +453,8 @@ async function placeOrder(){
 
   if(customerName.length<2)return toast('Please enter your name.');
   if(contact.replace(/\D/g,'').length<7)return toast('Please enter a valid contact number.');
-  if(service==='delivery'&&address.length<5)return toast('Please enter your delivery address.');
+  if(service==='delivery'&&!barangay)return toast('Please select your barangay.');
+  if(service==='delivery'&&address.length<5)return toast('Please enter your complete delivery address.');
   if(!cart.length)return toast('Your cart is empty.');
 
   const button=$('placeOrderButton');
@@ -399,6 +466,7 @@ async function placeOrder(){
       p_customer_name:customerName,
       p_phone:contact,
       p_service_type:service,
+      p_delivery_barangay:barangay,
       p_delivery_address:address,
       p_payment_method:payment,
       p_notes:notes,
@@ -464,7 +532,7 @@ document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('
 $('checkoutButton')?.addEventListener('click',()=>{
   if(!cart.length)return;
   closeCart();
-  $('checkoutTotal').textContent=money(total());
+  updateCheckoutTotals();
   updateServiceFields();
   $('checkoutDialog').showModal();
 });
@@ -472,6 +540,7 @@ $('addToCartButton')?.addEventListener('click',e=>{e.preventDefault();addSelecte
 $('qtyMinus')?.addEventListener('click',()=>{$('qtyInput').value=Math.max(1,Number($('qtyInput').value||1)-1)});
 $('qtyPlus')?.addEventListener('click',()=>{$('qtyInput').value=Math.min(20,Number($('qtyInput').value||1)+1)});
 document.querySelectorAll('input[name="serviceType"]').forEach(el=>el.addEventListener('change',updateServiceFields));
+$('deliveryBarangay')?.addEventListener('change',updateDeliveryFee);
 $('cashPaymentButton')?.addEventListener('click',()=>setPayment('cash'));
 $('gcashPaymentButton')?.addEventListener('click',()=>setPayment('gcash'));
 $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrder()});
@@ -480,4 +549,5 @@ $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 loadCart();
 renderCart();
 setPayment('cash');
+loadDeliveryZones();
 loadMenu();
