@@ -124,3 +124,35 @@ button{cursor:pointer}
   .price{font-size:.74rem}
   .add-button{padding:7px 8px;font-size:.74rem}
 }
+
+/* v3 simplified product cards */
+.menu-heading{display:block;margin:12px 0}
+.search-input{display:none!important}
+.menu-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.menu-card img{aspect-ratio:1/1;max-height:none;object-fit:cover}
+.menu-card-body{padding:8px}
+.menu-card h3{
+  margin:0;
+  font-size:.78rem;
+  line-height:1.15;
+  min-height:0;
+  font-weight:800;
+}
+.menu-card p,
+.menu-card-footer .price{display:none!important}
+.menu-card-footer{
+  margin-top:7px;
+  justify-content:flex-end;
+}
+.add-button{
+  padding:7px 10px;
+  font-size:.74rem;
+  border-radius:10px;
+}
+@media(max-width:640px){
+  .menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .menu-card img{aspect-ratio:1/1}
+  .menu-card-body{padding:7px}
+  .menu-card h3{font-size:.74rem}
+  .add-button{padding:7px 9px;font-size:.72rem}
+}

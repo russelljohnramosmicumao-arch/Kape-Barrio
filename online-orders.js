@@ -45,7 +45,6 @@ function attr(value=''){return esc(value)}
 function categories(){
   const preferred=[
     'Frappe & Smoothies',
-    'Specials',
     'Coffee Series',
     'Matcha Series',
     'Milk Tea Series',
@@ -58,9 +57,15 @@ function categories(){
   return preferred.filter(x=>present.has(x));
 }
 
+function categoryLabel(name){
+  if(name==='Soda')return 'Fruit Soda';
+  if(name==='Ice Cream')return 'Ice Creams';
+  return name;
+}
+
 function renderCategories(){
   $('categoryBar').innerHTML=categories().map(name=>`
-    <button type="button" class="category-button ${name===category?'active':''}" data-category="${attr(name)}">${esc(name)}</button>
+    <button type="button" class="category-button ${name===category?'active':''}" data-category="${attr(name)}">${esc(categoryLabel(name))}</button>
   `).join('');
   $('categoryBar').querySelectorAll('[data-category]').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -97,14 +102,9 @@ function resolveImage(item){
 }
 
 function renderMenu(){
-  const q=$('searchInput').value.trim().toLowerCase();
   const indexed=menu.map((item,index)=>({item,index}));
   const filtered=indexed
-    .filter(({item})=>{
-      const cat=item.category===category;
-      const search=!q||`${item.name} ${item.category}`.toLowerCase().includes(q);
-      return cat&&search;
-    })
+    .filter(({item})=>item.category===category)
     .sort((a,b)=>{
       if(category==='Frappe & Smoothies'){
         const aMax=Math.max(...itemVariants(a.item).map(x=>x.price),0);
@@ -116,7 +116,7 @@ function renderMenu(){
     })
     .map(x=>x.item);
 
-  $('categoryTitle').textContent=category;
+  $('categoryTitle').textContent=categoryLabel(category);
   $('emptyState').classList.toggle('hidden',filtered.length>0);
 
   $('menuGrid').innerHTML=filtered.map(item=>`
@@ -124,10 +124,8 @@ function renderMenu(){
       <img src="${attr(resolveImage(item))}" alt="${attr(item.name)}" loading="lazy"
            onerror="this.style.visibility='hidden'">
       <div class="menu-card-body">
-        <p>${esc(item.category||'')}</p>
         <h3>${esc(item.name||'')}</h3>
         <div class="menu-card-footer">
-          <span class="price">from ${money(minimumPrice(item))}</span>
           <button type="button" class="add-button" data-product="${attr(item.productId||item.name)}">Add</button>
         </div>
       </div>
@@ -377,7 +375,6 @@ async function loadMenu(){
   }
 }
 
-$('searchInput').addEventListener('input',renderMenu);
 $('cartButton').addEventListener('click',openCart);
 document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('click',closeCart));
 $('checkoutButton').addEventListener('click',()=>{
