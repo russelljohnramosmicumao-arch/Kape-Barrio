@@ -861,3 +861,29 @@ button{cursor:pointer}
 }
 .hours-card div+div{border-top:1px solid var(--line)}
 .hours-card span{color:var(--muted);text-align:right}
+
+/* v4.8 hours notice; ordering remains accessible */
+.hours-notice{
+  max-width:1100px;
+  margin:10px auto 0;
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff8ef;
+  color:var(--ink);
+  display:grid;
+  gap:3px;
+  font-size:.8rem;
+}
+.hours-notice strong{
+  color:var(--brown);
+  font-size:.82rem;
+}
+.hours-notice span{
+  font-weight:700;
+}
+.hours-notice small{
+  color:var(--muted);
+  line-height:1.35;
+}
+.shop-closed-gate{display:none!important}

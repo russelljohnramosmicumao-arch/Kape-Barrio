@@ -475,7 +475,33 @@ function setPayment(method){
   if($('gcashNumber'))$('gcashNumber').textContent=GCASH_NUMBER;
 }
 
+
+function getManilaNow(){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'Asia/Manila',
+    year:'numeric',month:'2-digit',day:'2-digit',
+    hour:'2-digit',minute:'2-digit',second:'2-digit',
+    hour12:false
+  }).formatToParts(new Date()).reduce((acc,p)=>{
+    acc[p.type]=p.value;
+    return acc;
+  },{});
+  return {
+    year:Number(parts.year),month:Number(parts.month),day:Number(parts.day),
+    hour:Number(parts.hour),minute:Number(parts.minute),second:Number(parts.second)
+  };
+}
+
+function deliveryCutoffPassed(){
+  const now=getManilaNow();
+  return now.hour>22 || (now.hour===22 && now.minute>=30);
+}
+
 async function placeOrder(){
+  const cutoffService=$('serviceType')?.value||document.querySelector('input[name="serviceType"]:checked')?.value||'';
+  if(cutoffService==='delivery'&&deliveryCutoffPassed()){
+    return toast('Last delivery order is 10:30 PM. Please choose Pickup instead.');
+  }
   const customerName=$('customerName').value.trim();
   const contact=$('contactNumber').value.trim();
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
@@ -865,27 +891,6 @@ async function signOutCustomer(){
 }
 
 
-let currentShopOpen=false;
-
-function setShopAccess(open){
-  currentShopOpen=!!open;
-  $('shopClosedGate')?.classList.toggle('hidden',currentShopOpen);
-  document.documentElement.classList.toggle('shop-is-closed',!currentShopOpen);
-}
-
-async function checkShopAccess(){
-  try{
-    const snapshot=await rpc('kbr_online_menu_snapshot',{});
-    setShopAccess(!!snapshot?.shopOpen);
-    const open=!!snapshot?.shopOpen;
-    setShopAccess(open);
-    return snapshot;
-  }catch(error){
-    console.warn('Could not verify shop status',error);
-    setShopAccess(false);
-    return null;
-  }
-}
 
 async function loadMenu(){
   try{
@@ -925,15 +930,6 @@ $('signInPhoneButton')?.addEventListener('click',()=>{
 $('signInGoogleButton')?.addEventListener('click',()=>{
   $('signInChoiceDialog')?.close();
   $('googleSignInButton')?.click();
-});
-$('checkShopStatusButton')?.addEventListener('click',async()=>{
-  const snapshot=await checkShopAccess();
-  if(snapshot?.shopOpen){
-    toast('Shop is open. Online ordering is available.');
-    if(typeof loadMenu==='function')loadMenu();
-  }else{
-    toast('Shop is still closed.');
-  }
 });
 
 $('createPointsAccountButton')?.addEventListener('click',()=>showAccountEntryStep('register'));
@@ -1020,12 +1016,9 @@ $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrde
 $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 
 document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden)checkShopAccess();
+
   if(!document.hidden&&customerSession?.user)loadCustomerProfile();
 });
-setInterval(()=>{
-  if(!document.hidden)checkShopAccess();
-},30000);
 
 window.addEventListener('focus',()=>{
   if(customerSession?.user)loadCustomerProfile();
