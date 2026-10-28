@@ -563,10 +563,12 @@ function updateAccountUI(){
   const button=$('customerAccountButton');
   const signed=!!customerSession?.user;
 
-  button.textContent=signed
-    ? `${customerProfile?.points||0} pts`
-    : 'Guest';
+  button.textContent='👤';
   button.classList.toggle('signed-in',signed);
+
+  if($('headerPoints')){
+    $('headerPoints').textContent=Number(customerProfile?.points||0).toLocaleString('en-PH');
+  }
 
   $('guestAccountView').classList.toggle('hidden',signed);
   $('signedInAccountView').classList.toggle('hidden',!signed);
@@ -722,7 +724,13 @@ document.querySelectorAll('.sweetness-option').forEach(btn=>{
   });
 });
 
-$('customerAccountButton')?.addEventListener('click',()=>$('accountDialog')?.showModal());
+$('customerAccountButton')?.addEventListener('click',async()=>{
+  if(customerSession?.user)await loadCustomerProfile();
+  $('accountDialog')?.showModal();
+});
+$('pointsButton')?.addEventListener('click',()=>{
+  toast('Rewards redemption page is coming next.');
+});
 $('accountClose')?.addEventListener('click',()=>$('accountDialog')?.close());
 $('continueGuestButton')?.addEventListener('click',()=>$('accountDialog')?.close());
 $('googleSignInButton')?.addEventListener('click',signInWithGoogle);
@@ -772,6 +780,13 @@ $('cashPaymentButton')?.addEventListener('click',()=>setPayment('cash'));
 $('gcashPaymentButton')?.addEventListener('click',()=>setPayment('gcash'));
 $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrder()});
 $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
+
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&customerSession?.user)loadCustomerProfile();
+});
+window.addEventListener('focus',()=>{
+  if(customerSession?.user)loadCustomerProfile();
+});
 
 loadCart();
 renderCart();

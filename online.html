@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="manifest" href="online-manifest.webmanifest?v=41">
+  <link rel="manifest" href="online-manifest.webmanifest?v=42">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=41">
+  <link rel="stylesheet" href="online-orders.css?v=42">
 </head>
 <body>
   <header class="online-topbar">
@@ -18,8 +18,11 @@
       <p id="shopStatus" class="shop-status">Loading live menu…</p>
     </div>
     <div class="header-actions">
-      <button id="customerAccountButton" class="account-button" type="button">
-        Guest
+      <button id="customerAccountButton" class="account-icon-button" type="button" aria-label="My Account" title="My Account">
+        👤
+      </button>
+      <button id="pointsButton" class="points-button" type="button" aria-label="KBR Points" title="KBR Points">
+        <span id="headerPoints">0</span> pts
       </button>
       <button id="cartButton" class="cart-button" type="button">
         Cart <span id="cartCount">0</span>
@@ -270,6 +273,6 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=41" defer></script>
+  <script src="online-orders.js?v=42" defer></script>
 </body>
 </html>

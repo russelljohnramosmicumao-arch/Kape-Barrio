@@ -632,3 +632,42 @@ button{cursor:pointer}
   color:var(--muted);
   font-size:.8rem;
 }
+
+/* v4.2 separate Account and Points controls */
+.account-icon-button,
+.points-button{
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--brown);
+  font-weight:900;
+  border-radius:999px;
+  height:44px;
+}
+.account-icon-button{
+  width:44px;
+  display:grid;
+  place-items:center;
+  font-size:1.15rem;
+  padding:0;
+}
+.points-button{
+  padding:0 14px;
+  min-width:74px;
+}
+.points-button:hover,
+.account-icon-button:hover{
+  background:#fff8ef;
+}
+@media(max-width:640px){
+  .account-icon-button{
+    width:38px;
+    height:38px;
+    font-size:1rem;
+  }
+  .points-button{
+    height:38px;
+    padding:0 10px;
+    min-width:64px;
+    font-size:.78rem;
+  }
+}
