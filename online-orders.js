@@ -781,7 +781,12 @@ $('customerAccountButton')?.addEventListener('click',async()=>{
   $('accountDialog')?.showModal();
 });
 $('pointsButton')?.addEventListener('click',()=>{
-  toast('Rewards redemption page is coming next.');
+  if(!customerSession?.user){
+    $('accountDialog')?.showModal();
+    toast('Sign in with Google to use KBR Points.');
+    return;
+  }
+  window.location.href='./rewards.html';
 });
 $('accountClose')?.addEventListener('click',()=>$('accountDialog')?.close());
 $('continueGuestButton')?.addEventListener('click',()=>$('accountDialog')?.close());
