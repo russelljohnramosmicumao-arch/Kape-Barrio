@@ -1297,10 +1297,10 @@ async function loadMenu(){
     const tabs=categories();
     if(!tabs.includes(category))category=tabs[0]||'Frappe & Smoothies';
     currentShopOpen=!!snapshot?.shopOpen;
-    $('shopStatus').textContent=currentShopOpen
-      ? 'Open now · order ASAP or schedule for later'
-      : 'Sorry, we’re closed right now · Order for Later is available';
-    $('shopStatus').className=`shop-status ${currentShopOpen?'open':'closed'}`;
+    if($('shopStatus')){
+      $('shopStatus').textContent='';
+      $('shopStatus').className='shop-status hidden';
+    }
 
     if(currentShopOpen){
       closedPreorderConfigured=false;

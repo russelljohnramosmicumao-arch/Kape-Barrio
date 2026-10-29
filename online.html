@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="manifest" href="online-manifest.webmanifest?v=56">
+  <link rel="manifest" href="online-manifest.webmanifest?v=57">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=56">
+  <link rel="stylesheet" href="online-orders.css?v=57">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -63,33 +63,28 @@
       </div>
     </div>
   </div>
-<header class="online-topbar">
-    <div>
-      <div class="eyebrow">Kape Bar-Rio</div>
-      <h1>Order Online</h1>
-      <p id="shopStatus" class="shop-status">Loading live menu…</p>
-    </div>
-    <div class="header-actions">
-      <button id="customerAccountButton" class="account-icon-button" type="button" aria-label="My Account" title="My Account">
-        👤
+<header class="online-topbar clean-topbar">
+    <div class="topbar-brand">Kape’ Bar-Rio</div>
+
+    <div class="topbar-title">Order Now</div>
+
+    <div class="topbar-actions">
+      <button id="openCart" class="topbar-action cart-action" type="button">
+        <span class="topbar-action-main">Cart <span id="cartCount">0</span></span>
       </button>
-      <button id="pointsButton" class="points-button" type="button" aria-label="KBR Points" title="KBR Points">
-        <span id="headerPoints">0</span> pts
+
+      <button id="pointsButton" class="topbar-action points-action" type="button">
+        <span class="topbar-action-main"><span id="pointsBalancePill">0</span> pts</span>
+        <small>Click to redeem</small>
       </button>
-      <button id="cartButton" class="cart-button" type="button">
-        Cart <span id="cartCount">0</span>
+
+      <button id="customerAccountButton" class="topbar-action account-action" type="button">
+        <span class="account-icon">👤</span>
+        <small>My Account</small>
       </button>
     </div>
   </header>
-
-  <div class="hours-notice" id="hoursNotice">
-    <strong>Online Ordering Hours</strong>
-    <span>Mon–Fri: 11:00 AM–11:00 PM · Sat–Sun: 3:00 PM–11:00 PM</span>
-    <small>Last delivery order: 10:30 PM. If we are closed, you can still place an Order for Later.</small>
-  </div>
-
-
-  <div class="page-shell points-signin-wrap">
+<div class="page-shell points-signin-wrap">
     <button id="pointsSignInHero" class="points-signin-hero" type="button">
       <span class="points-signin-title">⭐ Sign In to Earn Points</span>
       <small>Sign in or create an account so your eligible drink purchases earn KBR Points.</small>
@@ -553,6 +548,6 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=56" defer></script>
+  <script src="online-orders.js?v=57" defer></script>
 </body>
 </html>
