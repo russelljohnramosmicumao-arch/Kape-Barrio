@@ -1136,3 +1136,17 @@ button{cursor:pointer}
 @media(max-width:520px){
   .fries-flavor-options{grid-template-columns:1fr 1fr}
 }
+
+/* v5.6 KBR points redemption */
+.points-payment-box{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff9eb}
+.points-payment-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.points-payment-top strong,.points-payment-top small{display:block}
+.points-payment-top small{margin-top:2px;color:var(--muted);font-size:.72rem}
+.points-payment-toggle{border:1px solid #d5b76d;background:#fff;color:#6c5119;border-radius:11px;padding:9px 12px;font-weight:900}
+.points-payment-controls{margin-top:10px}
+.points-stepper{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;margin-bottom:7px}
+.points-stepper button{height:42px;border:1px solid var(--line);border-radius:11px;background:#fff;font-size:1.2rem;font-weight:900}
+.points-stepper div{text-align:center}
+.points-stepper strong,.points-stepper small{display:block}
+.points-stepper small{color:var(--muted);font-size:.7rem}
+.points-discount-row strong{color:#2f8f4e}

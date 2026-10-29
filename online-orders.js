@@ -16,6 +16,7 @@ let cart=[];
 let selected=null;
 let selectedType='standard';
 let selectedPayment='cash';
+let selectedRedeemPoints=0;
 const GCASH_NUMBER='09672365176';
 let deliveryZones=[];
 let selectedDeliveryFee=0;
@@ -429,19 +430,63 @@ function updateDeliveryFee(){
   updateCheckoutTotals();
 }
 
+
+function eligibleDrinkSubtotal(){
+  return cart.reduce((sum,line)=>{
+    const product=menu.find(item=>
+      (line.productId&&item.productId===line.productId) ||
+      (String(item.name||'').toLowerCase()===String(line.name||'').toLowerCase() &&
+       String(item.category||'').toLowerCase()===String(line.category||'').toLowerCase())
+    );
+    const food=product?.food===true;
+    const iceCream=String(line.category||'').toLowerCase().includes('ice cream');
+    return sum+((food||iceCream)?0:Number(line.unitPrice||0)*Number(line.qty||0));
+  },0);
+}
+function maxRedeemBlocks(){
+  if(!customerSession?.user)return 0;
+  return Math.max(0,Math.min(
+    Math.floor(Number(customerProfile?.points||0)/1000),
+    Math.floor(eligibleDrinkSubtotal()/50)
+  ));
+}
+function clampRedeemPoints(){
+  const max=maxRedeemBlocks()*1000;
+  selectedRedeemPoints=Math.max(0,Math.min(max,Math.floor(selectedRedeemPoints/1000)*1000));
+}
+function pointsDiscount(){return Math.floor(selectedRedeemPoints/1000)*50}
+function updatePointsPaymentUI(){
+  const signed=!!customerSession?.user;
+  const balance=Number(customerProfile?.points||0);
+  const box=$('pointsPaymentBox');
+  if(!box)return;
+  box.classList.toggle('hidden',!signed||balance<1000||maxRedeemBlocks()<1);
+  if($('pointsPaymentBalance'))$('pointsPaymentBalance').textContent=`${balance.toLocaleString('en-PH')} points available`;
+  clampRedeemPoints();
+  const discount=pointsDiscount();
+  if($('pointsRedeemValue'))$('pointsRedeemValue').textContent=`₱${discount} off`;
+  if($('pointsRedeemLabel'))$('pointsRedeemLabel').textContent=`${selectedRedeemPoints.toLocaleString('en-PH')} points`;
+  if($('pointsMinusButton'))$('pointsMinusButton').disabled=selectedRedeemPoints<=0;
+  if($('pointsPlusButton'))$('pointsPlusButton').disabled=selectedRedeemPoints>=maxRedeemBlocks()*1000;
+}
 function updateCheckoutTotals(){
+  clampRedeemPoints();
   const subtotal=total();
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
   const fee=service==='delivery'?selectedDeliveryFee:0;
-  const finalTotal=subtotal+fee;
+  const discount=pointsDiscount();
+  const finalTotal=Math.max(0,subtotal+fee-discount);
 
   if($('checkoutSubtotal'))$('checkoutSubtotal').textContent=money(subtotal);
   if($('checkoutTotal'))$('checkoutTotal').textContent=money(finalTotal);
+  if($('checkoutPointsDiscount'))$('checkoutPointsDiscount').textContent=`−${money(discount)}`;
+  $('pointsDiscountRow')?.classList.toggle('hidden',discount<=0);
+  updatePointsPaymentUI();
 
   const cashBtn=$('cashPaymentButton');
   if(cashBtn){
     cashBtn.disabled=finalTotal>300;
-    cashBtn.title=finalTotal>300?'Orders above ₱300 require GCash.':'';
+    cashBtn.title=finalTotal>300?'Orders above ₱300 after points require GCash.':'';
   }
 
   let note=document.getElementById('paymentLimitNote');
@@ -452,7 +497,7 @@ function updateCheckoutTotals(){
       note.className='payment-limit-note';
       document.querySelector('.payment-buttons')?.insertAdjacentElement('afterend',note);
     }
-    note.textContent='Orders above ₱300 require GCash payment.';
+    note.textContent='Orders above ₱300 after points require GCash payment.';
     if(selectedPayment!=='gcash')setPayment('gcash');
   }else if(note){
     note.remove();
@@ -501,7 +546,7 @@ function updateServiceFields(){
 }
 
 function setPayment(method){
-  const finalTotal=total()+((document.querySelector('input[name="serviceType"]:checked')?.value||'pickup')==='delivery'?selectedDeliveryFee:0);
+  const finalTotal=Math.max(0,total()+((document.querySelector('input[name="serviceType"]:checked')?.value||'pickup')==='delivery'?selectedDeliveryFee:0)-pointsDiscount());
   if(method==='cash'&&finalTotal>300){
     selectedPayment='gcash';
     toast('Orders above ₱300 require GCash.');
@@ -846,7 +891,7 @@ async function placeOrder(){
   const cashAmount=Number($('cashAmount')?.value||0);
 
   if(payment==='cash'&&service==='delivery'){
-    if(!cashAmount||cashAmount<(total()+(service==='delivery'?selectedDeliveryFee:0)))return toast('Please enter enough cash for the order total.');
+    if(!cashAmount||cashAmount<Math.max(0,total()+(service==='delivery'?selectedDeliveryFee:0)-pointsDiscount()))return toast('Please enter enough cash for the order total.');
     notes=[notes,`Cash tendered: ₱${cashAmount}`].filter(Boolean).join(' | ');
   }else{
     notes=[notes,'GCash selected. Customer instructed to send receipt to Kape Bar-Rio.'].filter(Boolean).join(' | ');
@@ -872,6 +917,7 @@ async function placeOrder(){
       p_payment_method:payment,
       p_notes:notes,
       p_requested_pickup_at:requested,
+      p_redeem_points:selectedRedeemPoints,
       p_items:cart.map(x=>({
         productId:x.productId,
         name:x.name,
@@ -890,12 +936,16 @@ async function placeOrder(){
     $('checkoutDialog').close();
 
     $('successOrderNo').textContent=`Online #${result.orderNumber}`;
+    const redeemedText=Number(result.rewardDiscount||0)>0
+      ? ` You used ${Number(result.pointsRedeemed||0).toLocaleString('en-PH')} points for ₱${Number(result.rewardDiscount||0).toLocaleString('en-PH')} off.`
+      : '';
+    selectedRedeemPoints=0;
     const scheduledText=requested
       ? ` Scheduled for ${new Date(requested).toLocaleString('en-PH',{timeZone:'Asia/Manila',dateStyle:'medium',timeStyle:'short'})}.`
       : '';
     $('successText').textContent=result.serviceType==='delivery'
-      ? `Your delivery order totaling ${money(result.total)} has been sent.${scheduledText} Kape Bar-Rio will use your contact number to confirm delivery details.`
-      : `Your pickup order totaling ${money(result.total)} has been sent to Kape Bar-Rio.${scheduledText}`;
+      ? `Your delivery order totaling ${money(result.total)} has been sent.${redeemedText}${scheduledText} Kape Bar-Rio will use your contact number to confirm delivery details.`
+      : `Your pickup order totaling ${money(result.total)} has been sent to Kape Bar-Rio.${redeemedText}${scheduledText}`;
     const guestOrder=!customerSession?.user;
     $('guestClaimOffer')?.classList.toggle('hidden',!guestOrder);
     if(guestOrder){
@@ -1188,6 +1238,7 @@ async function loadCustomerProfile(){
     customerOrders=[];
   }
   updateAccountUI();
+  updatePointsPaymentUI();
 }
 
 async function initCustomerAuth(){
@@ -1402,6 +1453,21 @@ document.querySelectorAll('input[name="serviceType"]').forEach(el=>el.addEventLi
 }));
 $('scheduledTime')?.addEventListener('change',updateTimingFields);
 $('deliveryBarangay')?.addEventListener('change',updateDeliveryFee);
+$('pointsPaymentToggle')?.addEventListener('click',()=>{
+  if(!customerSession?.user){$('accountDialog')?.showModal();return}
+  const controls=$('pointsPaymentControls');
+  if(controls?.classList.contains('hidden')){
+    controls.classList.remove('hidden');
+    if(selectedRedeemPoints===0&&maxRedeemBlocks()>0)selectedRedeemPoints=1000;
+  }else{
+    controls.classList.add('hidden');
+    selectedRedeemPoints=0;
+  }
+  updateCheckoutTotals();
+});
+$('pointsMinusButton')?.addEventListener('click',()=>{selectedRedeemPoints=Math.max(0,selectedRedeemPoints-1000);updateCheckoutTotals()});
+$('pointsPlusButton')?.addEventListener('click',()=>{selectedRedeemPoints=Math.min(maxRedeemBlocks()*1000,selectedRedeemPoints+1000);updateCheckoutTotals()});
+
 $('cashPaymentButton')?.addEventListener('click',()=>setPayment('cash'));
 $('gcashPaymentButton')?.addEventListener('click',()=>setPayment('gcash'));
 $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrder()});

@@ -48,25 +48,64 @@ function toast(message){
   toast.t=setTimeout(()=>el.classList.remove('show'),2200);
 }
 
-function renderRewards(snapshot){
-  $('pointsBalance').textContent=Number(snapshot?.points||0).toLocaleString('en-PH');
-  $('rewardValue').textContent=money(snapshot?.rewardValue||0);
 
-  const eligible=Array.isArray(snapshot?.eligible)?snapshot.eligible:[];
-  $('rewardEmpty').classList.toggle('hidden',eligible.length>0);
+const CATEGORY_ORDER=['Frappe & Smoothies','Coffee Series','Matcha Series','Milk Tea Series','Soda','Floats','Snackies','Ice Cream'];
+let rewardCategory='';
 
-  $('rewardGrid').innerHTML=eligible.map(item=>`
+function categoryLabel(name){
+  if(name==='Soda')return 'Fruit Soda';
+  if(name==='Ice Cream')return 'Ice Creams';
+  return name;
+}
+function rewardCategories(items){
+  const present=new Set(items.map(x=>x.category).filter(Boolean));
+  return CATEGORY_ORDER.filter(x=>present.has(x));
+}
+function renderRewardCategories(items){
+  const cats=rewardCategories(items);
+  if(!cats.includes(rewardCategory))rewardCategory=cats[0]||'';
+  $('rewardCategoryBar').innerHTML=cats.map(cat=>`
+    <button class="reward-category-button ${cat===rewardCategory?'active':''}" data-reward-category="${attr(cat)}" type="button">${esc(categoryLabel(cat))}</button>
+  `).join('');
+  $('rewardCategoryBar').querySelectorAll('[data-reward-category]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      rewardCategory=btn.dataset.rewardCategory;
+      renderRewardCategories(items);
+      renderRewardItems(items);
+    });
+  });
+}
+function renderRewardItems(items){
+  const indexed=items.map((item,index)=>({item,index}));
+  const filtered=indexed.filter(x=>x.item.category===rewardCategory)
+    .sort((a,b)=>{
+      if(rewardCategory==='Frappe & Smoothies'){
+        if(Number(b.item.price)!==Number(a.item.price))return Number(b.item.price)-Number(a.item.price);
+        return b.index-a.index;
+      }
+      return a.index-b.index;
+    }).map(x=>x.item);
+
+  $('rewardCategoryTitle').textContent=categoryLabel(rewardCategory);
+  $('rewardEmpty').classList.toggle('hidden',filtered.length>0);
+  $('rewardGrid').innerHTML=filtered.map(item=>`
     <article class="reward-card">
-      <img src="${attr(resolveImage(item.image))}" alt="${attr(item.name)}" loading="lazy"
-           onerror="this.style.visibility='hidden'">
+      <img src="${attr(resolveImage(item.image))}" alt="${attr(item.name)}" loading="lazy" onerror="this.style.visibility='hidden'">
       <div class="reward-card-body">
         <h3>${esc(item.name)}</h3>
-        <div class="reward-meta">${esc(item.size)} · ${esc(item.category)}</div>
+        <div class="reward-meta">${esc(item.size)}</div>
         <div class="reward-price">${money(item.price)}</div>
-        <span class="eligible-badge">Eligible reward</span>
+        <span class="eligible-badge">Eligible with points</span>
       </div>
     </article>
   `).join('');
+}
+function renderRewards(snapshot){
+  $('pointsBalance').textContent=Number(snapshot?.points||0).toLocaleString('en-PH');
+  $('rewardValue').textContent=money(snapshot?.rewardValue||0);
+  const eligible=Array.isArray(snapshot?.eligible)?snapshot.eligible:[];
+  renderRewardCategories(eligible);
+  renderRewardItems(eligible);
 }
 
 async function loadRewards(){
