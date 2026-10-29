@@ -380,6 +380,16 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 
 </style>
 
+
+<style id="kbr-compact-tile-v2-style">
+.kbr-compact-header-v2{margin-bottom:10px}
+.kbr-order-topline{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;font-size:1.08rem;line-height:1.15}
+.kbr-order-topline strong:last-child{white-space:nowrap;margin-left:auto}
+.kbr-order-counts{margin-top:5px;font-weight:800;font-size:.88rem}
+.kbr-order-source{margin-top:5px;font-size:.88rem;font-weight:700}
+.kbr-more-items-v2{margin-top:8px;font-weight:900}
+</style>
+
 </head>
 <body>
 <header>
@@ -1883,4 +1893,127 @@ if(customerServiceType){const start=document.getElementById('serviceStart');if(s
 })();
 </script>
 
+<script>
+(function(){
+  function compactKbrOrderTiles(){
+    const cards=[...document.querySelectorAll('.order-card,.order-tile,.orderCard,.pending-order-card,[data-order-id]')]
+      .filter(card=>/Order\s*#\d+/i.test(card.textContent||''));
+
+    cards.forEach(card=>{
+      if(card.dataset.kbrLayoutV2==='1')return;
+
+      const fullText=card.textContent||'';
+      const isOnline=/ONLINE ORDER|Online\s*:/i.test(fullText);
+      const orderMatch=fullText.match(/Order\s*#\s*(\d+)/i);
+      if(!orderMatch)return;
+
+      const orderNo=orderMatch[1];
+
+      // Find total price from the top/right total or first peso amount near the header.
+      let total='';
+      const totalEl=[...card.querySelectorAll('*')].find(el=>{
+        const t=(el.textContent||'').trim();
+        return /^₱[\d,]+(?:\.\d{1,2})?$/.test(t) &&
+               el.children.length===0;
+      });
+      if(totalEl)total=totalEl.textContent.trim();
+
+      // Get grouped item lines from visible card rows.
+      const lineEls=[...card.querySelectorAll('*')].filter(el=>{
+        if(el.children.length)return false;
+        const t=(el.textContent||'').trim();
+        return /^\d+\s*[×xX]\s*.+/.test(t) && !/Order\s*#/i.test(t);
+      });
+
+      // Deduplicate nested/duplicate textual matches.
+      const seen=new Set();
+      const lines=[];
+      lineEls.forEach(el=>{
+        const t=(el.textContent||'').trim().replace(/\s+/g,' ');
+        if(!seen.has(t)){seen.add(t);lines.push({el,text:t});}
+      });
+
+      // Determine drink/food line counts from existing data hints/classes/text.
+      let drinkCount=0, foodCount=0;
+      lines.forEach(({el,text})=>{
+        const lower=(text+' '+(el.className||'')).toLowerCase();
+        const food=/siomai|shanghai|fries|nachos|snack|food|cream cup|hotdog|burger|sandwich/.test(lower) ||
+                   el.closest('[data-food="true"],.food-item');
+        if(food)foodCount++;
+        else drinkCount++;
+      });
+
+      // Prefer existing compact summary if it already correctly counted grouped items.
+      const existingSummary=fullText.match(/(\d+)\s+drink(?:s)?\s*[·|]\s*(\d+)\s+food/i);
+      if(existingSummary){
+        drinkCount=Number(existingSummary[1]);
+        foodCount=Number(existingSummary[2]);
+      }
+
+      // Determine service label.
+      let service='';
+      const pickup=/PICKUP|Pick\s*Up/i.test(fullText);
+      const delivery=/DELIVERY/i.test(fullText);
+      const dineIn=/Dine\s*In/i.test(fullText);
+      const takeOut=/Take\s*Out|Takeout/i.test(fullText);
+
+      if(isOnline){
+        service='Online: '+(delivery?'Delivery':pickup?'Pickup':'Online');
+      }else{
+        service='Walk-in: '+(takeOut?'Take Out':dineIn?'Dine In':'Walk-in');
+      }
+
+      // Build a clean compact header.
+      let header=card.querySelector('.kbr-compact-header-v2');
+      if(!header){
+        header=document.createElement('div');
+        header.className='kbr-compact-header-v2';
+        card.insertBefore(header,card.firstChild);
+      }
+      header.innerHTML=`
+        <div class="kbr-order-topline">
+          <strong>Order #${orderNo}</strong>
+          <strong>${total||''}</strong>
+        </div>
+        <div class="kbr-order-counts">${drinkCount} drink${drinkCount===1?'':'s'} · ${foodCount} food</div>
+        <div class="kbr-order-source">${service}</div>
+      `;
+
+      // Hide old top summary / service/detail text nodes where possible.
+      [...card.querySelectorAll('*')].forEach(el=>{
+        if(el.closest('.kbr-compact-header-v2'))return;
+        const t=(el.textContent||'').trim();
+        if(el.children.length===0 && (
+          /^Order\s*#\s*\d+/i.test(t) ||
+          /^\d+\s+drink(?:s)?\s*[·|]\s*\d+\s+food/i.test(t) ||
+          /^(🌐\s*)?Online\b/i.test(t) ||
+          /^(Walk-?in|Dine\s*In|Take\s*Out)$/i.test(t) ||
+          /ONLINE ORDER\s*#/i.test(t) ||
+          /^Customer\s*:|^Contact\s*:|^Address\s*:|^Requested\s*:|^Note\s*:/i.test(t)
+        )){
+          el.style.display='none';
+        }
+      });
+
+      // Keep at most four unique item rows visible.
+      lines.forEach(({el},i)=>{ el.style.display=i<4?'':'none'; });
+
+      // Remove/replace old ellipsis.
+      [...card.querySelectorAll('.kbr-more-items-v2,.kbr-more-items')].forEach(x=>x.remove());
+      if(lines.length>4){
+        const more=document.createElement('div');
+        more.className='kbr-more-items-v2';
+        more.textContent=`… ${lines.length-4} more item${lines.length-4===1?'':'s'}`;
+        card.appendChild(more);
+      }
+
+      card.dataset.kbrLayoutV2='1';
+    });
+  }
+
+  window.addEventListener('load',()=>setTimeout(compactKbrOrderTiles,300));
+  const obs=new MutationObserver(()=>requestAnimationFrame(compactKbrOrderTiles));
+  obs.observe(document.documentElement,{subtree:true,childList:true});
+})();
+</script>
 </body></html>
