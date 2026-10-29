@@ -223,19 +223,27 @@ function renderRewards(snapshot){
 }
 
 async function loadRewards(){
-  const {data}=await authClient.auth.getSession();
-  session=data?.session||null;
-
-  if(!session?.user){
-    window.location.href='./online.html';
-    return;
-  }
-
   try{
+    const {data,error}=await authClient.auth.getSession();
+    if(error)throw error;
+
+    session=data?.session||null;
+
+    if(!session?.user){
+      window.location.href='./online.html';
+      return;
+    }
+
     const snapshot=await rpc('kbr_customer_rewards_snapshot',{});
     renderRewards(snapshot);
   }catch(error){
-    toast(error.message||'Could not load rewards.');
+    console.error('Rewards load failed',error);
+    const empty=$('rewardEmpty');
+    if(empty){
+      empty.textContent='Could not load your rewards. Please return to Online Ordering and try again.';
+      empty.classList.remove('hidden');
+    }
+    toast(error?.message||'Could not load rewards.');
   }
 }
 
@@ -250,5 +258,5 @@ $('rewardsAccountButton')?.addEventListener('click',()=>{
   window.location.href='./online.html#account';
 });
 
-$('backButton').addEventListener('click',()=>window.location.href='./online.html');
-loadRewards();
+$('backButton')?.addEventListener('click',()=>window.location.href='./online.html');
+window.addEventListener('DOMContentLoaded',loadRewards);
