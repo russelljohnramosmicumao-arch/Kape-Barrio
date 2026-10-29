@@ -343,6 +343,41 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
   letter-spacing:.03em;
   margin:4px 0 6px;
 }
+/* Compact online pending-order tiles */
+.barista-order-thumb.online-order-thumb,
+.barista-order-thumb.online-order-thumb.active,
+.barista-order-thumb.online-order-thumb.dine-in,
+.barista-order-thumb.online-order-thumb.take-out,
+.barista-order-thumb.online-order-thumb.mixed{
+  background:#dbeafe !important;
+  border:3px solid #2563eb !important;
+  color:#123b74 !important;
+}
+.barista-order-thumb.online-order-thumb .barista-order-thumb-head b,
+.barista-order-thumb.online-order-thumb .barista-order-thumb-total,
+.barista-order-thumb.online-order-thumb .barista-order-thumb-item span:last-child{
+  color:#174ea6 !important;
+}
+.barista-order-thumb.online-order-thumb .barista-order-thumb-meta,
+.barista-order-thumb.online-order-thumb .barista-order-thumb-item{
+  color:#254f87 !important;
+}
+.barista-order-counts{
+  font-size:11px;
+  font-weight:900;
+  color:inherit;
+  white-space:normal;
+}
+.barista-order-thumb-more{
+  padding-top:3px;
+  font-weight:900;
+  color:#6f6257;
+  letter-spacing:.02em;
+}
+.barista-order-thumb.online-order-thumb .barista-order-thumb-more{
+  color:#174ea6 !important;
+}
+
 </style>
 
 </head>
@@ -1223,6 +1258,25 @@ function toggleDisplayGroupServed(no,index){
   const served=!group.units.every(u=>u.served);group.units.forEach(u=>u.served=served);
   syncOpenOrderLifecycle(order);
 }
+function isOnlineBaristaOrder(order){
+  if(!order)return false;
+  if(order.onlineOrder===true)return true;
+  if(String(order.source||'').toLowerCase()==='online')return true;
+  if(order.onlineOrderId||order.onlineOrderNumber)return true;
+  return /ONLINE ORDER #/i.test(String(order.note||''));
+}
+function compactBaristaOrderSummary(order){
+  const groups=baristaDisplayGroups(order);
+  let drinks=0,food=0;
+  for(const g of groups){
+    if(g?.item?.food)food+=1;
+    else drinks+=1;
+  }
+  const parts=[];
+  if(drinks)parts.push(`${drinks} drink${drinks===1?'':'s'}`);
+  if(food)parts.push(`${food} food`);
+  return parts.join(' · ')||'No items';
+}
 function renderBaristaOrders(){
   ensureAllOpenUnits();
   updatePendingOrdersTab();
@@ -1240,16 +1294,20 @@ function renderBaristaOrders(){
     const thumbnails=orders.map(o=>{
       const total=pendingOrderTotal(o);
       const displayNo=String(o.no).replace(/\D/g,'').slice(-3).padStart(3,'0');
-      const items=baristaDisplayGroups(o).map(({item:x,units})=>{
+      const groups=baristaDisplayGroups(o);
+      const visibleGroups=groups.slice(0,4);
+      const items=visibleGroups.map(({item:x,units})=>{
         const line=units.reduce((sum,u)=>sum+orderUnitTotal(u),0);
         return `<div class="barista-order-thumb-item"><span>${units.length}× ${escapeHtml(x.name)}</span><span>${peso(line)}</span></div>`;
       }).join('');
+      const more=groups.length>4?`<div class="barista-order-thumb-more">… ${groups.length-4} more item${groups.length-4===1?'':'s'}</div>`:'';
       const svcClass=orderServiceClass(o);
-      return `<button class="barista-order-thumb ${svcClass}" onclick="selectOpenOrder('${o.no}')">
-        <div class="barista-order-thumb-head"><b>Order #${displayNo}</b><span class="barista-order-thumb-total">${peso(total)}</span></div>
-        <div class="barista-order-thumb-meta">${orderServiceLabel(o)||'Order'}</div>
-        <div class="barista-order-thumb-items">${items}</div>
-        ${o.note?`<div class="barista-order-thumb-meta">📝 ${escapeHtml(o.note)}</div>`:''}
+      const online=isOnlineBaristaOrder(o);
+      const summary=compactBaristaOrderSummary(o);
+      return `<button class="barista-order-thumb ${svcClass} ${online?'online-order-thumb':''}" onclick="selectOpenOrder('${o.no}')">
+        <div class="barista-order-thumb-head"><b>Order #${displayNo} <span class="barista-order-counts">· ${escapeHtml(summary)}</span></b><span class="barista-order-thumb-total">${peso(total)}</span></div>
+        <div class="barista-order-thumb-meta">${online?'🌐 Online · ':''}${orderServiceLabel(o)||'Order'}</div>
+        <div class="barista-order-thumb-items">${items}${more}</div>
       </button>`;
     }).join('');
     const title={orders:'Pending Orders','served-unpaid':'Served - Unpaid','unserved-paid':'Unserved - Paid'}[baristaView]||'Orders';
