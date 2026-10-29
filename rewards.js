@@ -51,6 +51,7 @@ function toast(message){
 
 const CATEGORY_ORDER=['Frappe & Smoothies','Coffee Series','Matcha Series','Milk Tea Series','Soda','Floats','Snackies','Ice Cream'];
 let rewardCategory='';
+let rewardsSnapshot=null;
 
 function categoryLabel(name){
   if(name==='Soda')return 'Fruit Soda';
@@ -75,6 +76,53 @@ function renderRewardCategories(items){
     });
   });
 }
+function rewardCart(){
+  try{
+    const value=JSON.parse(localStorage.getItem('kbr_online_cart_v2')||'[]');
+    return Array.isArray(value)?value:[];
+  }catch{return []}
+}
+function rewardPointsReserved(cart){
+  return cart.reduce((sum,item)=>
+    sum+(item.paidByPoints?Number(item.rewardPointsCost||0)*Number(item.qty||0):0)
+  ,0);
+}
+function addRewardToCart(item){
+  const cart=rewardCart();
+  const points=Number(rewardsSnapshot?.points||0);
+  const pointCost=Number(item.pointCost||0);
+  const reserved=rewardPointsReserved(cart);
+
+  if(pointCost<=0)return toast('Reward price is unavailable.');
+  if(reserved+pointCost>points)return toast('You do not have enough available KBR Points.');
+
+  const key=`reward|${item.productId}|${item.type||'standard'}|${item.size}`;
+  const existing=cart.find(x=>x.key===key && x.paidByPoints===true);
+
+  if(existing){
+    existing.qty=Math.min(20,Number(existing.qty||1)+1);
+  }else{
+    cart.push({
+      key,
+      productId:item.productId||'',
+      name:item.name,
+      category:item.category,
+      type:item.type||'standard',
+      size:item.size,
+      sweetness:'Normal Sugar',
+      flavor:'',
+      unitPrice:0,
+      rewardOriginalPrice:Number(item.price||0),
+      rewardPointsCost:pointCost,
+      paidByPoints:true,
+      qty:1
+    });
+  }
+
+  localStorage.setItem('kbr_online_cart_v2',JSON.stringify(cart));
+  toast(`${item.name} ${item.size} added for ${pointCost.toLocaleString('en-PH')} points.`);
+}
+
 function renderRewardItems(items){
   const indexed=items.map((item,index)=>({item,index}));
   const filtered=indexed.filter(x=>x.item.category===rewardCategory)
@@ -83,24 +131,38 @@ function renderRewardItems(items){
         if(Number(b.item.price)!==Number(a.item.price))return Number(b.item.price)-Number(a.item.price);
         return b.index-a.index;
       }
-      return a.index-b.index;
+      return a.item.name.localeCompare(b.item.name);
     }).map(x=>x.item);
 
   $('rewardCategoryTitle').textContent=categoryLabel(rewardCategory);
   $('rewardEmpty').classList.toggle('hidden',filtered.length>0);
-  $('rewardGrid').innerHTML=filtered.map(item=>`
-    <article class="reward-card">
-      <img src="${attr(resolveImage(item.image))}" alt="${attr(item.name)}" loading="lazy" onerror="this.style.visibility='hidden'">
+
+  $('rewardGrid').innerHTML=filtered.map((item,index)=>`
+    <article class="reward-card" data-reward-index="${index}" tabindex="0">
+      <img src="${attr(resolveImage(item.image))}" alt="${attr(item.name)}" loading="lazy"
+           onerror="this.style.visibility='hidden'">
       <div class="reward-card-body">
         <h3>${esc(item.name)}</h3>
-        <div class="reward-meta">${esc(item.size)}</div>
-        <div class="reward-price">${money(item.price)}</div>
-        <span class="eligible-badge">Eligible with points</span>
+        <div class="reward-meta">${esc(item.size)}${item.type==='premium'?' · Premium':''}</div>
+        <div class="reward-point-price">${Number(item.pointCost||0).toLocaleString('en-PH')} pts</div>
+        <span class="reward-tap-hint">Tap to add to cart</span>
       </div>
     </article>
   `).join('');
+
+  $('rewardGrid').querySelectorAll('[data-reward-index]').forEach(card=>{
+    const item=filtered[Number(card.dataset.rewardIndex)];
+    card.addEventListener('click',()=>addRewardToCart(item));
+    card.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){
+        e.preventDefault();
+        addRewardToCart(item);
+      }
+    });
+  });
 }
 function renderRewards(snapshot){
+  rewardsSnapshot=snapshot||{};
   $('pointsBalance').textContent=Number(snapshot?.points||0).toLocaleString('en-PH');
   $('rewardValue').textContent=money(snapshot?.rewardValue||0);
   const eligible=Array.isArray(snapshot?.eligible)?snapshot.eligible:[];

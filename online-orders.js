@@ -336,13 +336,22 @@ function updateHeaderCartCount(){
   if($('cartCount'))$('cartCount').textContent=String(groupedCartItemCount());
 }
 
+
+function rewardCartPoints(){
+  return cart.reduce((sum,item)=>
+    sum + (item.paidByPoints ? Number(item.rewardPointsCost||0)*Number(item.qty||0) : 0)
+  ,0);
+}
+function spendablePointsAfterRewardCart(){
+  return Math.max(0,Number(customerProfile?.points||0)-rewardCartPoints());
+}
 function total(){
   return cart.reduce((sum,x)=>sum+x.unitPrice*x.qty,0);
 }
 
 function renderCart(){
   updateHeaderCartCount();
-  $('cartCount').textContent=cart.reduce((s,x)=>s+x.qty,0);
+  $('cartCount').textContent=String(groupedCartItemCount());
   $('cartTotal').textContent=money(total());
   updateCheckoutTotals();
   $('checkoutButton').disabled=!cart.length;
@@ -357,7 +366,9 @@ function renderCart(){
       <div>
         <h4>${esc(item.name)}</h4>
         <p>${esc(item.type==='premium'?'Premium · ':'')}${esc(item.size)}${item.sweetness?` · ${esc(item.sweetness)}`:''}${item.flavor?` · ${esc(item.flavor)}`:''}</p>
-        <p>${money(item.unitPrice)} each</p>
+        <p>${item.paidByPoints
+          ? `${Number(item.rewardPointsCost||0).toLocaleString('en-PH')} pts · Paid by Points`
+          : `${money(item.unitPrice)} each`}</p>
       </div>
       <div class="qty-inline">
         <button type="button" data-minus="${i}">−</button>
@@ -460,7 +471,7 @@ function eligibleDrinkSubtotal(){
 function maxRedeemBlocks(){
   if(!customerSession?.user)return 0;
   return Math.max(0,Math.min(
-    Math.floor(Number(customerProfile?.points||0)/1000),
+    Math.floor(spendablePointsAfterRewardCart()/1000),
     Math.floor(eligibleDrinkSubtotal()/50)
   ));
 }
@@ -475,7 +486,12 @@ function updatePointsPaymentUI(){
   const box=$('pointsPaymentBox');
   if(!box)return;
   box.classList.toggle('hidden',!signed||balance<1000||maxRedeemBlocks()<1);
-  if($('pointsPaymentBalance'))$('pointsPaymentBalance').textContent=`${balance.toLocaleString('en-PH')} points available`;
+  if($('pointsPaymentBalance')){
+    const reserved=rewardCartPoints();
+    $('pointsPaymentBalance').textContent=reserved>0
+      ? `${balance.toLocaleString('en-PH')} points · ${reserved.toLocaleString('en-PH')} reserved for reward drinks`
+      : `${balance.toLocaleString('en-PH')} points available`;
+  }
   clampRedeemPoints();
   const discount=pointsDiscount();
   if($('pointsRedeemValue'))$('pointsRedeemValue').textContent=`₱${discount} off`;
@@ -940,7 +956,9 @@ async function placeOrder(){
         size:x.size,
         sweetness:x.sweetness,
         flavor:x.flavor,
-        qty:x.qty
+        qty:x.qty,
+        paidByPoints:x.paidByPoints===true,
+        rewardPointsCost:Number(x.rewardPointsCost||0)
       }))
     });
 
@@ -950,8 +968,10 @@ async function placeOrder(){
     $('checkoutDialog').close();
 
     $('successOrderNo').textContent=`Online #${result.orderNumber}`;
-    const redeemedText=Number(result.rewardDiscount||0)>0
-      ? ` You used ${Number(result.pointsRedeemed||0).toLocaleString('en-PH')} points for ₱${Number(result.rewardDiscount||0).toLocaleString('en-PH')} off.`
+    const rewardItemPts=Number(result.rewardItemPoints||0);
+    const checkoutPts=Number(result.checkoutPointsRedeemed||0);
+    const redeemedText=(rewardItemPts>0||checkoutPts>0)
+      ? ` You used ${Number(result.pointsRedeemed||0).toLocaleString('en-PH')} KBR Points${Number(result.rewardDiscount||0)>0?` including ₱${Number(result.rewardDiscount||0).toLocaleString('en-PH')} checkout discount`:''}.`
       : '';
     selectedRedeemPoints=0;
     const scheduledText=requested

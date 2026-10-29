@@ -1288,3 +1288,8 @@ button{cursor:pointer}
 .points-action .topbar-action-main{
   font-size:.95rem;
 }
+
+.cart-line .reward-points-label{
+  color:#2f8f4e;
+  font-weight:900;
+}
