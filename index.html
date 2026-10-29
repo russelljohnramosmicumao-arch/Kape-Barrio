@@ -497,6 +497,20 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 }
 </style>
 
+
+<style id="kbr-paid-points-v6-style">
+.kbr-paid-points-badge{
+  display:inline-block;
+  margin-top:4px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#e5f4ea;
+  color:#26733f;
+  font-size:.72rem;
+  font-weight:900;
+}
+</style>
+
 </head>
 <body>
 <header>
@@ -1221,7 +1235,7 @@ function ensurePendingUnits(order){
   order.units=[];
   (order.items||[]).forEach((x,itemIndex)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
-      order.units.push({uid:`${order.no}-${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:itemIndex,productId:x.productId||null,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
+      order.units.push({uid:`${order.no}-${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:itemIndex,productId:x.productId||null,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.originalPrice??x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,paidByPoints:!!x.paidByPoints,rewardPointsCost:Number(x.rewardPointsCost)||0,rewardNote:x.rewardNote||'',served:false});
     }
   });
   setPendingOrderStorage();
@@ -1485,7 +1499,7 @@ function renderBaristaOrders(){
         : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',20)">20%</button>${promoDiscountButton(u.uid,pct)}<button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`;
       const discountPrice=!u.food&&pct?`<div class="discount-price">Original ${peso(u.originalPrice)} · ${promoDiscountLabel(pct)} · <b>${peso(net)}</b></div>`:'';
       return `<div class="barista-unit-details-row">
-        <div class="barista-unit-details-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small>${unitAddonLabel(u)?`<small style="display:block;color:#386944">+ ${escapeHtml(unitAddonLabel(u))}</small>`:''}</div>
+        <div class="barista-unit-details-name"><b>1× ${escapeHtml(u.name)}</b><small>${escapeHtml(details)}</small>${u.paidByPoints?`<span class="kbr-paid-points-badge">⭐ Paid by Points${u.rewardPointsCost?` · ${Number(u.rewardPointsCost).toLocaleString()} pts`:''}</span>`:''}${unitAddonLabel(u)?`<small style="display:block;color:#386944">+ ${escapeHtml(unitAddonLabel(u))}</small>`:''}</div>
         <div class="barista-unit-details-price">${peso(net)}</div>
         <div class="barista-unit-details-controls"><div class="unit-adjustments">${discountUI}${baristaAddonControls(u,order.paid)}</div>${discountPrice}
           <div class="order-service-toggle"><span>Order type:</span>
@@ -1499,7 +1513,7 @@ function renderBaristaOrders(){
     return `<div class="barista-group ${expanded?'open':''}" id="barista-group-${gi}">
       <div class="barista-group-label" onclick="toggleBaristaGroup('${order.no}',${gi})">
         <button class="group-done-btn ${allServed?'done':''}" onclick="event.stopPropagation();toggleDisplayGroupServed('${order.no}',${gi})" aria-label="Mark ${escapeHtml(x.name)} served">${allServed?'✓ Served':'☐ Done?'}</button>
-        <span class="barista-group-label-main"><b>${units.length}× ${escapeHtml(x.name)}</b>${details?`<small>${escapeHtml(details)}</small>`:''}</span>
+        <span class="barista-group-label-main"><b>${units.length}× ${escapeHtml(x.name)}</b>${details?`<small>${escapeHtml(details)}</small>`:''}${units[0]?.paidByPoints?`<span class="kbr-paid-points-badge">⭐ Paid by Points${units[0]?.rewardPointsCost?` · ${Number(units[0].rewardPointsCost).toLocaleString()} pts`:''}</span>`:''}</span>
         <span class="barista-group-label-price">${topPrice}<span class="group-chevron">${expanded?'▴':'▾'}</span></span>
       </div>
       ${expanded?`<div class="barista-group-body">${unitRows}</div>`:''}
