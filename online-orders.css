@@ -1250,3 +1250,41 @@ button{cursor:pointer}
   .topbar-action-main{font-size:.75rem}
   .topbar-action small{font-size:.5rem}
 }
+
+/* v5.8 cart icon + points sync */
+.cart-icon-button{
+  position:relative;
+  min-width:74px;
+}
+.cart-icon-wrap{
+  position:relative;
+  display:inline-grid;
+  place-items:center;
+  font-size:1.5rem;
+  line-height:1;
+}
+.cart-count-badge{
+  position:absolute;
+  top:-8px;
+  right:-12px;
+  min-width:22px;
+  height:22px;
+  padding:0 6px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:#fff;
+  color:var(--brown);
+  border:2px solid var(--brown);
+  font-size:.68rem;
+  font-weight:950;
+}
+.cart-action small{
+  margin-top:5px;
+  color:#fff;
+  font-size:.58rem;
+  font-weight:800;
+}
+.points-action .topbar-action-main{
+  font-size:.95rem;
+}

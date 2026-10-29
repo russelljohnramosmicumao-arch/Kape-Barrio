@@ -307,6 +307,8 @@ function addSelected(){
 
   saveCart();
   renderCart();
+updateHeaderCartCount();
+updateHeaderPoints();
   animateToCart();
   setTimeout(()=>$('itemDialog').close(),120);
   toast('Added to cart.');
@@ -323,11 +325,23 @@ function loadCart(){
   }catch{cart=[]}
 }
 
+
+function groupedCartItemCount(){
+  // The cart already groups identical configured items into one line.
+  // Count those grouped lines rather than qty, so 20× Siomai = 1 cart item.
+  return Array.isArray(cart)?cart.length:0;
+}
+
+function updateHeaderCartCount(){
+  if($('cartCount'))$('cartCount').textContent=String(groupedCartItemCount());
+}
+
 function total(){
   return cart.reduce((sum,x)=>sum+x.unitPrice*x.qty,0);
 }
 
 function renderCart(){
+  updateHeaderCartCount();
   $('cartCount').textContent=cart.reduce((s,x)=>s+x.qty,0);
   $('cartTotal').textContent=money(total());
   updateCheckoutTotals();
@@ -1141,7 +1155,24 @@ async function connectGoogleAccount(){
   if(error)toast(error.message||'Could not connect Google.');
 }
 
+
+function currentCustomerPoints(){
+  return Number(
+    customerProfile?.points ??
+    customerProfile?.points_balance ??
+    customerProfile?.profile?.points ??
+    customerProfile?.profile?.points_balance ??
+    0
+  );
+}
+
+function updateHeaderPoints(){
+  const points=currentCustomerPoints();
+  if($('pointsBalancePill'))updateHeaderPoints();
+}
+
 function updateAccountUI(){
+  updateHeaderPoints();
   const button=$('customerAccountButton');
   const signed=!!customerSession?.user;
   $('pointsSignInHero')?.classList.toggle('hidden',signed);
@@ -1238,6 +1269,7 @@ async function loadCustomerProfile(){
     customerOrders=[];
   }
   updateAccountUI();
+  updateHeaderPoints();
   updatePointsPaymentUI();
 }
 
@@ -1383,6 +1415,17 @@ $('pointsSignInHero')?.addEventListener('click',()=>{
   }
   showAccountEntryStep('entry');
   $('accountDialog')?.showModal();
+});
+
+$('openCart')?.addEventListener('click',()=>{
+  renderCart();
+  const dialog=$('cartDialog');
+  if(!dialog)return toast('Cart is unavailable.');
+  if(typeof dialog.showModal==='function'){
+    if(!dialog.open)dialog.showModal();
+  }else{
+    dialog.classList.remove('hidden');
+  }
 });
 
 $('customerAccountButton')?.addEventListener('click',async()=>{

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="manifest" href="online-manifest.webmanifest?v=57">
+  <link rel="manifest" href="online-manifest.webmanifest?v=58">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=57">
+  <link rel="stylesheet" href="online-orders.css?v=58">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -69,8 +69,12 @@
     <div class="topbar-title">Order Now</div>
 
     <div class="topbar-actions">
-      <button id="openCart" class="topbar-action cart-action" type="button">
-        <span class="topbar-action-main">Cart <span id="cartCount">0</span></span>
+      <button id="openCart" class="topbar-action cart-action cart-icon-button" type="button" aria-label="Open cart">
+        <span class="cart-icon-wrap" aria-hidden="true">
+          🛒
+          <span id="cartCount" class="cart-count-badge">0</span>
+        </span>
+        <small>Cart</small>
       </button>
 
       <button id="pointsButton" class="topbar-action points-action" type="button">
@@ -548,6 +552,6 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=57" defer></script>
+  <script src="online-orders.js?v=58" defer></script>
 </body>
 </html>
