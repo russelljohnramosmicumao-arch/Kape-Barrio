@@ -136,7 +136,7 @@
 
   <dialog id="itemDialog" class="modal">
     <form method="dialog" class="modal-card" id="itemForm">
-      <button class="modal-close" value="cancel" aria-label="Close">×</button>
+      <button id="checkoutCloseButton" class="modal-close" type="button" aria-label="Close">×</button>
       <img id="itemImage" class="item-image" alt="">
       <div id="itemCategory" class="eyebrow"></div>
       <h2 id="itemName"></h2>
@@ -208,10 +208,10 @@
           </span>
         </label>
       </div>
-      <section class="order-timing-section">
+      <section id="orderTimingSection" class="order-timing-section hidden">
         <div class="payment-title">Choose date and time</div>
         <label id="scheduledTimeField" class="field">
-          <input id="scheduledTime" type="datetime-local" step="900">
+          <input id="scheduledTime" type="datetime-local" step="any">
           <small id="scheduledTimeHelp">Please allow at least 30 minutes for preparation.</small>
         </label>
       </section>

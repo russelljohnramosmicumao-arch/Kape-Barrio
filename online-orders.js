@@ -561,8 +561,12 @@ function updateServiceFields(){
     $('notesLabel').textContent='Delivery notes (optional)';
     $('orderNotes').placeholder='Landmark, gate color, special instructions, etc.';
   }else{
-    $('notesLabel').textContent='Pickup notes (optional)';
-    $('orderNotes').placeholder='Special instructions, etc.';
+    $('notesLabel').textContent=currentShopOpen
+      ? 'Pickup notes (optional) — include your pickup time'
+      : 'Pickup notes (optional)';
+    $('orderNotes').placeholder=currentShopOpen
+      ? 'Example: Pick up around 3:00 PM. Add special instructions here.'
+      : 'Special instructions, etc.';
     $('deliveryAddress').value='';
     if($('deliveryBarangay'))$('deliveryBarangay').value='';
     selectedDeliveryFee=0;
@@ -720,25 +724,33 @@ function scheduledValueIsValid(value,service){
 
 function updateTimingFields(){
   const input=$('scheduledTime');
+  const section=$('orderTimingSection');
   if(!input)return;
 
+  // Open shop: orders are immediate. No scheduled-time field.
+  if(currentShopOpen){
+    section?.classList.add('hidden');
+    input.value='';
+    input.removeAttribute('min');
+    input.removeAttribute('max');
+    return;
+  }
+
+  // Closed shop preorder: the time was chosen before entering the menu.
+  section?.classList.remove('hidden');
+
   const minDate=manilaPseudoDate();
-  minDate.setUTCMinutes(minDate.getUTCMinutes()+30);
   input.min=formatDateTimeLocal(minDate);
 
   const maxDate=manilaPseudoDate();
   maxDate.setUTCDate(maxDate.getUTCDate()+7);
   input.max=formatDateTimeLocal(maxDate);
 
-  if(!input.value || !closedPreorderConfigured){
-    input.value=defaultScheduledTime();
-  }
-
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
   if($('scheduledTimeHelp')){
     $('scheduledTimeHelp').textContent=service==='delivery'
-      ? 'Earliest: 30 minutes from now. Delivery closes 10:30 PM.'
-      : 'Earliest: 30 minutes from now. Pickup closes 10:45 PM.';
+      ? 'Scheduled delivery time selected from Order for Later.'
+      : 'Scheduled pickup time selected from Order for Later.';
   }
 }
 
@@ -908,9 +920,12 @@ async function tryClaimPendingGuestOrder(){
 async function placeOrder(){
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
 
-  const check=scheduledValueIsValid($('scheduledTime')?.value||'',service);
-  if(!check.ok)return toast(check.message);
-  const requested=check.iso;
+  let requested=null;
+  if(!currentShopOpen){
+    const check=scheduledValueIsValid($('scheduledTime')?.value||'',service);
+    if(!check.ok)return toast(check.message);
+    requested=check.iso;
+  }
 
   const customerName=$('customerName').value.trim();
   const contact=$('contactNumber').value.trim();
@@ -1493,7 +1508,13 @@ document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('
 $('checkoutButton')?.addEventListener('click',()=>{
   if(!cart.length)return;
   closeCart();
-  if(currentShopOpen)lockedServiceType='';
+
+  if(currentShopOpen){
+    lockedServiceType='';
+    closedPreorderConfigured=false;
+    if($('scheduledTime'))$('scheduledTime').value='';
+  }
+
   applyServiceLock();
   updateCheckoutTotals();
   updateServiceFields();
@@ -1527,11 +1548,15 @@ $('checkoutButton')?.addEventListener('click',()=>{
 
   $('checkoutDialog').showModal();
 });
+$('checkoutCloseButton')?.addEventListener('click',()=>{
+  const dialog=$('checkoutDialog');
+  if(dialog?.open)dialog.close();
+});
 $('addToCartButton')?.addEventListener('click',e=>{e.preventDefault();addSelected()});
 $('qtyMinus')?.addEventListener('click',()=>{$('qtyInput').value=Math.max(1,Number($('qtyInput').value||1)-1)});
 $('qtyPlus')?.addEventListener('click',()=>{$('qtyInput').value=Math.min(20,Number($('qtyInput').value||1)+1)});
 document.querySelectorAll('input[name="serviceType"]').forEach(el=>el.addEventListener('change',()=>{
-  if(!closedPreorderConfigured&&$('scheduledTime'))$('scheduledTime').value='';
+  if(currentShopOpen&&$('scheduledTime'))$('scheduledTime').value='';
   updateServiceFields();
 }));
 $('scheduledTime')?.addEventListener('change',updateTimingFields);
