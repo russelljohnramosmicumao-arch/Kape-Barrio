@@ -1411,16 +1411,44 @@ $('saveProfileDetailsButton')?.addEventListener('click',e=>{
 
 $('pointsSignInHero')?.addEventListener('click',()=>{
   if(customerSession?.user){
-    $('accountDialog')?.showModal();
+    $('customerAccountButton')?.click();
     return;
   }
   showAccountEntryStep('entry');
-  $('accountDialog')?.showModal();
+  const dialog=$('accountDialog');
+  if(dialog && typeof dialog.showModal==='function' && !dialog.open)dialog.showModal();
 });
 
 $('openCart')?.addEventListener('click',()=>{
   renderCart();
   openCart();
+});
+
+$('customerAccountButton')?.addEventListener('click',async()=>{
+  try{
+    if(customerSession?.user){
+      await loadCustomerProfile();
+    }else{
+      showAccountEntryStep('entry');
+      updateAccountUI();
+    }
+
+    const dialog=$('accountDialog');
+    if(!dialog){
+      toast('Account window is unavailable.');
+      return;
+    }
+
+    if(typeof dialog.showModal==='function'){
+      if(!dialog.open)dialog.showModal();
+    }else{
+      dialog.classList.remove('hidden');
+      dialog.setAttribute('open','');
+    }
+  }catch(error){
+    console.error('Account open failed',error);
+    toast(error?.message||'Could not open account.');
+  }
 });
 
 $('pointsButton')?.addEventListener('click',async()=>{
