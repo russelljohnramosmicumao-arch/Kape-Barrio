@@ -390,6 +390,52 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .kbr-more-items-v2{margin-top:8px;font-weight:900}
 </style>
 
+
+<style id="kbr-tile-top-align-v3">
+/* Keep order-tile contents aligned to the top instead of vertically centered */
+.order-card,
+.order-tile,
+.orderCard,
+.pending-order-card,
+[data-order-id]{
+  justify-content:flex-start!important;
+  align-items:stretch!important;
+  align-content:flex-start!important;
+}
+
+.order-card > *,
+.order-tile > *,
+.orderCard > *,
+.pending-order-card > *,
+[data-order-id] > *{
+  flex-shrink:0;
+}
+
+/* If the tile uses an inner wrapper, force that wrapper to the top too */
+.order-card .card-body,
+.order-tile .card-body,
+.orderCard .card-body,
+.pending-order-card .card-body,
+.order-card .order-content,
+.order-tile .order-content,
+.orderCard .order-content,
+.pending-order-card .order-content{
+  justify-content:flex-start!important;
+  align-items:stretch!important;
+  align-content:flex-start!important;
+  margin-top:0!important;
+}
+
+/* Compact header and item list spacing */
+.kbr-compact-header-v2{
+  margin-top:0!important;
+  padding-top:0!important;
+}
+.kbr-order-topline{
+  margin-top:0!important;
+}
+</style>
+
 </head>
 <body>
 <header>
