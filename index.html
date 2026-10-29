@@ -437,74 +437,63 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 </style>
 
 
-<style id="kbr-online-expanded-v4-style">
-/* Online expanded order should keep blue accent */
-.kbr-online-expanded-v4,
-.kbr-online-expanded-v4 .payment-panel,
-.kbr-online-expanded-v4 .order-detail-panel{
+
+<style id="kbr-online-expanded-v5-style">
+/* Keep expanded online orders blue without JS observers */
+.online-order-expanded,
+.online-order-detail,
+[data-online-order="true"]{
   border-color:#2563eb!important;
 }
-.kbr-online-expanded-v4{
-  background:#dceaff!important;
-  box-shadow:0 0 0 2px rgba(37,99,235,.04);
-}
-.kbr-online-expanded-v4 .order-detail-panel,
-.kbr-online-expanded-v4 .payment-panel{
-  background:#eef5ff!important;
-}
 
-.kbr-online-customer-summary{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px 14px;
-  align-items:center;
-  margin:8px 0 10px;
-  padding:10px 12px;
+/* Compact customer info row in the item/details area */
+.kbr-customer-info-row{
+  margin:8px 0 12px;
   border:1px solid rgba(37,99,235,.28);
   border-radius:12px;
   background:#f4f8ff;
-  color:#234f93;
-  font-size:.88rem;
-  font-weight:750;
-}
-.kbr-online-customer-summary strong{
-  color:#173f7d;
-}
-.kbr-online-more-details{
-  margin:0 0 12px;
-  border:1px solid rgba(37,99,235,.22);
-  border-radius:12px;
-  background:#f8fbff;
   overflow:hidden;
 }
-.kbr-online-more-details summary{
-  cursor:pointer;
-  list-style:none;
+.kbr-customer-info-toggle{
+  width:100%;
+  border:0;
+  background:transparent;
   padding:10px 12px;
-  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
   color:#1f4f95;
+  text-align:left;
+  font-weight:850;
+  cursor:pointer;
 }
-.kbr-online-more-details summary::-webkit-details-marker{display:none}
-.kbr-online-more-details summary::after{
-  content:'＋';
-  float:right;
+.kbr-customer-info-main{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 12px;
+  align-items:center;
 }
-.kbr-online-more-details[open] summary::after{
-  content:'−';
+.kbr-customer-info-arrow{
+  font-size:.85rem;
+  transition:transform .15s ease;
 }
-.kbr-online-more-details-body{
-  padding:0 12px 12px;
+.kbr-customer-info-row.open .kbr-customer-info-arrow{
+  transform:rotate(180deg);
+}
+.kbr-customer-info-extra{
+  display:none;
+  padding:0 12px 11px;
+  color:#5f6874;
+  font-size:.82rem;
+  line-height:1.38;
+}
+.kbr-customer-info-row.open .kbr-customer-info-extra{
   display:grid;
   gap:5px;
-  color:#5c6470;
-  font-size:.82rem;
-  line-height:1.35;
 }
-.kbr-online-more-details-body strong{
-  color:#34475f;
-}
-.kbr-hide-redundant-online-info{
-  display:none!important;
+.kbr-customer-info-extra strong{
+  color:#35475c;
 }
 </style>
 
@@ -1405,6 +1394,40 @@ function compactBaristaOrderSummary(order){
   if(food)parts.push(`${food} food`);
   return parts.join(' · ')||'No items';
 }
+
+function parseOnlineCustomerInfo(order){
+  const note=String(order?.note||'');
+  const customer=(note.match(/Customer:\s*([^|]+)/i)||[])[1]?.trim()||'Online customer';
+  const phone=(note.match(/Contact:\s*([^|]+)/i)||[])[1]?.trim()||'';
+  const address=(note.match(/Address:\s*([^|]+)/i)||[])[1]?.trim()||'';
+  const requested=(note.match(/Requested:\s*([^|]+)/i)||[])[1]?.trim()||'';
+  const payment=/GCash/i.test(note)?'GCash':/Cash/i.test(note)?'Cash':/Pay Later/i.test(note)?'Pay Later':'';
+  let barangay='';
+  if(address){
+    const parts=address.split(',').map(x=>x.trim()).filter(Boolean);
+    barangay=parts.length>1?parts[parts.length-1]:parts[0]||'';
+    if(/san quintin/i.test(barangay)&&parts.length>1)barangay=parts[parts.length-2];
+  }
+  return {customer,phone,address,requested,payment,barangay};
+}
+function onlineCustomerInfoHtml(order){
+  const i=parseOnlineCustomerInfo(order);
+  return `<div class="kbr-customer-info-row">
+    <button type="button" class="kbr-customer-info-toggle">
+      <span class="kbr-customer-info-main">
+        <strong>${escapeHtml(i.customer)}</strong>
+        ${i.payment?`<span>Payment: <strong>${escapeHtml(i.payment)}</strong></span>`:''}
+        ${i.barangay?`<span>Barangay: <strong>${escapeHtml(i.barangay)}</strong></span>`:''}
+      </span>
+      <span class="kbr-customer-info-arrow">▼</span>
+    </button>
+    <div class="kbr-customer-info-extra">
+      ${i.phone?`<div><strong>Phone:</strong> ${escapeHtml(i.phone)}</div>`:''}
+      ${i.address?`<div><strong>Complete address:</strong> ${escapeHtml(i.address)}</div>`:''}
+      ${i.requested?`<div><strong>Requested:</strong> ${escapeHtml(i.requested)}</div>`:''}
+    </div>
+  </div>`;
+}
 function renderBaristaOrders(){
   ensureAllOpenUnits();
   updatePendingOrdersTab();
@@ -2135,125 +2158,14 @@ if(customerServiceType){const start=document.getElementById('serviceStart');if(s
 })();
 </script>
 
-<script id="kbr-online-expanded-v4-script">
-(function(){
-  const onlineOrder=(root)=>{
-    const text=(root?.textContent||'');
-    return /ONLINE ORDER\s*#/i.test(text) || /Online:\s*(Pickup|Delivery)/i.test(text);
-  };
 
-  function extract(text,pattern){
-    const m=text.match(pattern);
-    return m?String(m[1]||'').trim():'';
-  }
-
-  function normalizePayment(text){
-    if(/GCash/i.test(text))return 'GCash';
-    if(/Cash/i.test(text))return 'Cash';
-    if(/Pay Later/i.test(text))return 'Pay Later';
-    return '';
-  }
-
-  function patchExpandedPanels(){
-    // Find expanded/detail containers by looking for payment controls or item detail controls.
-    const candidates=[...document.querySelectorAll('section,article,div')].filter(el=>{
-      if(!onlineOrder(el))return false;
-      const t=el.textContent||'';
-      return /Payment/i.test(t) && /(Cash|GCash|Pay Later|Barista Drinks)/i.test(t);
-    });
-
-    candidates.forEach(panel=>{
-      if(panel.dataset.kbrOnlineExpandedV4==='1')return;
-
-      // Pick the smallest useful container to avoid styling the entire page.
-      let root=panel;
-      let parent=panel.parentElement;
-      while(parent && onlineOrder(parent) && parent.textContent.length<panel.textContent.length*1.7){
-        root=parent;
-        parent=parent.parentElement;
-      }
-
-      root.classList.add('kbr-online-expanded-v4');
-
-      const full=root.textContent.replace(/\s+/g,' ').trim();
-
-      const customer=extract(full,/Customer:\s*([^|]+?)(?=\s*\||\s*Contact:|\s*Requested:|\s*Note:|$)/i);
-      const phone=extract(full,/Contact:\s*([^|]+?)(?=\s*\||\s*Requested:|\s*Address:|\s*Note:|$)/i);
-      const address=extract(full,/Address:\s*([^|]+?)(?=\s*\||\s*Requested:|\s*Note:|$)/i);
-      const requested=extract(full,/Requested:\s*([^|]+?)(?=\s*\||\s*Note:|$)/i);
-      const note=extract(full,/Note:\s*(.+?)(?=$|\s+Dine In|\s+Take Out)/i);
-      const payment=normalizePayment(note||full);
-
-      let barangay='';
-      if(address){
-        // Prefer known San Quintin barangay-looking segment before the complete address details.
-        const parts=address.split(',').map(x=>x.trim()).filter(Boolean);
-        barangay=parts.length?parts[parts.length-1]:'';
-        if(/san quintin/i.test(barangay) && parts.length>1)barangay=parts[parts.length-2];
-      }
-
-      // Fallback service location from explicit delivery barangay-like text if available.
-      const barangayMatch=full.match(/Barangay:\s*([^|]+)/i);
-      if(barangayMatch)barangay=barangayMatch[1].trim();
-
-      // Insert after the order heading area.
-      const heading=[...root.querySelectorAll('*')].find(el=>{
-        const t=(el.textContent||'').trim();
-        return /^Order\s*#\d+/i.test(t) && el.children.length===0;
-      }) || root.firstElementChild;
-
-      if(!root.querySelector('.kbr-online-customer-summary')){
-        const summary=document.createElement('div');
-        summary.className='kbr-online-customer-summary';
-        summary.innerHTML=`
-          <span><strong>${customer||'Online customer'}</strong></span>
-          ${payment?`<span>Payment: <strong>${payment}</strong></span>`:''}
-          ${barangay?`<span>Barangay: <strong>${barangay}</strong></span>`:''}
-        `;
-        if(heading?.parentElement)heading.parentElement.insertBefore(summary,heading.nextSibling);
-        else root.insertBefore(summary,root.firstChild);
-      }
-
-      if(!root.querySelector('.kbr-online-more-details')){
-        const details=document.createElement('details');
-        details.className='kbr-online-more-details';
-        details.innerHTML=`
-          <summary>More details</summary>
-          <div class="kbr-online-more-details-body">
-            ${phone?`<div><strong>Phone:</strong> ${phone}</div>`:''}
-            ${address?`<div><strong>Complete address:</strong> ${address}</div>`:''}
-            ${requested?`<div><strong>Requested:</strong> ${requested}</div>`:''}
-            ${note?`<div><strong>Notes:</strong> ${note}</div>`:''}
-          </div>
-        `;
-        const summary=root.querySelector('.kbr-online-customer-summary');
-        summary?.insertAdjacentElement('afterend',details);
-      }
-
-      // Hide duplicated long online metadata blocks only; keep order title, items, totals, controls.
-      [...root.querySelectorAll('*')].forEach(el=>{
-        if(el.closest('.kbr-online-customer-summary,.kbr-online-more-details'))return;
-        if(el.children.length)return;
-        const t=(el.textContent||'').trim();
-        if(!t)return;
-        if(
-          /ONLINE ORDER\s*#\d+.*Customer:/i.test(t) ||
-          /^📝?\s*ONLINE ORDER\s*#\d+/i.test(t) ||
-          (/Customer:/i.test(t) && /Contact:/i.test(t)) ||
-          (/Requested:/i.test(t) && /Note:/i.test(t))
-        ){
-          el.classList.add('kbr-hide-redundant-online-info');
-        }
-      });
-
-      root.dataset.kbrOnlineExpandedV4='1';
-    });
-  }
-
-  window.addEventListener('load',()=>setTimeout(patchExpandedPanels,350));
-  const obs=new MutationObserver(()=>requestAnimationFrame(patchExpandedPanels));
-  obs.observe(document.documentElement,{childList:true,subtree:true});
-})();
+<script id="kbr-online-expanded-v5-script">
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.kbr-customer-info-toggle');
+  if(!btn)return;
+  const row=btn.closest('.kbr-customer-info-row');
+  if(row)row.classList.toggle('open');
+});
 </script>
 
 </body></html>
