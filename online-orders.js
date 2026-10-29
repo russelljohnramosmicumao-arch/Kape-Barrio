@@ -1576,3 +1576,21 @@ if('serviceWorker' in navigator){
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
+
+
+function handleOnlineHashTarget(){
+  const target=window.location.hash;
+  if(target==='#cart'){
+    setTimeout(()=>{
+      renderCart();
+      openCart();
+      history.replaceState(null,'',window.location.pathname+window.location.search);
+    },250);
+  }else if(target==='#account'){
+    setTimeout(()=>{
+      $('customerAccountButton')?.click();
+      history.replaceState(null,'',window.location.pathname+window.location.search);
+    },250);
+  }
+}
+window.addEventListener('load',handleOnlineHashTarget);

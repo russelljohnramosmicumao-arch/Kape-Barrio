@@ -124,3 +124,136 @@ button{font:inherit;cursor:pointer}
   font-size:.72rem;
   font-weight:900;
 }
+
+/* v6.2 rewards header + fly-to-cart */
+.rewards-app-header{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:18px;
+  padding:14px 22px;
+  border-bottom:1px solid var(--line);
+  background:var(--page);
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+.rewards-brand{
+  justify-self:start;
+  font-weight:950;
+  font-size:1rem;
+  color:var(--brown);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.rewards-title{
+  justify-self:center;
+  font-weight:950;
+  font-size:1.35rem;
+  color:var(--ink);
+}
+.rewards-actions{
+  justify-self:end;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.rewards-action{
+  min-height:54px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  color:var(--brown);
+  padding:8px 13px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  cursor:pointer;
+}
+.rewards-action-main{
+  font-size:.9rem;
+  font-weight:950;
+  white-space:nowrap;
+}
+.rewards-action small{
+  display:block;
+  margin-top:1px;
+  font-size:.56rem;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.rewards-cart-action{
+  background:var(--brown);
+  border-color:var(--brown);
+  color:#fff;
+}
+.rewards-cart-action small{color:#fff}
+.rewards-cart-icon-wrap{
+  position:relative;
+  display:inline-grid;
+  place-items:center;
+  font-size:1.45rem;
+  line-height:1;
+}
+.rewards-cart-count{
+  position:absolute;
+  top:-8px;
+  right:-12px;
+  min-width:22px;
+  height:22px;
+  padding:0 6px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:#fff;
+  color:var(--brown);
+  border:2px solid var(--brown);
+  font-size:.68rem;
+  font-weight:950;
+}
+.rewards-account-icon{
+  font-size:1.05rem;
+  line-height:1;
+}
+.reward-fly-to-cart{
+  position:fixed;
+  z-index:9999;
+  object-fit:contain;
+  pointer-events:none;
+  border-radius:12px;
+  transition:
+    transform .62s cubic-bezier(.2,.75,.25,1),
+    width .62s ease,
+    height .62s ease,
+    opacity .62s ease;
+}
+.rewards-cart-bump{
+  animation:rewardsCartBump .25s ease;
+}
+@keyframes rewardsCartBump{
+  0%{transform:scale(1)}
+  45%{transform:scale(1.12)}
+  100%{transform:scale(1)}
+}
+@media(max-width:700px){
+  .rewards-app-header{
+    grid-template-columns:1fr auto;
+    grid-template-areas:
+      "brand actions"
+      "title title";
+    gap:8px;
+    padding:10px 12px;
+  }
+  .rewards-brand{grid-area:brand;font-size:.78rem}
+  .rewards-title{grid-area:title;font-size:1.15rem}
+  .rewards-actions{grid-area:actions;gap:5px}
+  .rewards-action{
+    min-height:48px;
+    padding:6px 9px;
+    border-radius:13px;
+  }
+  .rewards-action-main{font-size:.75rem}
+  .rewards-action small{font-size:.5rem}
+}

@@ -5,14 +5,32 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>KBR Rewards</title>
-  <link rel="stylesheet" href="rewards.css?v=61">
+  <link rel="stylesheet" href="rewards.css?v=62">
 </head>
 <body>
-  <header class="rewards-topbar">
-    <button id="backButton" class="back-button" type="button" aria-label="Back">←</button>
-    <div>
-      <div class="eyebrow">Kape Bar-Rio</div>
-      <h1>Rewards</h1>
+  <header class="rewards-topbar rewards-app-header">
+    <div class="rewards-brand">Kape’ Bar-Rio</div>
+
+    <div class="rewards-title">Rewards</div>
+
+    <div class="rewards-actions">
+      <button id="rewardsCartButton" class="rewards-action rewards-cart-action" type="button" aria-label="Open cart">
+        <span class="rewards-cart-icon-wrap" aria-hidden="true">
+          🛒
+          <span id="rewardsCartCount" class="rewards-cart-count">0</span>
+        </span>
+        <small>Cart</small>
+      </button>
+
+      <button id="rewardsPointsButton" class="rewards-action rewards-points-action" type="button">
+        <span class="rewards-action-main"><span id="rewardsHeaderPoints">0</span> pts</span>
+        <small>Click to redeem</small>
+      </button>
+
+      <button id="rewardsAccountButton" class="rewards-action rewards-account-action" type="button">
+        <span class="rewards-account-icon">👤</span>
+        <small>My Account</small>
+      </button>
     </div>
   </header>
 
@@ -53,6 +71,6 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="rewards.js?v=61" defer></script>
+  <script src="rewards.js?v=62" defer></script>
 </body>
 </html>
