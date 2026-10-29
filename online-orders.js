@@ -1168,7 +1168,8 @@ function currentCustomerPoints(){
 
 function updateHeaderPoints(){
   const points=currentCustomerPoints();
-  if($('pointsBalancePill'))updateHeaderPoints();
+  const pill=$('pointsBalancePill');
+  if(pill)pill.textContent=points.toLocaleString('en-PH');
 }
 
 function updateAccountUI(){
@@ -1177,7 +1178,7 @@ function updateAccountUI(){
   const signed=!!customerSession?.user;
   $('pointsSignInHero')?.classList.toggle('hidden',signed);
 
-  button.textContent='👤';
+  button.innerHTML='<span class="account-icon">👤</span><small>My Account</small>';
   button.classList.toggle('signed-in',signed);
 
   if($('headerPoints')){
@@ -1419,29 +1420,18 @@ $('pointsSignInHero')?.addEventListener('click',()=>{
 
 $('openCart')?.addEventListener('click',()=>{
   renderCart();
-  const dialog=$('cartDialog');
-  if(!dialog)return toast('Cart is unavailable.');
-  if(typeof dialog.showModal==='function'){
-    if(!dialog.open)dialog.showModal();
-  }else{
-    dialog.classList.remove('hidden');
-  }
+  openCart();
 });
 
-$('customerAccountButton')?.addEventListener('click',async()=>{
-  if(customerSession?.user){
-    await loadCustomerProfile();
-  }else{
-    showAccountEntryStep('entry');
-  }
-  $('accountDialog')?.showModal();
-});
-$('pointsButton')?.addEventListener('click',()=>{
+$('pointsButton')?.addEventListener('click',async()=>{
   if(!customerSession?.user){
-    $('accountDialog')?.showModal();
-    toast('Sign in with Google to use KBR Points.');
+    showAccountEntryStep('entry');
+    const dialog=$('accountDialog');
+    if(dialog && typeof dialog.showModal==='function' && !dialog.open)dialog.showModal();
+    toast('Sign in to view and redeem KBR Points.');
     return;
   }
+  await loadCustomerProfile();
   window.location.href='./rewards.html';
 });
 $('accountClose')?.addEventListener('click',()=>$('accountDialog')?.close());

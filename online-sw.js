@@ -1,10 +1,10 @@
 
-const CACHE='kbr-online-customer-v58';
+const CACHE='kbr-online-customer-v59';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=58',
-  './online-orders.js?v=58',
-  './online-manifest.webmanifest?v=58'
+  './online-orders.css?v=59',
+  './online-orders.js?v=59',
+  './online-manifest.webmanifest?v=59'
 ];
 
 self.addEventListener('install',event=>{
