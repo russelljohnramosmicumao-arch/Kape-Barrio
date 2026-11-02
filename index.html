@@ -2182,4 +2182,88 @@ document.addEventListener('click',function(e){
 });
 </script>
 
+
+<script id="kbr-online-order-alert-v7">
+(function(){
+  let audioCtx=null;
+  let audioUnlocked=false;
+  let initialized=false;
+  const seenOnlineOrders=new Set();
+
+  function ensureAudio(){
+    try{
+      if(!audioCtx){
+        const Ctx=window.AudioContext||window.webkitAudioContext;
+        if(!Ctx)return null;
+        audioCtx=new Ctx();
+      }
+      if(audioCtx.state==='suspended')audioCtx.resume();
+      audioUnlocked=true;
+      return audioCtx;
+    }catch(_){
+      return null;
+    }
+  }
+
+  ['pointerdown','touchstart','keydown','click'].forEach(evt=>{
+    window.addEventListener(evt,ensureAudio,{once:true,passive:true});
+  });
+
+  function chime(){
+    const ctx=ensureAudio();
+    if(!ctx||!audioUnlocked)return;
+
+    const now=ctx.currentTime;
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+
+    osc.type='sine';
+    osc.frequency.setValueAtTime(880,now);
+    osc.frequency.exponentialRampToValueAtTime(660,now+0.18);
+
+    gain.gain.setValueAtTime(0.0001,now);
+    gain.gain.exponentialRampToValueAtTime(0.22,now+0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.28);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now+0.3);
+  }
+
+  function ringOnlineOrderThreeTimes(){
+    chime();
+    setTimeout(chime,500);
+    setTimeout(chime,1000);
+  }
+
+  function scanOnlineOrders(){
+    const bodyText=document.body?.innerText||'';
+    const matches=[...bodyText.matchAll(/ONLINE ORDER\s*#\s*(\d+)/gi)].map(m=>m[1]);
+    const unique=[...new Set(matches)];
+
+    if(!initialized){
+      unique.forEach(no=>seenOnlineOrders.add(no));
+      initialized=true;
+      return;
+    }
+
+    let shouldRing=false;
+    unique.forEach(no=>{
+      if(!seenOnlineOrders.has(no)){
+        seenOnlineOrders.add(no);
+        shouldRing=true;
+      }
+    });
+
+    if(shouldRing)ringOnlineOrderThreeTimes();
+  }
+
+  window.addEventListener('load',()=>{
+    setTimeout(scanOnlineOrders,800);
+    setInterval(scanOnlineOrders,2500);
+  });
+})();
+</script>
+
 </body></html>
