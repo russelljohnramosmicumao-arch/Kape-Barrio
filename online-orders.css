@@ -1293,3 +1293,66 @@ button{cursor:pointer}
   color:#2f8f4e;
   font-weight:900;
 }
+
+/* v7.1 Terms & Privacy */
+.legal-consent-box{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  margin:12px 0 14px;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fffaf4;
+  font-size:.78rem;
+  line-height:1.35;
+  color:var(--muted);
+}
+.legal-consent-box input{
+  margin-top:3px;
+  width:17px;
+  height:17px;
+  flex:0 0 auto;
+}
+.compact-legal-consent{
+  margin-top:14px;
+}
+.legal-link-button,
+.legal-footer button{
+  border:0;
+  padding:0;
+  background:transparent;
+  color:var(--brown);
+  text-decoration:underline;
+  font:inherit;
+  font-weight:850;
+  cursor:pointer;
+}
+.legal-modal-card{
+  max-width:720px;
+  max-height:min(88vh,900px);
+}
+.legal-copy{
+  max-height:60vh;
+  overflow:auto;
+  padding-right:6px;
+  color:var(--ink);
+  font-size:.9rem;
+  line-height:1.52;
+}
+.legal-copy h3{
+  margin:16px 0 5px;
+  font-size:1rem;
+  color:var(--brown);
+}
+.legal-copy p{
+  margin:0 0 9px;
+}
+.legal-footer{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  padding:18px 12px 24px;
+  color:var(--muted);
+  font-size:.72rem;
+}

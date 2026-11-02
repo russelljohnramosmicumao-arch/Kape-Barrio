@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#6b3f24">
   <title>Kape Bar-Rio Online Orders</title>
-  <link rel="manifest" href="online-manifest.webmanifest?v=70">
+  <link rel="manifest" href="online-manifest.webmanifest?v=71">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=70">
+  <link rel="stylesheet" href="online-orders.css?v=71">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -352,6 +352,17 @@
           <h2>Create your account</h2>
           <p class="account-copy">Choose how you want to register.</p>
 
+
+          <label class="legal-consent-box">
+            <input id="registrationLegalConsent" type="checkbox">
+            <span>
+              I agree to the
+              <button id="openTermsFromRegister" class="legal-link-button" type="button">Terms &amp; Conditions</button>
+              and
+              <button id="openPrivacyFromRegister" class="legal-link-button" type="button">Privacy Policy</button>.
+            </span>
+          </label>
+
           <button id="phoneRegisterOpenButton" class="entry-choice-button phone-entry-button" type="button">
             <span class="entry-choice-icon">📱</span>
             <span>
@@ -489,6 +500,17 @@
           <input id="phoneRegisterConfirm" type="password" autocomplete="new-password" minlength="6" placeholder="Repeat password">
         </label>
 
+        
+        <label class="legal-consent-box compact-legal-consent">
+          <input id="phoneRegisterLegalConsent" type="checkbox">
+          <span>
+            I agree to the
+            <button id="openTermsFromPhone" class="legal-link-button" type="button">Terms &amp; Conditions</button>
+            and
+            <button id="openPrivacyFromPhone" class="legal-link-button" type="button">Privacy Policy</button>.
+          </span>
+        </label>
+
         <button id="phoneRegisterButton" class="primary-button" type="button">Create KBR Account</button>
         <button id="showPhoneLoginButton" class="auth-switch-button" type="button">I already have an account</button>
       </div>
@@ -527,6 +549,81 @@
     </form>
   </dialog>
 
+
+  <dialog id="termsDialog" class="modal legal-dialog">
+    <div class="modal-card legal-modal-card">
+      <button id="termsClose" class="modal-close" type="button" aria-label="Close">×</button>
+      <div class="eyebrow">Kape’ Bar-Rio</div>
+      <h2>Terms &amp; Conditions</h2>
+      <div class="legal-copy">
+        <p><strong>Last updated: November 2, 2026</strong></p>
+
+        <h3>1. Online orders</h3>
+        <p>Orders submitted through Kape’ Bar-Rio’s online ordering page are requests to prepare food and drinks for pickup or delivery. Orders remain subject to product availability, shop capacity, delivery coverage, and operating hours.</p>
+
+        <h3>2. Order information</h3>
+        <p>Customers are responsible for providing accurate contact, pickup, delivery, and payment information. Incorrect or incomplete details may delay or prevent fulfillment.</p>
+
+        <h3>3. Payments</h3>
+        <p>Available payment methods may include Cash, GCash, and KBR Points where eligible. Orders above the app’s configured cash limit may require GCash. A reward item paid fully by points will appear as ₱0 in the order because its value was paid through KBR Points.</p>
+
+        <h3>4. KBR Points</h3>
+        <p>KBR Points are a promotional loyalty benefit, not cash and not a bank balance. Points may be earned only on eligible purchases and may be redeemed only under the current rewards rules shown in the app. Food, ice cream, delivery fees, or other excluded items may not earn or accept points where indicated.</p>
+
+        <h3>5. Cancellations and refunds</h3>
+        <p>If an online order is cancelled before completion, eligible redeemed KBR Points should be returned to the customer account. Cash or GCash refunds, when applicable, are handled according to the actual payment status of the order.</p>
+
+        <h3>6. Prices and availability</h3>
+        <p>Menu prices, sizes, rewards, delivery areas, fees, and product availability may change. The amount confirmed by the system at the time the order is accepted is the applicable amount for that order.</p>
+
+        <h3>7. Account use</h3>
+        <p>Customers are responsible for keeping their password and account access secure. Kape’ Bar-Rio may restrict or correct accounts used for abuse, fraud, duplicate rewards, or unauthorized activity.</p>
+
+        <h3>8. Contact</h3>
+        <p>Questions about an order or account may be sent to <strong>kapebarrio.sq@gmail.com</strong> or through Kape’ Bar-Rio’s official Messenger account.</p>
+      </div>
+      <button id="termsDone" class="primary-button" type="button">Done</button>
+    </div>
+  </dialog>
+
+  <dialog id="privacyDialog" class="modal legal-dialog">
+    <div class="modal-card legal-modal-card">
+      <button id="privacyClose" class="modal-close" type="button" aria-label="Close">×</button>
+      <div class="eyebrow">Kape’ Bar-Rio</div>
+      <h2>Privacy Policy</h2>
+      <div class="legal-copy">
+        <p><strong>Last updated: November 2, 2026</strong></p>
+
+        <p>Kape’ Bar-Rio respects customer privacy and processes personal data in line with the Philippines’ Data Privacy Act of 2012 (Republic Act No. 10173), including the principles of transparency, legitimate purpose, and proportionality.</p>
+
+        <h3>1. Information we collect</h3>
+        <p>Depending on how you use the service, we may collect your name, mobile number, email address, Google account identity, saved barangay and delivery address, order history, payment method, loyalty points, account activity, and information needed to fulfill an order.</p>
+
+        <h3>2. Why we use it</h3>
+        <p>We use customer data to create and secure accounts, receive and prepare orders, contact customers about pickup or delivery, maintain order history, calculate and redeem KBR Points, prevent abuse, troubleshoot the service, and comply with legal or business recordkeeping requirements.</p>
+
+        <h3>3. Service providers</h3>
+        <p>The ordering system uses service providers such as Supabase for authentication, database storage, and application services, and Google when a customer chooses Google sign-in. These providers may process information needed to provide those services.</p>
+
+        <h3>4. Sharing</h3>
+        <p>We do not sell customer personal data. Information may be shared only when needed to operate the ordering service, fulfill a delivery, comply with law, protect customers or the business, or work with service providers acting for Kape’ Bar-Rio.</p>
+
+        <h3>5. Retention</h3>
+        <p>We keep personal data only for as long as reasonably necessary for account, order, loyalty, business, security, and legal purposes. Data that is no longer needed should be deleted, anonymized, or otherwise securely handled when appropriate.</p>
+
+        <h3>6. Your rights</h3>
+        <p>Under Philippine data privacy law, customers may have rights including being informed, accessing their data, correcting inaccurate data, objecting to certain processing, requesting erasure or blocking where applicable, data portability, filing a complaint, and seeking damages where provided by law.</p>
+
+        <h3>7. Security</h3>
+        <p>We use reasonable technical and organizational measures to protect customer information. Passwords are handled by the authentication provider and are not displayed to Kape’ Bar-Rio staff.</p>
+
+        <h3>8. Privacy requests</h3>
+        <p>For privacy questions or requests concerning your Kape’ Bar-Rio customer account, contact <strong>kapebarrio.sq@gmail.com</strong>.</p>
+      </div>
+      <button id="privacyDone" class="primary-button" type="button">Done</button>
+    </div>
+  </dialog>
+
   <dialog id="successDialog" class="modal">
     <div class="modal-card success-card">
       <div class="success-mark">✓</div>
@@ -549,10 +646,17 @@
     </div>
   </dialog>
 
+
+  <footer class="legal-footer">
+    <button id="footerTermsButton" type="button">Terms &amp; Conditions</button>
+    <span>·</span>
+    <button id="footerPrivacyButton" type="button">Privacy Policy</button>
+  </footer>
+
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=70" defer></script>
+  <script src="online-orders.js?v=71" defer></script>
 
 <script id="kbr-phone-auth-direct-v70">
 window.addEventListener('DOMContentLoaded',()=>{
@@ -610,6 +714,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   q('phoneRegisterButton')?.addEventListener('click',async e=>{
     e.preventDefault();
     e.stopImmediatePropagation();
+
+    const consent=q('registrationLegalConsent')?.checked||q('phoneRegisterLegalConsent')?.checked;
+    if(!consent)return message('Please agree to the Terms & Conditions and Privacy Policy.');
 
     const sb=client();
     if(!sb)return message('Phone registration could not start. Please reload the page.');

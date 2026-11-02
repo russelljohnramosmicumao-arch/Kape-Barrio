@@ -1123,6 +1123,7 @@ async function phoneLogin(){
 }
 
 async function phoneRegister(){
+  if(!legalConsentAccepted())return toast('Please agree to the Terms & Conditions and Privacy Policy.');
   if(!authClient)return toast('Phone registration is unavailable.');
 
   const name=$('phoneRegisterName').value.trim();
@@ -1499,6 +1500,32 @@ $('pointsButton')?.addEventListener('click',async()=>{
   await loadCustomerProfile();
   window.location.href='./rewards.html';
 });
+
+function legalConsentAccepted(){
+  return !!($('registrationLegalConsent')?.checked || $('phoneRegisterLegalConsent')?.checked);
+}
+function syncLegalConsent(sourceId){
+  const checked=$(sourceId)?.checked||false;
+  if($('registrationLegalConsent'))$('registrationLegalConsent').checked=checked;
+  if($('phoneRegisterLegalConsent'))$('phoneRegisterLegalConsent').checked=checked;
+}
+function openTerms(){ const d=$('termsDialog'); if(d&&!d.open)d.showModal(); }
+function openPrivacy(){ const d=$('privacyDialog'); if(d&&!d.open)d.showModal(); }
+
+$('registrationLegalConsent')?.addEventListener('change',()=>syncLegalConsent('registrationLegalConsent'));
+$('phoneRegisterLegalConsent')?.addEventListener('change',()=>syncLegalConsent('phoneRegisterLegalConsent'));
+
+['openTermsFromRegister','openTermsFromPhone','footerTermsButton'].forEach(id=>{
+  $(id)?.addEventListener('click',openTerms);
+});
+['openPrivacyFromRegister','openPrivacyFromPhone','footerPrivacyButton'].forEach(id=>{
+  $(id)?.addEventListener('click',openPrivacy);
+});
+$('termsClose')?.addEventListener('click',()=>$('termsDialog')?.close());
+$('termsDone')?.addEventListener('click',()=>$('termsDialog')?.close());
+$('privacyClose')?.addEventListener('click',()=>$('privacyDialog')?.close());
+$('privacyDone')?.addEventListener('click',()=>$('privacyDialog')?.close());
+
 $('accountClose')?.addEventListener('click',()=>$('accountDialog')?.close());
 $('continueGuestButton')?.addEventListener('click',()=>$('accountDialog')?.close());
 $('googleSignInButton')?.addEventListener('click',signInWithGoogle);
@@ -1627,3 +1654,13 @@ function handleOnlineHashTarget(){
   }
 }
 window.addEventListener('load',handleOnlineHashTarget);
+
+
+function handleLegalHash(){
+  if(window.location.hash==='#terms'){
+    setTimeout(()=>{ openTerms(); history.replaceState(null,'',window.location.pathname+window.location.search); },250);
+  }else if(window.location.hash==='#privacy'){
+    setTimeout(()=>{ openPrivacy(); history.replaceState(null,'',window.location.pathname+window.location.search); },250);
+  }
+}
+window.addEventListener('load',handleLegalHash);
