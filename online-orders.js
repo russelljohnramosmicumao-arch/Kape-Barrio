@@ -1548,10 +1548,16 @@ $('checkoutButton')?.addEventListener('click',()=>{
 
   $('checkoutDialog').showModal();
 });
+$('itemCloseButton')?.addEventListener('click',()=>{
+  const dialog=$('itemDialog');
+  if(dialog?.open)dialog.close();
+});
+
 $('checkoutCloseButton')?.addEventListener('click',()=>{
   const dialog=$('checkoutDialog');
   if(dialog?.open)dialog.close();
 });
+
 $('addToCartButton')?.addEventListener('click',e=>{e.preventDefault();addSelected()});
 $('qtyMinus')?.addEventListener('click',()=>{$('qtyInput').value=Math.max(1,Number($('qtyInput').value||1)-1)});
 $('qtyPlus')?.addEventListener('click',()=>{$('qtyInput').value=Math.min(20,Number($('qtyInput').value||1)+1)});
