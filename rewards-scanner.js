@@ -1,7 +1,7 @@
 'use strict';
 (()=>{
   // Loads only when the barista requests QR rewards. No timers or Supabase polling.
-  let camera=null,busy=false;
+  let camera=null,busy=false,selectedOrderNo='';
   function el(tag,attrs={},children=[]){
     const e=document.createElement(tag);
     Object.entries(attrs).forEach(([k,v])=>{if(k==='text')e.textContent=v;else e.setAttribute(k,v);});
@@ -21,6 +21,8 @@
     #kbrQrVideo{min-height:0;overflow:hidden}
     #kbrQrMessage{font-size:.85rem;line-height:1.45;margin:10px 0}
     .kbr-qr-help{font-size:.8rem;color:#716052}
+    .kbr-qr-selected-order{display:block;font-size:1.5rem;color:#245a32;margin:4px 0 12px}
+    .kbr-qr-order-label{font-size:.8rem;color:#716052}
   `});
   document.head.append(css);
   const overlay=el('div',{id:'kbrQrOverlay',role:'dialog','aria-modal':'true','aria-label':'Credit KBR customer points'});
@@ -29,15 +31,15 @@
     el('h2',{text:'🎟 KBR Rewards QR'}),
     el('button',{type:'button',class:'kbr-qr-close','aria-label':'Close rewards scanner',text:'×'})
   ]);
-  const receipt=el('input',{id:'kbrQrReceipt',type:'text',inputmode:'numeric',placeholder:'Paid receipt number',autocomplete:'off'});
+  const receipt=el('strong',{id:'kbrQrReceipt',class:'kbr-qr-selected-order',text:'No order selected'});
   const token=el('input',{id:'kbrQrToken',type:'text',placeholder:'Scan QR or paste customer code',autocomplete:'off'});
   const scan=el('button',{type:'button',class:'kbr-qr-btn',text:'📷 Scan Customer QR'});
-  const credit=el('button',{type:'button',class:'kbr-qr-btn',text:'Credit Points to Customer'});
-  const msg=el('p',{id:'kbrQrMessage',role:'status',text:'Only a paid, completed receipt can earn points. Each receipt can earn once.'});
+  const credit=el('button',{type:'button',class:'kbr-qr-btn',text:'Link Customer to This Order'});
+  const msg=el('p',{id:'kbrQrMessage',role:'status',text:'Scan before payment. Points will be earned only when this order is paid and completed.'});
   const video=el('div',{id:'kbrQrVideo'});
   sheet.append(header,
-    el('p',{class:'kbr-qr-help',text:'After completing payment, enter the POS receipt number and scan the customer’s personal QR from My Account.'}),
-    el('label',{text:'POS receipt number'},[receipt]),
+    el('p',{class:'kbr-qr-help',text:'This is the selected POS transaction. Scan the customer’s personal QR from My Account before taking payment. No receipt number is needed.'}),
+    el('div',{class:'kbr-qr-order-label',text:'Selected transaction'},[receipt]),
     el('label',{text:'Customer rewards QR code'},[token]),
     scan,video,credit,msg);
   overlay.append(sheet);document.body.append(overlay);
@@ -50,12 +52,14 @@
     overlay.classList.remove('open');
     stopCamera();
   }
-  function open(){
-    const current=window.currentReceipt;
-    receipt.value=String(current?.no||'').replace(/[^0-9]/g,'');
-    token.value='';msg.textContent='Scan the customer QR for a paid, completed order.';
+  function openForOrder(orderNo){
+    const value=String(orderNo||'').replace(/[^0-9]/g,'');
+    if(!/^\d{1,12}$/.test(value)){alert('Select an active order to scan rewards.');return;}
+    selectedOrderNo=value;
+    receipt.textContent='Order #'+value.slice(-3).padStart(3,'0');
+    token.value='';
+    msg.textContent='Scan the QR to link this customer. Points are awarded after payment and completion.';
     overlay.classList.add('open');
-    receipt.focus();
   }
   header.lastChild.onclick=close;
   overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
@@ -79,9 +83,10 @@
       await scanner.start({facingMode:'environment'},{fps:8,qrbox:{width:220,height:220}},async value=>{
         if(!String(value).startsWith('KBR-CUSTOMER:'))return;
         token.value=value;
-        msg.textContent='Customer QR read. Credit the completed order when ready.';
+        msg.textContent='Customer QR read. Linking it to the selected order…';
         scan.textContent='📷 Scan Customer QR';
         await stopCamera();
+        credit.click();
       },()=>{});
       scan.textContent='Stop Camera';
       msg.textContent='Point the camera at the customer’s KBR QR.';
@@ -92,32 +97,25 @@
   };
   credit.onclick=async()=>{
     if(busy)return;
-    const no=receipt.value.trim(), qr=token.value.trim();
-    if(!/^\d{1,12}$/.test(no)){msg.textContent='Enter a valid paid POS receipt number.';return;}
+    const no=selectedOrderNo, qr=token.value.trim();
+    if(!/^\d{1,12}$/.test(no)){msg.textContent='Select an order first.';return;}
     if(!/^KBR-CUSTOMER:[0-9a-f-]{36}$/i.test(qr)){msg.textContent='Scan a valid KBR customer QR first.';return;}
     if(!window.KBRCloud){msg.textContent='The POS is not connected. Sign in and try again.';return;}
-    busy=true;credit.disabled=true;msg.textContent='Verifying purchase and adding points…';
+    busy=true;credit.disabled=true;msg.textContent='Linking customer to the selected transaction…';
     try{
-      const result=await window.KBRCloud.rpc('kbr_credit_walkin_qr_points',{
+      const result=await window.KBRCloud.rpc('kbr_link_customer_qr_to_order',{
         p_order_number:Number(no),p_qr:qr.toLowerCase().replace('kbr-customer:','KBR-CUSTOMER:')
       });
-      msg.textContent='✓ '+result.pointsAwarded+' points added to '+(result.customerName||'customer')+
-        ' for receipt #'+result.orderNumber+'.';
+      msg.textContent=result.status==='credited'
+        ?'✓ '+result.pointsAwarded+' points credited to '+(result.customerName||'customer')+' for order #'+result.orderNumber+'.'
+        :result.status==='already-credited'
+        ?'✓ Points were already credited for this order.'
+        :'✓ '+(result.customerName||'Customer')+' linked to order #'+result.orderNumber+
+         '. Points will be credited once payment and service are completed.';
       token.value='';
       await stopCamera();
     }catch(error){msg.textContent=error.message||'Could not credit points.';}
     finally{busy=false;credit.disabled=false;}
   };
-  function install(){
-    const actions=document.querySelector('#baristaDrawer .barista-actions');
-    if(!actions||document.getElementById('kbrQrRewardButton'))return false;
-    const btn=el('button',{type:'button',id:'kbrQrRewardButton',class:'secondary',text:'🎟 Scan Rewards QR'});
-    btn.onclick=open;
-    actions.append(btn);
-    return true;
-  }
-  if(!install()){
-    const observer=new MutationObserver(()=>{if(install())observer.disconnect();});
-    observer.observe(document.body,{childList:true,subtree:true});
-  }
+  window.KBRRewardsScanner={openForOrder,close};
 })();
