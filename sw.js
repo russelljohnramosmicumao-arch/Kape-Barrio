@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v150-main-deploy-nov4";
+const CACHE="kbr-ordering-v151-pay-later-30-days";
 const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html","./shifts.js?v=turnover-v3","./sync.css?v=turnover-v3","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
@@ -12,7 +12,7 @@ const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shi
   "./manifest.json",
   "./menu-defaults.js",
   "./menu-store.js",
-  "./pay-later.js",
+  "./pay-later.js?v=30-day-settled-v1",
   "./reset-password.html",
   "./reset-password.js",
   "./shift-records.html",
