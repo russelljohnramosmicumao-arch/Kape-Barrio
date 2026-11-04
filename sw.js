@@ -1,10 +1,10 @@
-const CACHE="kbr-ordering-v151-pay-later-30-days";
+const CACHE="kbr-ordering-v152-low-egress-nov5";
 const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html","./shifts.js?v=turnover-v3","./sync.css?v=turnover-v3","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
   "./",
   "./app-links.js",
-  "./app-sync-v135.js?v=136-sleep-tabs",
+  "./app-sync-v135.js?v=137-low-egress",
   "./app-update.js",
   "./comp-payments.js",
   "./index.html",
