@@ -1,10 +1,10 @@
-const CACHE="kbr-ordering-v141-online-compact-all-baristas-cash-handover-expected-nov4";
+const CACHE="kbr-ordering-v142-background-startup-nov4";
 const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html","./shifts.js?v=turnover-v3","./sync.css?v=turnover-v3","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
   "./",
   "./app-links.js",
-  "./app-sync-v135.js?v=135",
+  "./app-sync-v135.js?v=135-startup1",
   "./app-update.js",
   "./comp-payments.js",
   "./index.html",
