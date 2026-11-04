@@ -3,7 +3,7 @@ const CACHE='kbr-online-customer-v73-phone-auth';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=71',
-  './online-orders.js?v=72-phone-username',
+  './online-orders.js?v=73-phone-auth-fixed',
   './online-manifest.webmanifest?v=71'
 ];
 
