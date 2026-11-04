@@ -6,6 +6,23 @@
  let rosterNames=[],claimDay='',claimedNames=null,claimRequest=null;
  let lastMenuCheck=0,lastClaimsPoll=0;
  const MENU_POLL_MS=60000,CLAIMS_POLL_MS=60000;
+ // Same-device tabs coordinate reads; the foreground tab polls for new orders.
+ // This lease never guards writes, so submitting/saving orders still works in any tab.
+ const pollLeaseKey='kbr_order_poll_leader_v1',tabId=crypto.randomUUID();
+ function claimPollLease(takeOver=false){
+  if(document.hidden)return false;
+  try{
+   const now=Date.now();
+   const old=JSON.parse(localStorage.getItem(pollLeaseKey)||'null');
+   if(!takeOver&&old?.owner&&old.owner!==tabId&&now-Number(old.at||0)<25000)return false;
+   localStorage.setItem(pollLeaseKey,JSON.stringify({owner:tabId,at:now}));
+   return JSON.parse(localStorage.getItem(pollLeaseKey)||'null')?.owner===tabId;
+  }catch{return true;} // Storage unavailable: preserve reliable order synchronization.
+ }
+ function releasePollLease(){
+  try{const old=JSON.parse(localStorage.getItem(pollLeaseKey)||'null');if(old?.owner===tabId)localStorage.removeItem(pollLeaseKey);}catch{}
+ }
+
  function shopDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
 window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null?rosterNames.filter(name=>!claimedNames.has(name)):null};
  async function refreshBaristaClaims(){
@@ -59,7 +76,7 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
  async function loadOrders(){const rows=await cloud.rows('/rest/v1/kbr_orders?select=*&order=order_number.desc');pendingOrders=[];servedUnpaidOrders=[];unservedPaidOrders=[];const backup=cloud.read('kbr_before_cloud_v1',{});history=structuredClone(backup.history||[]);remote.clear();rows.reverse().forEach(applyRow);}
  function display(){updatePendingOrdersTab();if(baristaDrawer.classList.contains('open')){if(baristaView==='history')renderHistory();else if(baristaView==='pay-later')KBRDeferred.refresh();else if(baristaView==='kitchen')renderKitchenAlerts();else renderBaristaOrders();}render();}
  function showPending(){const q=cloud.read(queueKey),draft=cloud.read(draftKey);if(q)ui.screen('Change waiting to sync','Keep this device open. Retry the saved change before making another edit.',[['Retry saved change',()=>retryUpdate()],['Sign in again',()=>location.href='sync-login.html']]);else if(draft)ui.screen('Order awaiting confirmation','The connection stopped before confirmation. Retry this same order to check whether it was received. Its ID is reused to prevent duplicates.',[['Retry order',()=>retryDraft()],['Sign in again',()=>location.href='sync-login.html']]);}
- async function poll(){if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)||document.hidden)return;polling=true;try{
+ async function poll(){if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)||document.hidden||!claimPollLease())return;polling=true;try{
   let changedUI=false;
   // Order updates keep their 10-second cadence; relatively static menu data does not.
   const checkMenu=Date.now()-lastMenuCheck>=MENU_POLL_MS;
@@ -286,7 +303,10 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
   else if(cloud.read(draftKey))retryDraft();
   else poll();
  });
- window.addEventListener('focus',()=>{if(!ready)start();else poll();});
+ window.addEventListener('focus',()=>{if(!ready)start();else{claimPollLease(true);poll();}});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)releasePollLease();else if(ready){claimPollLease(true);poll();}});
+ window.addEventListener('pagehide',releasePollLease);
+ window.addEventListener('storage',e=>{if(e.key===pollLeaseKey&&!e.newValue&&!document.hidden)poll();});
  setInterval(()=>{if(!ready&&navigator.onLine)start();else poll();},10000);
  start();
 })();
