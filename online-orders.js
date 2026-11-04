@@ -1039,6 +1039,7 @@ async function placeOrder(){
       }))
     });
 
+    const sentItems=cart.map(x=>({name:x.name,qty:x.qty,size:x.size,sweetness:x.sweetness,flavor:x.flavor}));
     cart=[];
     saveCart();
     renderCart();
@@ -1061,7 +1062,16 @@ async function placeOrder(){
     $('guestClaimOffer')?.classList.toggle('hidden',!guestOrder);
     if(guestOrder){
       savePendingGuestClaim(result.id,contact);
+      try{
+        const previous=JSON.parse(localStorage.getItem(KBR_GUEST_SENT_KEY)||'[]');
+        const list=Array.isArray(previous)?previous:[];
+        localStorage.setItem(KBR_GUEST_SENT_KEY,JSON.stringify([{
+          orderNumber:result.orderNumber,status:'sent',serviceType:result.serviceType,
+          total:result.total,createdAt:new Date().toISOString(),items:sentItems
+        },...list.filter(o=>String(o.orderNumber)!==String(result.orderNumber))].slice(0,12)));
+      }catch{}
     }
+    activeCartTab='sent';renderCartOrderTabs();
 
     $('successDialog').showModal();
 
@@ -1399,24 +1409,33 @@ function updateAccountUI(){
 
 async function loadCustomerProfile(){
   if(!customerSession?.user){
-    customerProfile=null;
-    customerOrders=[];
-    updateAccountUI();
-    return;
+    customerProfile=null;customerOrders=[];lastCartOrdersRefresh=0;
+    stopCartOrdersTimer();updateAccountUI();renderCartOrderTabs();return;
   }
-
-  try{
-    const snapshot=await rpc('kbr_customer_account_snapshot',{});
-    customerProfile=snapshot?.profile||null;
-    customerOrders=Array.isArray(snapshot?.orders)?snapshot.orders:[];
-  }catch(error){
-    console.warn('Could not load customer account',error);
-    customerProfile=null;
-    customerOrders=[];
-  }
-  updateAccountUI();
-  updateHeaderPoints();
-  updatePointsPaymentUI();
+  if(customerSnapshotPromise)return customerSnapshotPromise;
+  const userId=customerSession.user.id;
+  customerSnapshotPromise=(async()=>{
+    try{
+      const snapshot=await rpc('kbr_customer_account_snapshot',{});
+      if(customerSession?.user?.id!==userId)return;
+      customerProfile=snapshot?.profile||null;
+      customerOrders=Array.isArray(snapshot?.orders)?snapshot.orders:[];
+      lastCartOrdersRefresh=Date.now();
+      // After a guest order is claimed, the server record becomes authoritative.
+      try{
+        const guest=JSON.parse(localStorage.getItem(KBR_GUEST_SENT_KEY)||'[]');
+        if(Array.isArray(guest)){
+          const linked=new Set(customerOrders.map(o=>String(o.orderNumber)));
+          localStorage.setItem(KBR_GUEST_SENT_KEY,JSON.stringify(guest.filter(o=>!linked.has(String(o.orderNumber)))));
+        }
+      }catch{}
+    }catch(error){
+      console.warn('Could not refresh customer orders',error);
+      // Retain known status when offline rather than clearing previous orders.
+    }
+    updateAccountUI();updateHeaderPoints();updatePointsPaymentUI();renderCartOrderTabs();
+  })().finally(()=>{customerSnapshotPromise=null;});
+  return customerSnapshotPromise;
 }
 
 async function initCustomerAuth(){
