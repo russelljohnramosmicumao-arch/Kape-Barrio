@@ -2,7 +2,7 @@
 (()=>{
  window.KBR_ORDER_SYNC_VERSION='v135-sql-speed-fix';
  const cloud=KBRCloud,ui=KBRSyncUI,queueKey='kbr_order_write_v1',draftKey='kbr_order_draft_v1';
- let role='',ready=false,busy=false,polling=false,menuRevision=0,lastFinalized=null;const remote=new Map();
+ let role='',ready=false,busy=false,polling=false,connecting=false,menuRevision=0,lastFinalized=null;const remote=new Map();
  let rosterNames=[],claimDay='',claimedNames=null,claimRequest=null;
  let lastMenuCheck=0,lastClaimsPoll=0;
  const MENU_POLL_MS=60000,CLAIMS_POLL_MS=60000;
@@ -232,10 +232,53 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
   };
  };
  clearHistory=()=>alert('Shared sales history is retained in the database. Export CSV to keep a separate copy.');
- async function start(){if(!cloud.requireLogin())return;ui.screen('Connecting this device…','Loading the shared shop menu and orders.');try{
-  ui.rememberBackup();role=await cloud.role();if(['owner','operator'].includes(role))await cloud.rpc('kbr_barista_duty',{p_on:true});const menuRow=await ui.menuReady(role);ui.applyMenu(menuRow);menuRevision=menuRow.revision;refreshManagedMenu();await loadOrders();await refreshBaristaClaims();ready=true;display();ui.close();cloud.status('Connected · v135 · updates every 10 sec');showPending();if(['owner','operator'].includes(role)&&!cloud.read(queueKey)&&!cloud.read(draftKey)){const openShifts=await cloud.request('/rest/v1/kbr_shifts?status=eq.open&select=id');if(!openShifts.length)location.href='shift-records.html?open=1';};
-  const managerLink=document.getElementById('managerLink');if(managerLink)managerLink.hidden=role!=='owner';
-  const actions=document.querySelector('.barista-actions');if(actions){for(const [label,action] of [['Shift Records',()=>location.href='shift-records.html']]){const button=document.createElement('button');button.className='secondary';button.textContent=label;button.onclick=action;actions.insertBefore(button,document.getElementById('baristaUpdateTools'));}}
- }catch(e){ui.screen('Could not connect',e.message+' Check the database and staff setup steps.',[['Retry connection',start],['Sign in again',()=>location.href='sync-login.html']]);}}
- window.addEventListener('online',()=>{if(cloud.read(queueKey))retryUpdate();else if(cloud.read(draftKey))retryDraft();else poll();});window.addEventListener('focus',poll);setInterval(poll,10000);start();
+ async function start(){
+  if(ready||connecting||!cloud.requireLogin())return;
+  connecting=true;
+  // The locally cached menu already renders in index.html. Keep it usable
+  // while the server initializes; checkout remains guarded by ready=false.
+  cloud.status('Connecting in background · browse and add items');
+  try{
+   ui.rememberBackup();
+   role=await cloud.role();
+   if(['owner','operator'].includes(role))await cloud.rpc('kbr_barista_duty',{p_on:true});
+   const menuRow=await ui.menuReady(role);
+   ui.applyMenu(menuRow);
+   menuRevision=menuRow.revision;
+   refreshManagedMenu();
+   await Promise.all([loadOrders(),refreshBaristaClaims()]);
+   ready=true;
+   display();
+   cloud.status('Connected · orders every 10 sec');
+   showPending();
+   if(['owner','operator'].includes(role)&&!cloud.read(queueKey)&&!cloud.read(draftKey)){
+    const openShifts=await cloud.request('/rest/v1/kbr_shifts?status=eq.open&select=id');
+    if(!openShifts.length)location.href='shift-records.html?open=1';
+   }
+   const managerLink=document.getElementById('managerLink');
+   if(managerLink)managerLink.hidden=role!=='owner';
+   const actions=document.querySelector('.barista-actions');
+   if(actions&&!document.getElementById('kbr-shift-records-action')){
+    const button=document.createElement('button');
+    button.id='kbr-shift-records-action';
+    button.className='secondary';
+    button.textContent='Shift Records';
+    button.onclick=()=>location.href='shift-records.html';
+    actions.insertBefore(button,document.getElementById('baristaUpdateTools'));
+   }
+  }catch(e){
+   // Keep the cart and cached menu in place on a failed connection.
+   cloud.status('Offline / reconnecting · checkout unavailable',true);
+   console.warn('KBR startup synchronization failed:',e);
+  }finally{connecting=false;}
+ }
+ window.addEventListener('online',()=>{
+  if(!ready){start();return;}
+  if(cloud.read(queueKey))retryUpdate();
+  else if(cloud.read(draftKey))retryDraft();
+  else poll();
+ });
+ window.addEventListener('focus',()=>{if(!ready)start();else poll();});
+ setInterval(()=>{if(!ready&&navigator.onLine)start();else poll();},10000);
+ start();
 })();
