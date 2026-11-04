@@ -11,7 +11,24 @@ function panel(){const order=getCurrentBaristaOrder(),total=pendingOrderTotal(or
  const form=document.getElementById('arrangementForm'),update=e=>{const cash=Number(form.elements.cash.value);if(!later&&e?.target===form.elements.cash)form.elements.gcash.value=String(Math.max(0,Math.round((total-cash)*100)/100));const gcash=later?0:Number(form.elements.gcash.value),debt=Math.round((total-cash-gcash)*100)/100;document.getElementById('arrangementBalance').textContent='Remaining: '+money(debt);document.getElementById('arrangementSubmit').disabled=!Number.isFinite(cash)||cash<0||cash>total||!Number.isFinite(gcash)||gcash<0||debt<0||(!later&&Math.abs(debt)>0.001);};form.oninput=update;update();
  form.onsubmit=async e=>{e.preventDefault();const cash=Number(form.elements.cash.value),gcash=later?0:Number(form.elements.gcash.value);if(!Number.isFinite(cash)||cash<0||cash>total){alert('Cash applied must be between zero and the bill total.');return;}if(!later&&Math.abs(cash+gcash-total)>0.001){alert('Cash and GCash must equal the bill total. Use Pay Later for an unpaid balance.');return;}await window.savePaymentArrangement('kbr_arrange_payment',{p_order:order._cloudId,p_revision:order._cloudRevision,p_cash:cash,p_gcash:gcash,p_customer:form.elements.customer?.value||'',p_operation:KBRCloud.uuid()});};
 }
-async function refresh(){if(loading)return;loading=true;try{const result=await Promise.all([KBRCloud.rows('/rest/v1/kbr_payment_accounts?select=*&order=created_at.desc'),KBRCloud.rows('/rest/v1/kbr_payment_entries?select=*&order=recorded_at.asc')]);accounts=result[0];entries=result[1];render();}catch(e){const host=document.getElementById('baristaPayLaterView');if(host&&baristaView==='pay-later')host.innerHTML='<p>Could not load Pay Later bills. Check your connection and try again.</p><button onclick="KBRDeferred.refresh()">Retry</button>';}finally{loading=false;}}
+const PAY_LATER_HISTORY_DAYS=30;
+async function refresh(){
+ if(loading)return;loading=true;
+ try{
+  // Preserve outstanding debts regardless of age. Download settled accounts only
+  // for 30 days after their last update, and retrieve entries for visible bills only.
+  const cutoff=new Date(Date.now()-PAY_LATER_HISTORY_DAYS*86400000).toISOString();
+  const query='/rest/v1/kbr_payment_accounts?select=*&cancelled=eq.false&or=(balance.gt.0,updated_at.gte.'+encodeURIComponent(cutoff)+')&order=created_at.desc';
+  const nextAccounts=await KBRCloud.rows(query);
+  const ids=nextAccounts.map(a=>a.order_id).filter(Boolean);
+  const nextEntries=ids.length?await KBRCloud.rows('/rest/v1/kbr_payment_entries?select=*&order_id=in.('+ids.join(',')+')&order=recorded_at.asc'):[];
+  accounts=nextAccounts;entries=nextEntries;
+  render();
+ }catch(e){
+  const host=document.getElementById('baristaPayLaterView');
+  if(host&&baristaView==='pay-later')host.innerHTML='<p>Could not load Pay Later bills. Check your connection and try again.</p><button onclick="KBRDeferred.refresh()">Retry</button>';
+ }finally{loading=false;}
+}
 function dateTime(value){const date=new Date(value);return Number.isNaN(date.getTime())?'Date not recorded':date.toLocaleString('en-PH',{timeZone:'Asia/Manila'});}
 function billOrder(a){return [...pendingOrders,...servedUnpaidOrders,...unservedPaidOrders].find(o=>o._cloudId===a.order_id)||history.find(r=>r._cloudId===a.order_id);}
 function orderLines(order){return (order?.items||[]).map(x=>`${Number(x.qty)||1}× ${escapeHtml(x.name)}${x.size?' · '+escapeHtml(x.size):''}${x.flavor?' · '+escapeHtml(x.flavor):''}`).join('<br>')||'Order details not available';}
@@ -20,7 +37,7 @@ function billDetails(a){const order=billOrder(a),payments=entries.filter(e=>e.or
 }
 function render(){const host=document.getElementById('baristaPayLaterView');if(!host)return;const active=accounts.filter(a=>!a.cancelled&&a.customer_name),balance=active.reduce((sum,a)=>sum+Number(a.balance),0),groups=new Map();
  for(const a of active){const key=a.customer_name.trim().replace(/\s+/g,' ').toLowerCase();if(!groups.has(key))groups.set(key,{key,name:a.customer_name.trim(),bills:[],balance:0});const group=groups.get(key);group.bills.push(a);group.balance+=Number(a.balance);}
- host.innerHTML=`<h3>Pay Later / Utang</h3><p>Total outstanding: <b>${money(balance)}</b></p><label><input id="showSettledBills" type="checkbox" ${window.kbrShowSettled?'checked':''}> Show fully paid customers</label><button class="secondary" onclick="KBRDeferred.refresh()">Refresh</button><div id="deferredBills" class="history-thumb-grid" style="align-items:start"></div>`;
+ host.innerHTML=`<h3>Pay Later / Utang</h3><p>Total outstanding: <b>${money(balance)}</b></p><p class="muted" style="font-size:12px">Fully paid bills disappear from this list 30 days after settlement. Unpaid balances remain until collected. Transaction records are retained for accounting.</p><label><input id="showSettledBills" type="checkbox" ${window.kbrShowSettled?'checked':''}> Show fully paid customers</label><button class="secondary" onclick="KBRDeferred.refresh()">Refresh</button><div id="deferredBills" class="history-thumb-grid" style="align-items:start"></div>`;
  const toggle=document.getElementById('showSettledBills');toggle.onchange=()=>{window.kbrShowSettled=toggle.checked;render();};const visible=[...groups.values()].filter(g=>g.balance>0||window.kbrShowSettled);
  document.getElementById('deferredBills').innerHTML=visible.length?visible.map(g=>{const open=expandedCustomers.has(g.key),outstanding=g.bills.filter(a=>Number(a.balance)>0),preview=outstanding.length?outstanding:g.bills;
  return `<details class="history-thumb" data-customer-key="${escapeHtml(g.key)}" ${open?'open':''} style="${open?'grid-column:1 / -1;':''}"><summary style="cursor:pointer;list-style:none"><div class="history-thumb-head"><b>${escapeHtml(g.name)}</b><span class="history-thumb-total">${money(g.balance)}</span></div><div class="history-thumb-meta">Current unpaid bill · ${outstanding.length} outstanding ${outstanding.length===1?'transaction':'transactions'}</div><div class="history-thumb-items">${preview.slice(0,3).map(a=>`<div><b>Order #${escapeHtml(String(billOrder(a)?.no||''))}</b><br>${orderLines(billOrder(a))}</div>`).join('')}${preview.length>3?`<div>+ ${preview.length-3} more transactions</div>`:''}</div><div class="history-thumb-meta" style="margin-top:10px;font-weight:800">Open for full transactions and payments ▾</div></summary><div style="font-size:15px;margin-top:14px"><b>${escapeHtml(g.name)} · Current bill: ${money(g.balance)}</b><p>${g.bills.length} ${g.bills.length===1?'transaction':'transactions'} · includes fully paid bills</p>${g.bills.map(billDetails).join('')}</div></details>`;}).join(''):'<p>No outstanding Pay Later bills.</p>';
