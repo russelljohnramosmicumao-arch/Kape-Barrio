@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v73-phone-auth';
+const CACHE='kbr-online-customer-v74-change-password';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=71',
-  './online-orders.js?v=73-phone-auth-fixed',
+  './online-orders.css?v=74-change-password',
+  './online-orders.js?v=74-change-password',
   './online-manifest.webmanifest?v=71'
 ];
 
