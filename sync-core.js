@@ -1,6 +1,6 @@
 'use strict';
 window.KBRCloud=(()=>{
- const cfg=window.KBR_SYNC_CONFIG,sessionKey='kbr_cloud_session_v1';let refreshing=null;
+ const cfg=window.KBR_SYNC_CONFIG,sessionKey='kbr_cloud_session_v1';let refreshing=null;const inFlightGets=new Map();
  function read(key,fallback=null){try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}}
  function session(){return read(sessionKey);}
  function storeSession(value){if(value){value.expires_at=Date.now()+(Number(value.expires_in)||3600)*1000;localStorage.setItem(sessionKey,JSON.stringify(value));}else localStorage.removeItem(sessionKey);}
@@ -10,7 +10,21 @@ window.KBRCloud=(()=>{
   if(!response.ok){const error=new Error(data?.message||data?.msg||data?.error_description||'Request failed ('+response.status+')');error.status=response.status;error.code=data?.code;throw error;}return data;
  }catch(error){if(error.name==='AbortError')throw new Error('Connection timed out. Your pending request is kept for retry.');throw error;}finally{clearTimeout(timer);}}
  async function refresh(){if(!refreshing)refreshing=(async()=>{const s=session();if(!s?.refresh_token)throw new Error('Please sign in.');try{const next=await raw('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:s.refresh_token})});storeSession(next);return next;}catch(e){if(e.status===400||e.status===401)storeSession(null);throw e;}})().finally(()=>refreshing=null);return refreshing;}
- async function request(path,options={}){let s=session();if(!s?.access_token)throw new Error('Please sign in.');if(s.expires_at<Date.now()+60000)s=await refresh();try{return await raw(path,options,s.access_token);}catch(e){if(e.status!==401)throw e;s=await refresh();return raw(path,options,s.access_token);}}
+ async function request(path,options={}){
+  const isGet=String(options.method||'GET').toUpperCase()==='GET'&&!options.signal;
+  const key=isGet?(session()?.access_token||'')+'|'+path:'';
+  // Concurrent readers of the same URL share one network call, never a stale cached result.
+  if(isGet&&inFlightGets.has(key))return structuredClone(await inFlightGets.get(key));
+  const job=(async()=>{
+    let s=session();if(!s?.access_token)throw new Error('Please sign in.');
+    if(s.expires_at<Date.now()+60000)s=await refresh();
+    try{return await raw(path,options,s.access_token);}
+    catch(e){if(e.status!==401)throw e;s=await refresh();return raw(path,options,s.access_token);}
+  })();
+  if(isGet)inFlightGets.set(key,job);
+  try{const value=await job;return isGet?structuredClone(value):value;}
+  finally{if(isGet&&inFlightGets.get(key)===job)inFlightGets.delete(key);}
+ }
  async function login(email,password){const s=await raw('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})});storeSession(s);try{await role();}catch(e){storeSession(null);throw e;}}
  async function role(){const rows=await request('/rest/v1/kbr_staff?select=role');if(!rows?.length)throw new Error('This login has not been added to kbr_staff. Run the staff access SQL.');return rows[0].role;}
  function requireLogin(){if(!session()){const next=location.pathname.split('/').pop()||'index.html';location.replace('sync-login.html?next='+encodeURIComponent(next));return false;}return true;}
