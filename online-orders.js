@@ -1086,6 +1086,22 @@ function normalizePHPhone(value){
   return '';
 }
 
+async function phoneUsernameRequest(action,details){
+  const response=await fetch(`${SUPABASE_URL}/functions/v1/kbr-phone-username`,{
+    method:'POST',
+    headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({action,...details})
+  });
+  const body=await response.json().catch(()=>({}));
+  if(!response.ok||body.error)throw Error(body.error||'Phone account request failed.');
+  if(!body.access_token||!body.refresh_token)throw Error('The server did not return a login session.');
+  const {data,error}=await authClient.auth.setSession({
+    access_token:body.access_token,refresh_token:body.refresh_token
+  });
+  if(error||!data?.session)throw error||Error('Could not start your session.');
+  customerSession=data.session;
+}
+
 function showPhoneAuth(mode='login'){
   const register=mode==='register';
   $('phoneLoginView').classList.toggle('hidden',register);
@@ -1106,9 +1122,7 @@ async function phoneLogin(){
   button.textContent='Signing in…';
 
   try{
-    const {data,error}=await authClient.auth.signInWithPassword({phone,password});
-    if(error)throw error;
-    customerSession=data?.session||null;
+    await phoneUsernameRequest('login',{phone,password});
     await loadCustomerProfile();
     await tryClaimPendingGuestOrder();
     $('phoneAuthDialog')?.close();
@@ -1141,19 +1155,7 @@ async function phoneRegister(){
   button.textContent='Creating account…';
 
   try{
-    const {data,error}=await authClient.auth.signUp({
-      phone,
-      password,
-      options:{data:{full_name:name,name}}
-    });
-    if(error)throw error;
-
-    if(!data?.session){
-      toast('Account created, but phone confirmation is enabled in Supabase. Turn phone confirmation off for no-OTP signup.');
-      return;
-    }
-
-    customerSession=data.session;
+    await phoneUsernameRequest('register',{name,phone,password,consent:true});
     await rpc('kbr_save_customer_checkout_details',{
       p_name:name,
       p_phone:phone.replace('+63','0'),
