@@ -496,6 +496,53 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .kbr-customer-info-extra strong{
   color:#35475c;
 }
+/* Selected online orders: visually distinct from green walk-in transactions. */
+.barista-selected-order-toggle.online-order-selected,
+.barista-order-card.online-order-selected,
+.barista-order-card.online-order-selected.dine-in,
+.barista-order-card.online-order-selected.take-out,
+.barista-order-card.online-order-selected.mixed{
+  background:#dbeafe!important;
+  border:3px solid #2563eb!important;
+  color:#173e7b!important;
+}
+.barista-selected-order-toggle.online-order-selected .order-number-badge,
+.barista-order-card.online-order-selected .order-number-badge{
+  background:#174ea6!important;
+  border-color:#174ea6!important;
+  color:#fff!important;
+}
+.barista-order-card.online-order-selected .barista-order-head,
+.barista-order-card.online-order-selected .barista-order-total{color:#174ea6}
+.barista-order-card.online-order-selected .kbr-customer-info-row{
+  display:block;
+  background:#eff6ff;
+  border:1px solid #93b9ed;
+  border-radius:12px;
+  margin:10px 0 12px;
+}
+.barista-order-card.online-order-selected summary.kbr-customer-info-toggle{
+  display:flex;
+  list-style:none;
+  cursor:pointer;
+  background:#eff6ff;
+  padding:12px 14px;
+  color:#174ea6;
+  font-weight:900;
+  align-items:center;
+  justify-content:space-between;
+}
+.barista-order-card.online-order-selected summary.kbr-customer-info-toggle::-webkit-details-marker{display:none}
+.barista-order-card.online-order-selected details[open] .kbr-customer-info-arrow{transform:rotate(180deg)}
+.barista-order-card.online-order-selected .kbr-customer-info-extra{
+  display:none;
+  padding:4px 14px 14px;
+  color:#294d78;
+  font-size:13px;
+  line-height:1.5;
+}
+.barista-order-card.online-order-selected details[open] .kbr-customer-info-extra{display:grid;gap:7px}
+.barista-order-card.online-order-selected .note-preview{display:none}
 </style>
 
 
@@ -1453,23 +1500,26 @@ function parseOnlineCustomerInfo(order){
   return {customer,phone,address,requested,payment,barangay};
 }
 function onlineCustomerInfoHtml(order){
-  const i=parseOnlineCustomerInfo(order);
-  return `<div class="kbr-customer-info-row">
-    <button type="button" class="kbr-customer-info-toggle">
-      <span class="kbr-customer-info-main">
-        <strong>${escapeHtml(i.customer)}</strong>
-        ${i.payment?`<span>Payment: <strong>${escapeHtml(i.payment)}</strong></span>`:''}
-        ${i.barangay?`<span>Barangay: <strong>${escapeHtml(i.barangay)}</strong></span>`:''}
-      </span>
-      <span class="kbr-customer-info-arrow">▼</span>
-    </button>
-    <div class="kbr-customer-info-extra">
-      ${i.phone?`<div><strong>Phone:</strong> ${escapeHtml(i.phone)}</div>`:''}
-      ${i.address?`<div><strong>Complete address:</strong> ${escapeHtml(i.address)}</div>`:''}
-      ${i.requested?`<div><strong>Requested:</strong> ${escapeHtml(i.requested)}</div>`:''}
-    </div>
-  </div>`;
+  // Account details stay collapsed until a barista requests them.
+  const info=parseOnlineCustomerInfo(order);
+  const note=String(order?.note||'');
+  const customerNote=(note.match(/\\|\\s*Note:\\s*([\\s\\S]*)$/i)||[])[1]?.trim()||'';
+  const internalNumber=(note.match(/ONLINE ORDER\\s*#\\s*(\\d+)/i)||[])[1]||order?.onlineOrderNumber||'';
+  const rows=[
+    '<div><strong>Customer:</strong> '+escapeHtml(info.customer)+'</div>',
+    '<div><strong>Phone:</strong> '+escapeHtml(info.phone||'Not provided')+'</div>',
+    '<div><strong>Address:</strong> '+escapeHtml(info.address||'Pickup order — no delivery address')+'</div>',
+    info.payment?'<div><strong>Payment selected:</strong> '+escapeHtml(info.payment)+'</div>':'',
+    info.requested?'<div><strong>Requested pickup:</strong> '+escapeHtml(info.requested)+'</div>':'',
+    customerNote?'<div><strong>Customer note:</strong> '+escapeHtml(customerNote)+'</div>':''
+  ].filter(Boolean).join('');
+  return '<details class="kbr-customer-info-row"><summary class="kbr-customer-info-toggle">'+
+    '<strong>Details</strong><span class="kbr-customer-info-arrow" aria-hidden="true">▾</span></summary>'+
+    '<div class="kbr-customer-info-extra">'+
+    (internalNumber?'<div><strong>Online order:</strong> #'+escapeHtml(internalNumber)+'</div>':'')+
+    rows+'</div></details>';
 }
+
 function renderBaristaOrders(){
   ensureAllOpenUnits();
   updatePendingOrdersTab();
@@ -1556,10 +1606,15 @@ function renderBaristaOrders(){
     : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">GCash</button><button class="barista-pay-btn ${selectedBaristaPayment==='pay-later'?'selected':''}" onclick="selectBaristaPayment('pay-later')">Pay Later</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Barista Drinks</button><button class="barista-pay-btn qr-rewards-btn" type="button" onclick="window.KBRRewardsScanner?.openForOrder('${String(order.no).replace(/\D/g,'')}')">▦ Scan for Points</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
   const orderSvcClass=orderServiceClass(order);
-  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${orderSvcClass}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
-    <div class="barista-order-card ${orderSvcClass}">
-      <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${order.note?` <span class="muted">· ${escapeHtml(order.note)}</span>`:''}<div class="barista-order-meta">${orderServiceLabel(order)} · ${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
-      <div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>
+  const onlineSelected=isOnlineBaristaOrder(order);
+  const onlineOrderNumber=String(order.note||'').match(/ONLINE ORDER\\s*#\\s*(\\d+)/i)?.[1]||order.onlineOrderNumber||'';
+  const cleanHeader=onlineSelected
+    ?(onlineOrderNumber?' · Online #'+escapeHtml(onlineOrderNumber):' · Online Order')
+    :(order.note?' · '+escapeHtml(order.note):'');
+  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${orderSvcClass} ${onlineSelected?'online-order-selected':''}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
+    <div class="barista-order-card ${orderSvcClass} ${onlineSelected?'online-order-selected':''}">
+      <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><span class="muted">${cleanHeader}</span><div class="barista-order-meta">${onlineSelected?'🌐 Online · ':''}${orderServiceLabel(order)} · ${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
+      ${onlineSelected?onlineCustomerInfoHtml(order):`<div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>`}
       ${noteEditorOpenNo===String(order.no)?`<div class="note-editor"><textarea id="pendingOrderNoteInput" maxlength="250" placeholder="Add name, less ice, less sugar, special request, etc.">${escapeHtml(order.note||'')}</textarea><div class="note-editor-actions"><button class="secondary" onclick="closePendingNoteEditor()">Close</button><button class="primary" style="background:#2f8f4e;border-color:#2f8f4e" onclick="savePendingOrderNote()">Save note</button></div></div>`:''}
       <div class="report-note">Original total: ${peso(originalTotal)}. Drink discounts apply per cup. Add-ons are charged at full price.</div>
       ${groups}${paymentBlock}
@@ -2202,12 +2257,7 @@ if(customerServiceType){const start=document.getElementById('serviceStart');if(s
 
 
 <script id="kbr-online-expanded-v5-script">
-document.addEventListener('click',function(e){
-  const btn=e.target.closest('.kbr-customer-info-toggle');
-  if(!btn)return;
-  const row=btn.closest('.kbr-customer-info-row');
-  if(row)row.classList.toggle('open');
-});
+// Native <details> provides accessible disclosure without extra polling or event handlers.
 </script>
 
 
