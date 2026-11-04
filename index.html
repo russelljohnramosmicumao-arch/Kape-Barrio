@@ -653,7 +653,11 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 <script>
 const PRODUCTS = MenuStore.load();
 let category = "Frappe & Smoothies"
-let customerServiceType = sessionStorage.getItem("kbr_current_service") || "";
+// Always ask Dine In / Take Out for a new app session.
+// A previous service selection must not silently dismiss the welcome screen.
+// Keep the cart and unsynced order drafts untouched.
+sessionStorage.removeItem("kbr_current_service");
+let customerServiceType = "";
 let cart = JSON.parse(localStorage.getItem("kbr_cart")||"[]");
 let history = JSON.parse(localStorage.getItem("kbr_history")||"[]");
 let selected = null;
