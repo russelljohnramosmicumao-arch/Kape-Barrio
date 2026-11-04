@@ -4,6 +4,8 @@
  const cloud=KBRCloud,ui=KBRSyncUI,queueKey='kbr_order_write_v1',draftKey='kbr_order_draft_v1';
  let role='',ready=false,busy=false,polling=false,menuRevision=0,lastFinalized=null;const remote=new Map();
  let rosterNames=[],claimDay='',claimedNames=null,claimRequest=null;
+ let lastMenuCheck=0,lastClaimsPoll=0;
+ const MENU_POLL_MS=60000,CLAIMS_POLL_MS=60000;
  function shopDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
 window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null?rosterNames.filter(name=>!claimedNames.has(name)):null};
  async function refreshBaristaClaims(){
@@ -58,12 +60,15 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
  function display(){updatePendingOrdersTab();if(baristaDrawer.classList.contains('open')){if(baristaView==='history')renderHistory();else if(baristaView==='pay-later')KBRDeferred.refresh();else if(baristaView==='kitchen')renderKitchenAlerts();else renderBaristaOrders();}render();}
  function showPending(){const q=cloud.read(queueKey),draft=cloud.read(draftKey);if(q)ui.screen('Change waiting to sync','Keep this device open. Retry the saved change before making another edit.',[['Retry saved change',()=>retryUpdate()],['Sign in again',()=>location.href='sync-login.html']]);else if(draft)ui.screen('Order awaiting confirmation','The connection stopped before confirmation. Retry this same order to check whether it was received. Its ID is reused to prevent duplicates.',[['Retry order',()=>retryDraft()],['Sign in again',()=>location.href='sync-login.html']]);}
  async function poll(){if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)||document.hidden)return;polling=true;try{
-  let changedUI=false;const [menus,rows]=await Promise.all([cloud.request('/rest/v1/kbr_menu?id=eq.1&select=id,revision'),cloud.rows('/rest/v1/kbr_orders?select=id,revision,status&status=eq.open&order=order_number.desc')]);
-  if(menus[0]&&menus[0].revision!==menuRevision){const latest=await cloud.request('/rest/v1/kbr_menu?id=eq.1&select=*');ui.applyMenu(latest[0]);menuRevision=latest[0].revision;refreshManagedMenu();changedUI=true;}
+  let changedUI=false;
+  // Order updates keep their 10-second cadence; relatively static menu data does not.
+  const checkMenu=Date.now()-lastMenuCheck>=MENU_POLL_MS;
+  const [menus,rows]=await Promise.all([checkMenu?cloud.request('/rest/v1/kbr_menu?id=eq.1&select=id,revision'):Promise.resolve(null),cloud.rows('/rest/v1/kbr_orders?select=id,revision,status&status=eq.open&order=order_number.desc')]);
+  if(checkMenu){lastMenuCheck=Date.now();if(menus[0]&&menus[0].revision!==menuRevision){const latest=await cloud.request('/rest/v1/kbr_menu?id=eq.1&select=*');ui.applyMenu(latest[0]);menuRevision=latest[0].revision;refreshManagedMenu();changedUI=true;}}
   const ids=new Set(rows.map(r=>r.id));for(const row of rows){if(remote.get(row.id)?.revision!==row.revision){const changed=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(row.id)+'&select=*');if(changed[0]){applyRow(changed[0]);changedUI=true;}}}
   // Fetch individual tombstones so cancelled or completed orders never resurrect.
   for(const [id,row] of [...remote])if(row.status==='open'&&!ids.has(id)){const changed=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(id)+'&select=*');if(changed[0]){applyRow(changed[0]);changedUI=true;}}
-  await refreshBaristaClaims();if(baristaView==='pay-later')await KBRDeferred.refresh();if(changedUI)display();cloud.status('Connected · v135 · updates every 10 sec');
+  if(Date.now()-lastClaimsPoll>=CLAIMS_POLL_MS){await refreshBaristaClaims();lastClaimsPoll=Date.now();}if(baristaView==='pay-later')await KBRDeferred.refresh();if(changedUI)display();cloud.status('Connected · v135 · orders every 10 sec');
  }catch(e){cloud.status('Offline or disconnected · orders cannot be sent',true);}finally{polling=false;}}
  async function flushUpdate(operation){
   let row;
