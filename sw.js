@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v146-rewards-qr";
+const CACHE="kbr-ordering-v147-rewards-selected-transaction";
 const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html","./shifts.js?v=turnover-v3","./sync.css?v=turnover-v3","./receipt-lines.js","./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png","./icons/icon-192.png","./icons/icon-512.png","./manifest.json","./page-tools.js","./page-tools.css",
   "manager-access.js",
   "worker-clock.js",
@@ -18,7 +18,7 @@ const ASSETS=["./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shi
   "./shift-records.html",
   "./shifts.js",
   "./sync-config.js",
-  "./rewards-scanner.js?v=1", "./sync-core.js", "./sync-core.js?v=usage-reads-v1",
+  "./rewards-scanner.js?v=2", "./sync-core.js", "./sync-core.js?v=usage-reads-v1",
   "./sync-login.html",
   "./sync-ui.js",
   "./sync.css"
