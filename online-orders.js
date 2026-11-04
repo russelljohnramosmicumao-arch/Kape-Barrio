@@ -1634,7 +1634,7 @@ loadMenu();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=69',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=73-phone-auth',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
