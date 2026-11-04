@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v75-hide-auth-email';
+const CACHE='kbr-online-customer-v76-order-tabs';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=74-change-password',
-  './online-orders.js?v=75-hide-auth-email',
+  './online-orders.css?v=76-order-tabs',
+  './online-orders.js?v=76-order-tabs',
   './online-manifest.webmanifest?v=71'
 ];
 
