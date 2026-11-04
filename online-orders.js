@@ -9,6 +9,8 @@ const authClient=window.supabase?.createClient
 let customerSession=null;
 let customerProfile=null;
 let customerOrders=[];
+let activeCartTab='cart',lastCartOrdersRefresh=0,cartOrdersTimer=null,customerSnapshotPromise=null;
+const KBR_GUEST_SENT_KEY='kbr_guest_sent_v2';
 
 let menu=[];
 let category='Frappe & Smoothies';
@@ -392,13 +394,73 @@ function renderCart(){
   }));
 }
 
+
+function visibleCartOrders(){
+ const signed=!!customerSession?.user;
+ let orders=customerOrders;
+ if(!signed){try{orders=JSON.parse(localStorage.getItem(KBR_GUEST_SENT_KEY)||'[]');}catch{orders=[];}}
+ return (Array.isArray(orders)?orders:[]).filter(o=>{
+  const status=String(o.status||'sent').toLowerCase();
+  return status!=='cancelled'&&(activeCartTab==='paid'?status==='completed':status!=='completed');
+ });
+}
+function renderCartOrderTabs(){
+ for(const tab of document.querySelectorAll('[data-cart-tab]')){
+  const on=tab.dataset.cartTab===activeCartTab;
+  tab.classList.toggle('active',on);tab.setAttribute('aria-selected',String(on));
+ }
+ const cartVisible=activeCartTab==='cart';
+ $('cartItems').classList.toggle('hidden',!cartVisible);
+ $('cartCheckoutFooter').classList.toggle('hidden',!cartVisible);
+ $('customerCartOrders').classList.toggle('hidden',cartVisible);
+ if(cartVisible)return;
+ const signed=!!customerSession?.user;
+ $('cartOrdersNotice').textContent=!signed?'Orders sent from this device are shown here. Sign in to track payment status across devices.':
+ activeCartTab==='sent'?'Submitted orders awaiting confirmation and payment.':'Orders confirmed completed and paid by the shop.';
+ $('refreshCartOrders').classList.toggle('hidden',!signed);
+ const orders=visibleCartOrders();
+ $('cartOrdersList').innerHTML=orders.length?orders.map(order=>{
+  const items=(Array.isArray(order.items)?order.items:[]).map(item=>
+   '<div class="cart-order-line"><strong>'+Number(item.qty||1)+'× '+esc(item.name||'Item')+'</strong><span>'+
+   [item.size,item.sweetness,item.flavor].filter(Boolean).map(esc).join(' · ')+'</span></div>').join('');
+  const date=order.createdAt?new Date(order.createdAt):null;
+  const stamp=date&&!Number.isNaN(date.getTime())?date.toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'}):'';
+  return '<article class="cart-order-card"><div class="cart-order-heading"><strong>Online #'+esc(order.orderNumber||'')+
+   '</strong><strong>'+money(order.total||0)+'</strong></div><p>'+
+   esc(String(order.status||'sent').replace(/_/g,' '))+' · '+esc(order.serviceType||'pickup')+
+   (stamp?' · '+esc(stamp):'')+'</p>'+items+'</article>';
+ }).join(''):'<p class="empty-state">'+(activeCartTab==='paid'?'No paid orders yet.':'No sent orders awaiting payment.')+'</p>';
+}
+function stopCartOrdersTimer(){if(cartOrdersTimer!==null){clearInterval(cartOrdersTimer);cartOrdersTimer=null;}}
+async function refreshCartOrders(force=false){
+ if(document.hidden||!customerSession?.user)return;
+ if(!force&&Date.now()-lastCartOrdersRefresh<20000)return;
+ await loadCustomerProfile();
+}
+function startCartOrdersTimer(){
+ stopCartOrdersTimer();
+ if(activeCartTab!=='sent'||!customerSession?.user||document.hidden||!$('cartDrawer').classList.contains('open'))return;
+ cartOrdersTimer=setInterval(()=>{
+  if(document.hidden||activeCartTab!=='sent'||!$('cartDrawer').classList.contains('open')){stopCartOrdersTimer();return;}
+  refreshCartOrders();
+ },60000);
+}
+function selectCartTab(tab){
+ if(!['cart','sent','paid'].includes(tab))return;
+ activeCartTab=tab;renderCartOrderTabs();startCartOrdersTimer();
+ if(tab!=='cart')refreshCartOrders();
+}
+
 function openCart(){
   $('cartDrawer').classList.add('open');
   $('cartDrawer').setAttribute('aria-hidden','false');
+  renderCartOrderTabs();startCartOrdersTimer();
+  if(activeCartTab!=='cart')refreshCartOrders();
 }
 function closeCart(){
   $('cartDrawer').classList.remove('open');
   $('cartDrawer').setAttribute('aria-hidden','true');
+  stopCartOrdersTimer();
 }
 
 
