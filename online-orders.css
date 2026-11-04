@@ -1356,3 +1356,9 @@ button{cursor:pointer}
   color:var(--muted);
   font-size:.72rem;
 }
+
+/* Customer password replacement after in-shop reset */
+.password-change-field{display:block;margin:12px 0;color:var(--brown);font-size:.86rem;font-weight:800}
+.password-change-field input{display:block;width:100%;box-sizing:border-box;min-height:46px;margin-top:6px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font:inherit;background:#fff;color:var(--ink)}
+#changeCustomerPasswordStatus{min-height:1.35em;font-size:.83rem;color:#9b3b24}
+#changeCustomerPasswordForm .primary-button{width:100%;margin-top:8px}
