@@ -8,7 +8,7 @@
   <link rel="manifest" href="online-manifest.webmanifest?v=71">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=74-change-password">
+  <link rel="stylesheet" href="online-orders.css?v=76-order-tabs">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -122,9 +122,19 @@
         <button type="button" class="icon-button" data-close-cart aria-label="Close">×</button>
       </div>
 
-      <div id="cartItems" class="cart-items"></div>
+      <div class="customer-order-tabs" role="tablist" aria-label="Your orders">
+        <button id="cartTabCart" class="customer-order-tab active" type="button" role="tab" aria-selected="true" data-cart-tab="cart">Cart</button>
+        <button id="cartTabSent" class="customer-order-tab" type="button" role="tab" aria-selected="false" data-cart-tab="sent">Sent Orders</button>
+        <button id="cartTabPaid" class="customer-order-tab" type="button" role="tab" aria-selected="false" data-cart-tab="paid">Paid Orders</button>
+      </div>
+      <div id="cartItems" class="cart-items" role="tabpanel"></div>
+      <div id="customerCartOrders" class="cart-items hidden" role="tabpanel">
+        <p id="cartOrdersNotice" class="cart-orders-notice"></p>
+        <div id="cartOrdersList"></div>
+        <button id="refreshCartOrders" class="guest-button" type="button">Refresh order status</button>
+      </div>
 
-      <div class="cart-footer">
+      <div class="cart-footer" id="cartCheckoutFooter">
         <div class="total-row">
           <span>Subtotal</span>
           <strong id="cartTotal">₱0</strong>
@@ -677,7 +687,7 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=75-hide-auth-email" defer></script>
+  <script src="online-orders.js?v=76-order-tabs" defer></script>
 
 
 
