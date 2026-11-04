@@ -1481,7 +1481,11 @@ async function signOutCustomer(){
   customerSession=null;
   customerProfile=null;
   customerOrders=[];
+  lastCartOrdersRefresh=0;
+  stopCartOrdersTimer();
+  activeCartTab='cart';
   updateAccountUI();
+  renderCartOrderTabs();
   $('accountDialog')?.close();
 }
 
