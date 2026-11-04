@@ -8,7 +8,7 @@
   <link rel="manifest" href="online-manifest.webmanifest?v=71">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=77-rewards-qr">
+  <link rel="stylesheet" href="online-orders.css?v=78-30-day-history">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -130,6 +130,7 @@
       <div id="cartItems" class="cart-items" role="tabpanel"></div>
       <div id="customerCartOrders" class="cart-items hidden" role="tabpanel">
         <p id="cartOrdersNotice" class="cart-orders-notice"></p>
+        <p class="cart-history-retention-notice">Your completed order history is shown for 30 days after purchase. Older orders disappear from your account view; Kape Bar-Rio keeps necessary business records.</p>
         <div id="cartOrdersList"></div>
         <button id="refreshCartOrders" class="guest-button" type="button">Refresh order status</button>
       </div>
@@ -422,13 +423,6 @@
           <div class="saved-details-edit-hint">Tap to view or edit</div>
         </button>
 
-        <div class="order-history-section">
-          <div class="saved-details-title">Recent online orders</div>
-          <div id="customerOrderHistory" class="customer-order-history">
-            <div class="empty-history">No online orders yet.</div>
-          </div>
-        </div>
-
         <p class="points-note">Your name, phone number and delivery address are saved after you place an order while signed in. Points are added after your order is paid and completed.</p>
 
         <button id="connectGoogleButton" class="google-signin-button account-link-google hidden" type="button">
@@ -695,7 +689,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="online-orders.js?v=77-rewards-qr" defer></script>
+  <script src="online-orders.js?v=78-30-day-history" defer></script>
 
 
 
