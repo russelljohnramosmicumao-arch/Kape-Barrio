@@ -8,7 +8,7 @@
   <link rel="manifest" href="online-manifest.webmanifest?v=71">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=76-order-tabs">
+  <link rel="stylesheet" href="online-orders.css?v=77-rewards-qr">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -409,6 +409,13 @@
           <strong id="customerPoints">0</strong>
         </div>
 
+        <section class="kbr-rewards-qr-card" aria-label="Your KBR Rewards QR code">
+          <strong>My KBR Rewards QR</strong>
+          <p>Show this QR to the barista after paying for an in-shop order to earn KBR Points.</p>
+          <div id="kbrCustomerQr" class="kbr-customer-qr"></div>
+          <small id="kbrCustomerQrStatus">Sign in to display your rewards QR.</small>
+        </section>
+
         <button id="savedDetailsButton" class="saved-details-card saved-details-button" type="button">
           <div class="saved-details-title">Saved details</div>
           <div id="savedCustomerDetails" class="saved-details-text">No saved checkout details yet.</div>
@@ -687,7 +694,8 @@
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="online-orders.js?v=76-order-tabs" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="online-orders.js?v=77-rewards-qr" defer></script>
 
 
 
