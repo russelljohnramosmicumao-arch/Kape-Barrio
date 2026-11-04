@@ -1385,3 +1385,6 @@ button{cursor:pointer}
 .kbr-customer-qr{display:flex;justify-content:center;align-items:center;min-height:225px;padding:8px;background:#fff}
 .kbr-customer-qr img,.kbr-customer-qr canvas{max-width:100%;image-rendering:auto}
 .kbr-rewards-qr-card small{display:block;color:var(--muted);font-size:.72rem;margin-top:10px}
+
+/* Customer history retention notice */
+.cart-history-retention-notice{margin:0 0 12px;color:var(--muted);font-size:.73rem;line-height:1.45;background:#faf4ef;border:1px solid var(--line);border-radius:10px;padding:9px 10px}
