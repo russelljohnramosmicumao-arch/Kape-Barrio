@@ -1284,7 +1284,6 @@ function updateAccountUI(){
     user.user_metadata?.name||
     'KBR Customer';
 
-  $('customerEmail').textContent=customerProfile?.email||user.email||'';
   $('customerPoints').textContent=Number(customerProfile?.points||0).toLocaleString('en-PH');
 
   const avatar=customerProfile?.avatarUrl||user.user_metadata?.avatar_url||'';
@@ -1687,7 +1686,7 @@ loadMenu();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=74-change-password',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=75-hide-auth-email',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
