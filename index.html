@@ -1503,8 +1503,8 @@ function onlineCustomerInfoHtml(order){
   // Account details stay collapsed until a barista requests them.
   const info=parseOnlineCustomerInfo(order);
   const note=String(order?.note||'');
-  const customerNote=(note.match(/\\|\\s*Note:\\s*([\\s\\S]*)$/i)||[])[1]?.trim()||'';
-  const internalNumber=(note.match(/ONLINE ORDER\\s*#\\s*(\\d+)/i)||[])[1]||order?.onlineOrderNumber||'';
+  const customerNote=(note.match(/\|\s*Note:\s*([\s\S]*)$/i)||[])[1]?.trim()||'';
+  const internalNumber=(note.match(/ONLINE ORDER\s*#\s*(\d+)/i)||[])[1]||order?.onlineOrderNumber||'';
   const rows=[
     '<div><strong>Customer:</strong> '+escapeHtml(info.customer)+'</div>',
     '<div><strong>Phone:</strong> '+escapeHtml(info.phone||'Not provided')+'</div>',
