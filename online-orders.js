@@ -11,6 +11,24 @@ let customerProfile=null;
 let customerOrders=[];
 let activeCartTab='cart',lastCartOrdersRefresh=0,cartOrdersTimer=null,customerSnapshotPromise=null;
 const KBR_GUEST_SENT_KEY='kbr_guest_sent_v2';
+const KBR_CUSTOMER_ORDER_HISTORY_DAYS=30;
+const KBR_ORDER_HISTORY_CUTOFF_MS=KBR_CUSTOMER_ORDER_HISTORY_DAYS*24*60*60*1000;
+function isRecentCustomerOrder(order){
+ const status=String(order?.status||'').toLowerCase();
+ if(status!=='completed'&&status!=='cancelled')return true; // Keep unresolved orders visible.
+ const when=Date.parse(order?.createdAt||'');
+ return Number.isFinite(when)&&when>=Date.now()-KBR_ORDER_HISTORY_CUTOFF_MS;
+}
+function savedGuestCustomerOrders(){
+ try{
+   const orders=JSON.parse(localStorage.getItem(KBR_GUEST_SENT_KEY)||'[]');
+   const recent=Array.isArray(orders)?orders.filter(isRecentCustomerOrder).slice(0,12):[];
+   if(Array.isArray(orders)&&orders.length!==recent.length)
+     localStorage.setItem(KBR_GUEST_SENT_KEY,JSON.stringify(recent));
+   return recent;
+ }catch{return [];}
+}
+
 
 let menu=[];
 let category='Frappe & Smoothies';
@@ -398,10 +416,11 @@ function renderCart(){
 function visibleCartOrders(){
  const signed=!!customerSession?.user;
  let orders=customerOrders;
- if(!signed){try{orders=JSON.parse(localStorage.getItem(KBR_GUEST_SENT_KEY)||'[]');}catch{orders=[];}}
+ if(!signed)orders=savedGuestCustomerOrders();
  return (Array.isArray(orders)?orders:[]).filter(o=>{
   const status=String(o.status||'sent').toLowerCase();
-  return status!=='cancelled'&&(activeCartTab==='paid'?status==='completed':status!=='completed');
+  return isRecentCustomerOrder(o)&&status!=='cancelled'&&
+    (activeCartTab==='paid'?status==='completed':status!=='completed');
  });
 }
 function renderCartOrderTabs(){
@@ -1397,36 +1416,7 @@ function updateAccountUI(){
     ? details.join('\n')
     : 'No saved checkout details yet.';
 
-  if(!customerOrders.length){
-    $('customerOrderHistory').innerHTML='<div class="empty-history">No online orders yet.</div>';
-  }else{
-    $('customerOrderHistory').innerHTML=customerOrders.slice(0,10).map(order=>{
-      const items=(Array.isArray(order.items)?order.items:[])
-        .map(item=>`${item.qty||1}× ${esc(item.name||'Item')}`)
-        .join(', ');
 
-      const created=order.createdAt
-        ? new Date(order.createdAt).toLocaleString('en-PH',{
-            month:'short',day:'numeric',year:'numeric',
-            hour:'numeric',minute:'2-digit'
-          })
-        : '';
-
-      return `
-        <div class="order-history-card">
-          <div class="order-history-top">
-            <span>Online #${esc(order.orderNumber||'')}</span>
-            <span>${money(order.total||0)}</span>
-          </div>
-          <div class="order-history-meta">
-            <span class="order-status">${esc(order.status||'pending')}</span>
-            · ${esc(order.serviceType||'')}
-            ${created?` · ${esc(created)}`:''}
-          </div>
-          <div class="order-history-items">${items||'Order details'}</div>
-        </div>`;
-    }).join('');
-  }
 }
 
 async function loadCustomerProfile(){
@@ -1441,11 +1431,11 @@ async function loadCustomerProfile(){
       const snapshot=await rpc('kbr_customer_account_snapshot',{});
       if(customerSession?.user?.id!==userId)return;
       customerProfile=snapshot?.profile||null;
-      customerOrders=Array.isArray(snapshot?.orders)?snapshot.orders:[];
+      customerOrders=Array.isArray(snapshot?.orders)?snapshot.orders.filter(isRecentCustomerOrder):[];
       lastCartOrdersRefresh=Date.now();
       // After a guest order is claimed, the server record becomes authoritative.
       try{
-        const guest=JSON.parse(localStorage.getItem(KBR_GUEST_SENT_KEY)||'[]');
+        const guest=savedGuestCustomerOrders();
         if(Array.isArray(guest)){
           const linked=new Set(customerOrders.map(o=>String(o.orderNumber)));
           localStorage.setItem(KBR_GUEST_SENT_KEY,JSON.stringify(guest.filter(o=>!linked.has(String(o.orderNumber)))));
@@ -1806,7 +1796,7 @@ loadMenu();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=77-rewards-qr',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=78-30-day-history',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
