@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v76-order-tabs';
+const CACHE='kbr-online-customer-v77-rewards-qr';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=76-order-tabs',
-  './online-orders.js?v=76-order-tabs',
+  './online-orders.css?v=77-rewards-qr',
+  './online-orders.js?v=77-rewards-qr',
   './online-manifest.webmanifest?v=71'
 ];
 
