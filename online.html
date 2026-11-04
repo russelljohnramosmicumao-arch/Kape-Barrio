@@ -421,6 +421,7 @@
           Connect Google Account
         </button>
 
+        <button id="changeCustomerPasswordOpen" class="guest-button hidden" type="button" style="margin-bottom:10px">Change Password</button>
         <button id="customerSignOutButton" class="guest-button" type="button">Sign out</button>
       </div>
     </div>
@@ -646,6 +647,28 @@
     </div>
   </dialog>
 
+
+  <dialog id="changeCustomerPasswordDialog" class="modal">
+    <div class="modal-card" style="max-width:450px">
+      <button type="button" id="changeCustomerPasswordClose" class="modal-close" aria-label="Close">×</button>
+      <div class="eyebrow">KBR Account Security</div>
+      <h2>Change Password</h2>
+      <p class="account-copy">After the shop resets your password, sign in with the temporary password and replace it here. Forgotten passwords must still be reset at Kape Barrio.</p>
+      <form id="changeCustomerPasswordForm" autocomplete="off">
+        <label class="password-change-field">Current or temporary password
+          <input id="changeCustomerOldPassword" type="password" autocomplete="current-password" minlength="6" required>
+        </label>
+        <label class="password-change-field">New password
+          <input id="changeCustomerNewPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+        </label>
+        <label class="password-change-field">Confirm new password
+          <input id="changeCustomerConfirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+        </label>
+        <p id="changeCustomerPasswordStatus" role="status" aria-live="polite"></p>
+        <button type="submit" class="primary-button" id="changeCustomerPasswordSubmit">Save New Password</button>
+      </form>
+    </div>
+  </dialog>
 
   <footer class="legal-footer">
     <button id="footerTermsButton" type="button">Terms &amp; Conditions</button>
