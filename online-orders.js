@@ -1583,6 +1583,13 @@ $('pointsSignInHero')?.addEventListener('click',()=>{
   if(dialog && typeof dialog.showModal==='function' && !dialog.open)dialog.showModal();
 });
 
+document.querySelectorAll('[data-cart-tab]').forEach(button=>{
+  button.addEventListener('click',()=>selectCartTab(button.dataset.cartTab));
+});
+$('refreshCartOrders')?.addEventListener('click',async()=>{
+  const button=$('refreshCartOrders');button.disabled=true;button.textContent='Refreshing…';
+  try{await refreshCartOrders(true);}finally{button.disabled=false;button.textContent='Refresh order status';}
+});
 $('openCart')?.addEventListener('click',()=>{
   renderCart();
   openCart();
@@ -1749,14 +1756,20 @@ $('gcashPaymentButton')?.addEventListener('click',()=>setPayment('gcash'));
 $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrder()});
 $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 
+let lastAccountResume=0;
+function resumeCustomerApp(){
+  if(document.hidden)return;
+  const now=Date.now();
+  if(now-lastAccountResume<5000)return;
+  lastAccountResume=now;
+  if(customerSession?.user&&now-lastCartOrdersRefresh>60000)loadCustomerProfile();
+  startCartOrdersTimer();
+}
 document.addEventListener('visibilitychange',()=>{
-
-  if(!document.hidden&&customerSession?.user)loadCustomerProfile();
+  if(document.hidden)stopCartOrdersTimer();
+  else resumeCustomerApp();
 });
-
-window.addEventListener('focus',()=>{
-  if(customerSession?.user)loadCustomerProfile();
-});
+window.addEventListener('focus',resumeCustomerApp);
 
 loadCart();
 renderCart();
@@ -1767,7 +1780,7 @@ loadMenu();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=75-hide-auth-email',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=76-order-tabs',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
