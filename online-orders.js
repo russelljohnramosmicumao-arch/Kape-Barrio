@@ -1181,6 +1181,49 @@ function userHasGoogleIdentity(){
   return identities.some(identity=>identity.provider==='google');
 }
 
+function customerCanChangePassword(){
+  const user=customerSession?.user;
+  return Boolean(user&&(user.app_metadata?.kbr_phone_username===true||
+    user.identities?.some(identity=>identity.provider==='phone')||user.phone));
+}
+
+async function changeCustomerPassword(event){
+  event.preventDefault();
+  if(!customerCanChangePassword()||!authClient)return;
+  const current=$('changeCustomerOldPassword').value;
+  const next=$('changeCustomerNewPassword').value;
+  const confirmation=$('changeCustomerConfirmPassword').value;
+  const status=$('changeCustomerPasswordStatus');
+  const button=$('changeCustomerPasswordSubmit');
+  const feedback=(message)=>{status.textContent=message;};
+  if(!current)return feedback('Enter your current or temporary password.');
+  if(next.length<8||next.length>128)return feedback('New password must be 8–128 characters.');
+  if(next!==confirmation)return feedback('New passwords do not match.');
+  if(current===next)return feedback('Choose a different password.');
+  button.disabled=true;
+  feedback('Checking your current password…');
+  try{
+    const user=customerSession.user;
+    const verification=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+      auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+    });
+    const credentials=user.email?{email:user.email,password:current}:
+      {phone:user.phone,password:current};
+    if(!credentials.email&&!credentials.phone)throw Error('Visit Kape Barrio for a password reset.');
+    const {error:verifyError}=await verification.auth.signInWithPassword(credentials);
+    if(verifyError)throw Error('Current password is incorrect. Visit the shop if you forgot it.');
+    const {error}=await authClient.auth.updateUser({password:next});
+    if(error)throw error;
+    $('changeCustomerPasswordForm').reset();
+    $('changeCustomerPasswordDialog').close();
+    toast('Password changed successfully.');
+  }catch(error){
+    feedback(error.message||'Password change failed. Please try again.');
+  }finally{
+    button.disabled=false;
+  }
+}
+
 async function connectGoogleAccount(){
   if(!authClient||!customerSession?.user)return;
   if(userHasGoogleIdentity())return toast('Google is already connected.');
@@ -1234,6 +1277,7 @@ function updateAccountUI(){
   if($('connectGoogleButton')){
     $('connectGoogleButton').classList.toggle('hidden',userHasGoogleIdentity());
   }
+  $('changeCustomerPasswordOpen')?.classList.toggle('hidden',!customerCanChangePassword());
   $('customerDisplayName').textContent=
     customerProfile?.name||
     user.user_metadata?.full_name||
@@ -1531,6 +1575,15 @@ $('privacyDone')?.addEventListener('click',()=>$('privacyDialog')?.close());
 $('accountClose')?.addEventListener('click',()=>$('accountDialog')?.close());
 $('continueGuestButton')?.addEventListener('click',()=>$('accountDialog')?.close());
 $('googleSignInButton')?.addEventListener('click',signInWithGoogle);
+$('changeCustomerPasswordOpen')?.addEventListener('click',()=>{
+  if(!customerCanChangePassword())return;
+  $('accountDialog')?.close();
+  $('changeCustomerPasswordStatus').textContent='';
+  $('changeCustomerPasswordForm').reset();
+  $('changeCustomerPasswordDialog')?.showModal();
+});
+$('changeCustomerPasswordClose')?.addEventListener('click',()=>{$('changeCustomerPasswordDialog')?.close();});
+$('changeCustomerPasswordForm')?.addEventListener('submit',changeCustomerPassword);
 $('customerSignOutButton')?.addEventListener('click',signOutCustomer);
 $('cartButton')?.addEventListener('click',openCart);
 document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('click',closeCart));
