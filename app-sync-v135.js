@@ -243,9 +243,17 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
    role=await cloud.role();
    if(['owner','operator'].includes(role))await cloud.rpc('kbr_barista_duty',{p_on:true});
    const menuRow=await ui.menuReady(role);
+   const cachedMenu=JSON.stringify(MenuStore.load());
    ui.applyMenu(menuRow);
    menuRevision=menuRow.revision;
-   refreshManagedMenu();
+   // Avoid closing the product selector when startup finishes mid-order.
+   if(JSON.stringify(MenuStore.load())!==cachedMenu){
+    const refreshWhenIdle=()=>{
+     if(selector.classList.contains('open')){setTimeout(refreshWhenIdle,350);return;}
+     refreshManagedMenu();
+    };
+    refreshWhenIdle();
+   }
    await Promise.all([loadOrders(),refreshBaristaClaims()]);
    ready=true;
    display();
