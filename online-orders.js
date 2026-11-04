@@ -1327,6 +1327,27 @@ function updateHeaderPoints(){
   if(pill)pill.textContent=points.toLocaleString('en-PH');
 }
 
+let lastRenderedRewardQr='';
+function renderCustomerRewardQr(){
+ const holder=$('kbrCustomerQr'),status=$('kbrCustomerQrStatus');
+ if(!holder||!status)return;
+ const id=customerSession?.user?.id||'';
+ if(!id){holder.replaceChildren();lastRenderedRewardQr='';status.textContent='Sign in to display your QR.';return;}
+ const payload='KBR-CUSTOMER:'+id.toLowerCase();
+ if(payload===lastRenderedRewardQr&&holder.childElementCount)return;
+ if(typeof window.QRCode!=='function'){
+  status.textContent='QR image unavailable. Reconnect to load it.';
+  return;
+ }
+ holder.replaceChildren();
+ try{
+  new window.QRCode(holder,{text:payload,width:224,height:224,
+    colorDark:'#1d1713',colorLight:'#ffffff',
+    correctLevel:window.QRCode.CorrectLevel.M});
+  lastRenderedRewardQr=payload;
+  status.textContent='Your personal customer code · Show this to the cashier';
+ }catch(error){status.textContent='Could not create your QR. Refresh and try again.';}
+}
 function updateAccountUI(){
   updateHeaderPoints();
   const button=$('customerAccountButton');
@@ -1357,6 +1378,7 @@ function updateAccountUI(){
     'KBR Customer';
 
   $('customerPoints').textContent=Number(customerProfile?.points||0).toLocaleString('en-PH');
+  renderCustomerRewardQr();
 
   const avatar=customerProfile?.avatarUrl||user.user_metadata?.avatar_url||'';
   if(avatar){
