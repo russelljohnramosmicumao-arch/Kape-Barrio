@@ -1156,7 +1156,11 @@ function setBaristaView(view){
   else if(view==='kitchen')renderKitchenAlerts();
   else renderHistory();
 }
-setInterval(()=>{if(baristaDrawer?.classList.contains('open'))refreshPromoDiscountSetting();},30000);
+// Promo settings are seldom changed; opening the Barista page already
+// refreshes them immediately. Do not poll hidden/background pages.
+setInterval(()=>{
+  if(!document.hidden&&baristaDrawer?.classList.contains('open'))refreshPromoDiscountSetting();
+},180000);
 function isKitchenUrgentItem(item){
   const n=String(item?.name||'').trim().toLowerCase();
   return ['fries','shiang hai','nachos','samyang buldak'].includes(n);
@@ -2098,7 +2102,7 @@ setInterval(()=>runDailyCsvCheck(),60000);
 render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
-<script src="sync-config.js"></script><script src="sync-core.js?v=usage-reads-v1"></script><script src="sync-ui.js"></script><script src="pay-later.js?v=30-day-settled-v1"></script><script src="app-sync-v135.js?v=136-sleep-tabs"></script><script src="rewards-scanner.js?v=2"></script>
+<script src="sync-config.js"></script><script src="sync-core.js?v=usage-reads-v1"></script><script src="sync-ui.js"></script><script src="pay-later.js?v=30-day-settled-v1"></script><script src="app-sync-v135.js?v=137-low-egress"></script><script src="rewards-scanner.js?v=2"></script>
 <script src="app-links.js"></script><script src="page-tools.js"></script>
 <script id="kbr-online-order-blue-script">
 (()=>{
