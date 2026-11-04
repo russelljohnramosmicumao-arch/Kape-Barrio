@@ -1377,3 +1377,11 @@ button{cursor:pointer}
 .cart-order-line span{color:var(--muted)}
 #refreshCartOrders{width:100%;margin-top:15px}
 @media(max-width:370px){.customer-order-tab{font-size:.7rem}}
+
+/* Personal rewards QR -- only shown in signed-in account */
+.kbr-rewards-qr-card{margin:14px 0;background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;text-align:center}
+.kbr-rewards-qr-card>strong{display:block;font-size:1rem;color:var(--brown)}
+.kbr-rewards-qr-card p{font-size:.77rem;color:var(--muted);line-height:1.4;margin:8px 0 12px}
+.kbr-customer-qr{display:flex;justify-content:center;align-items:center;min-height:225px;padding:8px;background:#fff}
+.kbr-customer-qr img,.kbr-customer-qr canvas{max-width:100%;image-rendering:auto}
+.kbr-rewards-qr-card small{display:block;color:var(--muted);font-size:.72rem;margin-top:10px}
