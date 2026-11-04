@@ -725,6 +725,20 @@ function showCustomerStart(){
   const start=document.getElementById('serviceStart');
   if(start)start.style.display='flex';
 }
+// Keep the service choice visible until a real customer/barista action.
+// Async startup refreshes must not silently dismiss the welcome gate.
+(function protectServiceChoice(){
+  const gate=document.getElementById('serviceStart');
+  if(!gate)return;
+  const restore=()=>{
+    if(!customerServiceType&&!document.getElementById('baristaDrawer')?.classList.contains('open')
+       &&gate.style.display==='none'){
+      gate.style.display='flex';
+    }
+  };
+  new MutationObserver(restore).observe(gate,{attributes:true,attributeFilter:['style']});
+  window.addEventListener('pageshow',restore);
+})();
 function setCategory(name){
   if(!cats.includes(name)) return;
   category=name;
