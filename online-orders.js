@@ -1187,6 +1187,26 @@ async function phoneUsernameRequest(action,details){
   customerSession=data.session;
 }
 
+function requiresInitialPasswordChange(){
+  return customerSession?.user?.app_metadata?.kbr_temporary_password===true;
+}
+function enforceInitialPasswordChange(){
+  const required=requiresInitialPasswordChange();
+  const dialog=$('changeCustomerPasswordDialog');
+  if(!dialog)return;
+  dialog.classList.toggle('kbr-initial-change',required);
+  const closeButton=$('changeCustomerPasswordClose');
+  if(closeButton)closeButton.hidden=required;
+  const instruction=$('changeCustomerPasswordInstructions');
+  if(instruction)instruction.textContent=required
+    ?'Welcome to KBR Rewards! For your security, replace the temporary password before using your account.'
+    :'Change your password here. Forgotten passwords can be reset at Kape Bar-Rio.';
+  if(required&&!dialog.open){
+    $('phoneAuthDialog')?.close();
+    $('accountDialog')?.close();
+    dialog.showModal();
+  }
+}
 function showPhoneAuth(mode='login'){
   const register=mode==='register';
   $('phoneLoginView').classList.toggle('hidden',register);
@@ -1208,6 +1228,10 @@ async function phoneLogin(){
 
   try{
     await phoneUsernameRequest('login',{phone,password});
+    if(requiresInitialPasswordChange()){
+      enforceInitialPasswordChange();
+      return;
+    }
     await loadCustomerProfile();
     await tryClaimPendingGuestOrder();
     $('phoneAuthDialog')?.close();
@@ -1299,7 +1323,13 @@ async function changeCustomerPassword(event){
     if(verifyError)throw Error('Current password is incorrect. Visit the shop if you forgot it.');
     const {error}=await authClient.auth.updateUser({password:next});
     if(error)throw error;
+    const {data:refreshed,error:refreshError}=await authClient.auth.getUser();
+    if(refreshError)throw refreshError;
+    if(refreshed?.user?.app_metadata?.kbr_temporary_password===true)
+      throw Error('Password changed, but setup could not be confirmed. Please refresh.');
+    if(refreshed?.user)customerSession={...customerSession,user:refreshed.user};
     $('changeCustomerPasswordForm').reset();
+    enforceInitialPasswordChange();
     $('changeCustomerPasswordDialog').close();
     toast('Password changed successfully.');
   }catch(error){
@@ -1478,12 +1508,14 @@ async function initCustomerAuth(){
   const {data}=await authClient.auth.getSession();
   customerSession=data?.session||null;
   await loadCustomerProfile();
-  if(customerSession?.user)await tryClaimPendingGuestOrder();
+  if(requiresInitialPasswordChange())enforceInitialPasswordChange();
+  else if(customerSession?.user)await tryClaimPendingGuestOrder();
 
   authClient.auth.onAuthStateChange(async(_event,session)=>{
     customerSession=session||null;
     await loadCustomerProfile();
-    if(customerSession?.user)await tryClaimPendingGuestOrder();
+    if(requiresInitialPasswordChange())enforceInitialPasswordChange();
+    else if(customerSession?.user)await tryClaimPendingGuestOrder();
   });
 }
 
