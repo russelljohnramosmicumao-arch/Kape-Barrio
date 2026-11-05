@@ -1388,3 +1388,20 @@ button{cursor:pointer}
 
 /* Customer history retention notice */
 .cart-history-retention-notice{margin:0 0 12px;color:var(--muted);font-size:.73rem;line-height:1.45;background:#faf4ef;border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+
+/* Customer rewards progress and readable manual code */
+.points-card.kbr-progress-points{display:block;padding:18px;background:#f7ede5}
+.kbr-points-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.kbr-points-heading>span{font-size:1rem;font-weight:850}
+.kbr-points-heading strong{font-size:1.55rem;white-space:nowrap}
+.kbr-points-heading strong small{font-size:.7rem;color:var(--muted)}
+.kbr-progress-explainer{font-size:.82rem;line-height:1.4;color:var(--brown);margin:8px 0 13px}
+.kbr-progress-track{background:#e0d4c9;height:12px;width:100%;border-radius:999px;overflow:hidden}
+.kbr-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#8c6249,#b8864e);border-radius:999px;transition:width .4s ease}
+.kbr-progress-scale{display:flex;justify-content:space-between;color:var(--muted);font-size:.72rem;margin-top:7px}
+.kbr-customer-code-wrap{padding:8px 5px 0}
+.kbr-customer-code-label{font-size:.75rem;color:var(--muted);font-weight:750}
+.kbr-customer-code-line{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0}
+.kbr-customer-code-text{font-size:1.22rem;letter-spacing:.07em;color:var(--brown);font-variant-numeric:tabular-nums}
+.kbr-customer-copy{border:1px solid var(--line);border-radius:9px;background:#f7ede5;padding:7px 11px;color:var(--brown);font-weight:800;cursor:pointer;font-size:.76rem}
+@media(max-width:380px){.kbr-customer-code-text{font-size:1.05rem}.kbr-points-heading strong{font-size:1.3rem}}
