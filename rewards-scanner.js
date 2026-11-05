@@ -28,6 +28,14 @@
     #kbrQrVideo{margin-top:6px;overflow:hidden;border-radius:12px}
     #kbrQrMessage{font-size:.86rem;line-height:1.45;margin:12px 0 0;min-height:20px}
     .kbr-qr-manual{padding:12px;border:1px solid #e5d3c3;border-radius:12px;background:#fff}
+    .kbr-phone-keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+    .kbr-qr-sheet .kbr-phone-key{padding:13px 5px;border:1px solid #dcc7b5;border-radius:11px;background:#fff9f1;font-size:1.18rem;font-weight:850;color:#49301f;min-height:48px}
+    .kbr-qr-sheet .kbr-phone-key:active{background:#e4d2c0}
+    .kbr-qr-sheet .kbr-phone-key.kbr-phone-delete{color:#8d4028}
+    .kbr-qr-sheet input.kbr-phone-input{text-transform:none;letter-spacing:1.5px;font-size:1.12rem;font-weight:800;text-align:center}
+    .kbr-phone-confirm{border:1px solid #9ccea7;background:#eff9f0;padding:12px;border-radius:12px;margin:10px 0;font-size:.9rem}
+    .kbr-phone-confirm strong{display:block;font-size:1.05rem;margin:4px 0}
+    .kbr-qr-sheet button.kbr-qr-btn.kbr-confirm-button{background:#267449}
   `}));
   const overlay=el('div',{id:'kbrQrOverlay',role:'dialog','aria-modal':'true','aria-label':'KBR rewards'});
   const sheet=el('div',{class:'kbr-qr-sheet'});
@@ -40,17 +48,54 @@
   const codeButton=el('button',{type:'button',class:'kbr-qr-btn kbr-qr-alt',text:'⌨ Enter Customer Code','aria-expanded':'false'});
   const codeInput=el('input',{id:'kbrQrCustomerCode',type:'text',maxlength:'24',placeholder:'XXXX-XXXX-XXXX',autocomplete:'off',spellcheck:'false'});
   const linkButton=el('button',{type:'button',class:'kbr-qr-btn',text:'Link Order'});
+  const phoneButton=el('button',{type:'button',class:'kbr-qr-btn kbr-qr-alt',text:'📱 Enter Phone Number','aria-expanded':'false'});
+  const phoneInput=el('input',{id:'kbrRewardsPhone',class:'kbr-phone-input',type:'tel',inputmode:'numeric',maxlength:'13',placeholder:'09XXXXXXXXX',autocomplete:'off'});
+  const phoneKeyboard=el('div',{class:'kbr-phone-keypad'});
+  const phoneFindButton=el('button',{type:'button',class:'kbr-qr-btn',text:'Find Customer'});
+  const phoneConfirm=el('div',{class:'kbr-phone-confirm',hidden:''});
+  const phoneConfirmButton=el('button',{type:'button',class:'kbr-qr-btn kbr-confirm-button',text:'Confirm & Link Order'});
+  const phonePanel=el('div',{class:'kbr-qr-manual',hidden:''},[
+    el('label',{for:'kbrRewardsPhone',text:'Customer mobile number'}),phoneInput,phoneKeyboard,
+    phoneFindButton,phoneConfirm,phoneConfirmButton
+  ]);
+  let pendingPhoneCustomer=null;
+  for(const digit of ['1','2','3','4','5','6','7','8','9','Clear','0','⌫']){
+    const key=el('button',{type:'button',class:'kbr-phone-key'+(digit==='⌫'?' kbr-phone-delete':''),text:digit});
+    key.addEventListener('click',()=>{
+      if(digit==='Clear')phoneInput.value='';
+      else if(digit==='⌫')phoneInput.value=phoneInput.value.slice(0,-1);
+      else if(phoneInput.value.length<13)phoneInput.value+=digit;
+      invalidatePhoneLookup();
+      phoneInput.focus();
+    });
+    phoneKeyboard.append(key);
+  }
   const manual=el('div',{class:'kbr-qr-manual',hidden:''},[
     el('label',{for:'kbrQrCustomerCode',text:'Customer code'},[codeInput]),
     linkButton
   ]);
   const video=el('div',{id:'kbrQrVideo'});
-  const status=el('p',{id:'kbrQrMessage',role:'status',text:'Choose Scan QR Code or Enter Customer Code.'});
-  sheet.append(header,receipt,scanButton,video,codeButton,manual,status);
+  const status=el('p',{id:'kbrQrMessage',role:'status',text:'Choose Scan QR Code, Enter Customer Code, or Enter Phone Number.'});
+  sheet.append(header,receipt,scanButton,video,codeButton,manual,phoneButton,phonePanel,status);
   overlay.append(sheet);document.body.append(overlay);
   // Hidden needs to work despite any global styles.
   function manualOpen(value){manual.hidden=!value;manual.style.display=value?'block':'none';codeButton.setAttribute('aria-expanded',String(value));}
+  function phoneOpen(value){
+    phonePanel.hidden=!value;
+    phonePanel.style.display=value?'block':'none';
+    phoneButton.setAttribute('aria-expanded',String(value));
+    if(value)manualOpen(false);
+  }
+  function invalidatePhoneLookup(){
+    pendingPhoneCustomer=null;
+    phoneConfirm.hidden=true;
+    phoneConfirm.style.display='none';
+    phoneConfirmButton.hidden=true;
+    phoneConfirmButton.style.display='none';
+  }
   manualOpen(false);
+  phoneOpen(false);
+  invalidatePhoneLookup();
   async function stopCamera(){
     const active=camera;camera=null;
     if(active){try{await active.stop();}catch{}try{await active.clear();}catch{}}
@@ -61,6 +106,8 @@
     overlay.classList.remove('open');
     stopCamera();
     manualOpen(false);
+    phoneOpen(false);
+    invalidatePhoneLookup();
   }
   function openForOrder(orderNo){
     const value=String(orderNo||'').replace(/\D/g,'');
@@ -68,7 +115,8 @@
     selectedOrderNo=value;scanLocked=false;busy=false;
     receipt.textContent='Order #'+value.slice(-3).padStart(3,'0');
     codeInput.value='';manualOpen(false);
-    status.textContent='Choose Scan QR Code or Enter Customer Code.';
+    phoneInput.value='';phoneOpen(false);invalidatePhoneLookup();
+    status.textContent='Choose Scan QR Code, Enter Customer Code, or Enter Phone Number.';
     overlay.classList.add('open');
   }
   header.lastChild.onclick=close;
@@ -90,7 +138,7 @@
     const short=/^[0-9a-f]{4}(?:-?[0-9a-f]{4}){2}$/i.test(value);
     if(!full&&!short){status.textContent='Enter a valid 12-character customer code or scan their QR.';return;}
     if(!window.KBRCloud){status.textContent='Sign in to the Barista App first.';return;}
-    busy=true;linkButton.disabled=true;scanButton.disabled=true;
+    busy=true;linkButton.disabled=true;scanButton.disabled=true;phoneFindButton.disabled=true;phoneConfirmButton.disabled=true;
     status.textContent='Linking customer to order #'+selectedOrderNo+'…';
     try{
       const normalized=full?'KBR-CUSTOMER:'+value.slice(13).toLowerCase():value.replace(/-/g,'').toUpperCase();
@@ -104,7 +152,7 @@
         :'✓ '+(result.customerName||'Customer')+' linked! Points will be added after the order is paid and completed.';
       manualOpen(false);codeInput.value='';
     }catch(error){status.textContent=error?.message||'Could not link this customer. Please try again.';}
-    finally{busy=false;linkButton.disabled=false;scanButton.disabled=false;}
+    finally{busy=false;linkButton.disabled=false;scanButton.disabled=false;phoneFindButton.disabled=false;phoneConfirmButton.disabled=false;}
   }
   scanButton.onclick=async()=>{
     if(busy)return;
@@ -132,8 +180,57 @@
   codeButton.onclick=async()=>{
     await stopCamera();
     const show=manual.hidden;
+    phoneOpen(false);invalidatePhoneLookup();
     manualOpen(show);
     if(show)codeInput.focus();
+  };
+  phoneButton.onclick=async()=>{
+    await stopCamera();
+    const show=phonePanel.hidden;
+    phoneOpen(show);invalidatePhoneLookup();
+    if(show)phoneInput.focus();
+  };
+  phoneInput.addEventListener('input',()=>{
+    phoneInput.value=phoneInput.value.replace(/[^0-9+]/g,'').slice(0,13);
+    invalidatePhoneLookup();
+  });
+  phoneInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();phoneFindButton.click();}});
+  phoneFindButton.onclick=async()=>{
+    if(busy)return;
+    const value=phoneInput.value.trim();
+    if(!/^(09\d{9}|(?:\+?63)9\d{9})$/.test(value)){
+      status.textContent='Enter a valid 11-digit mobile number, starting with 09.';
+      return;
+    }
+    if(!window.KBRCloud){status.textContent='Sign in to the Barista App first.';return;}
+    busy=true;phoneFindButton.disabled=true;invalidatePhoneLookup();
+    status.textContent='Looking up KBR Rewards customer…';
+    try{
+      const customer=await window.KBRCloud.rpc('kbr_lookup_customer_by_phone',{p_phone:value});
+      if(!customer?.customerCode)throw Error('Could not verify this customer account.');
+      pendingPhoneCustomer={...customer,phone:value,orderNo:selectedOrderNo};
+      phoneConfirm.replaceChildren(
+        el('span',{text:'Please confirm the customer before linking points:'}),
+        el('strong',{text:customer.customerName||'Customer'}),
+        el('span',{text:customer.maskedPhone||''})
+      );
+      phoneConfirm.hidden=false;phoneConfirm.style.display='block';
+      phoneConfirmButton.hidden=false;phoneConfirmButton.style.display='block';
+      status.textContent='Confirm the customer name, then link the order.';
+    }catch(error){status.textContent=error?.message||'Customer not found. Please check the phone number.';}
+    finally{busy=false;phoneFindButton.disabled=false;}
+  };
+  phoneConfirmButton.onclick=async()=>{
+    if(!pendingPhoneCustomer||busy)return;
+    if(pendingPhoneCustomer.phone!==phoneInput.value.trim()||pendingPhoneCustomer.orderNo!==selectedOrderNo){
+      invalidatePhoneLookup();
+      status.textContent='Phone number or order changed. Please look up the customer again.';
+      return;
+    }
+    const code=pendingPhoneCustomer.customerCode;
+    invalidatePhoneLookup();
+    await linkOrder(code);
+    if(status.textContent.startsWith('✓')){phoneOpen(false);phoneInput.value='';}
   };
   codeInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();linkButton.click();}});
   linkButton.onclick=()=>linkOrder(codeInput.value);
