@@ -8,7 +8,7 @@
   <link rel="manifest" href="online-manifest.webmanifest?v=71">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=79-reward-progress">
+  <link rel="stylesheet" href="online-orders.css?v=81-dynamic-milestone">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -406,15 +406,17 @@
         </div>
 
         <section class="points-card kbr-progress-points" aria-label="Your KBR reward progress">
-          <div class="kbr-points-heading">
-            <span>Your KBR Points</span>
-            <strong><span id="customerPoints">0</span> <small>points</small></strong>
+          <div class="kbr-points-heading"><span>Your KBR Points</span></div>
+          <div class="kbr-progress-track-wrap">
+            <div id="kbrRewardProgressTrack" class="kbr-progress-track" role="progressbar" aria-label="Progress to the next 1,000-point milestone" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+              <div id="kbrRewardProgressFill" class="kbr-progress-fill"></div>
+            </div>
+            <span class="kbr-progress-gift" aria-label="Drink reward" title="Drink reward milestone">☕</span>
           </div>
-          <p id="kbrRewardProgressLabel" class="kbr-progress-explainer">1,000 points unlocks ₱50 off your next eligible purchase.</p>
-          <div id="kbrRewardProgressTrack" class="kbr-progress-track" role="progressbar" aria-label="Progress toward your next ₱50 reward" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
-            <div id="kbrRewardProgressFill" class="kbr-progress-fill"></div>
+          <div class="kbr-progress-scale">
+            <strong><span id="customerPoints">0</span> points</strong>
+            <strong><span id="kbrRewardNextGoal">1,000</span> points <span aria-hidden="true">🥤</span></strong>
           </div>
-          <div class="kbr-progress-scale"><span>0 pts</span><span>1,000 pts</span></div>
         </section>
 
         <section class="kbr-rewards-qr-card" aria-label="Your KBR Rewards QR code">
@@ -703,7 +705,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="online-orders.js?v=79-reward-progress" defer></script>
+  <script src="online-orders.js?v=81-dynamic-milestone" defer></script>
 
 
 
