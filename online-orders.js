@@ -1540,11 +1540,18 @@ async function initCustomerAuth(){
   if(requiresInitialPasswordChange())enforceInitialPasswordChange();
   else if(customerSession?.user)await tryClaimPendingGuestOrder();
 
-  authClient.auth.onAuthStateChange(async(_event,session)=>{
+  authClient.auth.onAuthStateChange((_event,session)=>{
     customerSession=session||null;
-    await loadCustomerProfile();
-    if(requiresInitialPasswordChange())enforceInitialPasswordChange();
-    else if(customerSession?.user)await tryClaimPendingGuestOrder();
+    // Avoid calling Supabase APIs synchronously inside an auth-state callback.
+    // Doing so can deadlock token refresh and leave the password dialog repeating.
+    setTimeout(async()=>{
+      if(initialPasswordChangeProcessing)return;
+      try{
+        await loadCustomerProfile();
+        if(requiresInitialPasswordChange())enforceInitialPasswordChange();
+        else if(customerSession?.user)await tryClaimPendingGuestOrder();
+      }catch(error){console.warn('Customer session refresh failed',error);}
+    },0);
   });
 }
 
