@@ -1349,17 +1349,19 @@ function updateHeaderPoints(){
 const REWARD_THRESHOLD=1000;
 function renderCustomerPointsProgress(){
  const balance=Math.max(0,Math.floor(Number(customerProfile?.points||0)));
- // The scale always measures the progress *within* the next 1,000 points.
- // Example: 3,457 points => 457 / 1,000 (45.7%), next goal 4,000.
- const progress=balance%REWARD_THRESHOLD;
  const goal=(Math.floor(balance/REWARD_THRESHOLD)+1)*REWARD_THRESHOLD;
+ // Display cumulative progress to the *next* milestone; earned points are not reset.
+ // 3,457 of 4,000 => 86.425% full, rather than 457/1,000.
+ const percent=goal>0?Math.min(100,balance/goal*100):0;
  const fill=$('kbrRewardProgressFill');
  const track=$('kbrRewardProgressTrack');
  const goalLabel=$('kbrRewardNextGoal');
- if(fill)fill.style.width=(progress/REWARD_THRESHOLD*100)+'%';
+ if(fill)fill.style.width=percent.toFixed(2)+'%';
  if(track){
-  track.setAttribute('aria-valuenow',String(progress));
-  track.setAttribute('aria-label',balance.toLocaleString('en-PH')+' points; next milestone '+goal.toLocaleString('en-PH')+' points');
+  track.setAttribute('aria-valuemin','0');
+  track.setAttribute('aria-valuemax',String(goal));
+  track.setAttribute('aria-valuenow',String(balance));
+  track.setAttribute('aria-label',balance.toLocaleString('en-PH')+' of '+goal.toLocaleString('en-PH')+' points toward the next drink milestone');
  }
  if(goalLabel)goalLabel.textContent=goal.toLocaleString('en-PH');
 }
@@ -1830,7 +1832,7 @@ loadMenu();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=81-dynamic-milestone',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=82-near-goal',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
