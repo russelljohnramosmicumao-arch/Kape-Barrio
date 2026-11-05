@@ -1187,6 +1187,7 @@ async function phoneUsernameRequest(action,details){
   customerSession=data.session;
 }
 
+let initialPasswordChangeProcessing=false;
 function requiresInitialPasswordChange(){
   return customerSession?.user?.app_metadata?.kbr_temporary_password===true;
 }
@@ -1201,7 +1202,7 @@ function enforceInitialPasswordChange(){
   if(instruction)instruction.textContent=required
     ?'Welcome to KBR Rewards! For your security, replace the temporary password before using your account.'
     :'Change your password here. Forgotten passwords can be reset at Kape Bar-Rio.';
-  if(required&&!dialog.open){
+  if(required&&!initialPasswordChangeProcessing&&!dialog.open){
     $('phoneAuthDialog')?.close();
     $('accountDialog')?.close();
     dialog.showModal();
@@ -1298,43 +1299,71 @@ function customerCanChangePassword(){
 
 async function changeCustomerPassword(event){
   event.preventDefault();
-  if(!customerCanChangePassword()||!authClient)return;
+  if(initialPasswordChangeProcessing||!customerCanChangePassword()||!authClient)return;
   const current=$('changeCustomerOldPassword').value;
   const next=$('changeCustomerNewPassword').value;
   const confirmation=$('changeCustomerConfirmPassword').value;
   const status=$('changeCustomerPasswordStatus');
   const button=$('changeCustomerPasswordSubmit');
-  const feedback=(message)=>{status.textContent=message;};
+  const feedback=message=>{status.textContent=message;};
   if(!current)return feedback('Enter your current or temporary password.');
   if(next.length<8||next.length>128)return feedback('New password must be 8–128 characters.');
   if(next!==confirmation)return feedback('New passwords do not match.');
   if(current===next)return feedback('Choose a different password.');
+  initialPasswordChangeProcessing=true;
   button.disabled=true;
-  feedback('Checking your current password…');
+  feedback('Saving your password…');
   try{
-    const user=customerSession.user;
-    const verification=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
-      auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
-    });
-    const credentials=user.email?{email:user.email,password:current}:
-      {phone:user.phone,password:current};
-    if(!credentials.email&&!credentials.phone)throw Error('Visit Kape Barrio for a password reset.');
-    const {error:verifyError}=await verification.auth.signInWithPassword(credentials);
-    if(verifyError)throw Error('Current password is incorrect. Visit the shop if you forgot it.');
-    const {error}=await authClient.auth.updateUser({password:next});
-    if(error)throw error;
-    const {data:refreshed,error:refreshError}=await authClient.auth.getUser();
-    if(refreshError)throw refreshError;
-    if(refreshed?.user?.app_metadata?.kbr_temporary_password===true)
-      throw Error('Password changed, but setup could not be confirmed. Please refresh.');
-    if(refreshed?.user)customerSession={...customerSession,user:refreshed.user};
-    $('changeCustomerPasswordForm').reset();
-    enforceInitialPasswordChange();
-    $('changeCustomerPasswordDialog').close();
-    toast('Password changed successfully.');
+    const initial=requiresInitialPasswordChange();
+    const user=customerSession?.user;
+    if(!user)throw Error('Your session ended. Please sign in again with your phone number.');
+    if(initial){
+      // Recover a browser session that was not persisted even though login completed.
+      let {data:sessionData}=await authClient.auth.getSession();
+      if(!sessionData?.session?.access_token){
+        const credentials=user.email?{email:user.email,password:current}:{phone:user.phone,password:current};
+        const {data:relogin,error:reloginError}=await authClient.auth.signInWithPassword(credentials);
+        if(reloginError||!relogin?.session)throw Error('Session expired. Sign in again using your temporary password.');
+        customerSession=relogin.session;
+        sessionData={session:relogin.session};
+      }
+      const response=await fetch(SUPABASE_URL+'/functions/v1/kbr-initial-password-change',{
+        method:'POST',
+        headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+sessionData.session.access_token,'Content-Type':'application/json'},
+        body:JSON.stringify({currentPassword:current,newPassword:next})
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok||!result?.ok)throw Error(result?.error||'Could not complete your password setup.');
+      // A password update can invalidate the old token. Exit cleanly and request
+      // a fresh login rather than using a stale session or reopening this dialog.
+      customerSession=null;
+      await authClient.auth.signOut({scope:'local'}).catch(()=>{});
+      customerProfile=null;
+      customerOrders=[];
+      $('changeCustomerPasswordForm').reset();
+      $('changeCustomerPasswordDialog')?.close();
+      $('changeCustomerPasswordDialog')?.classList.remove('kbr-initial-change');
+      $('changeCustomerPasswordClose').hidden=false;
+      updateAccountUI();
+      $('signInChoiceDialog')?.showModal();
+      toast('Password saved! Sign in again using your NEW password.');
+    }else{
+      const verification=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+        auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+      });
+      const credentials=user.email?{email:user.email,password:current}:{phone:user.phone,password:current};
+      const {error:verifyError}=await verification.auth.signInWithPassword(credentials);
+      if(verifyError)throw Error('Current password is incorrect.');
+      const {error:updateError}=await authClient.auth.updateUser({password:next});
+      if(updateError)throw updateError;
+      $('changeCustomerPasswordForm').reset();
+      $('changeCustomerPasswordDialog')?.close();
+      toast('Password changed successfully.');
+    }
   }catch(error){
-    feedback(error.message||'Password change failed. Please try again.');
+    feedback(error?.message||'Password change failed. Please try again.');
   }finally{
+    initialPasswordChangeProcessing=false;
     button.disabled=false;
   }
 }
