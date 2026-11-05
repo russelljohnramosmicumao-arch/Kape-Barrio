@@ -36,6 +36,11 @@
     .kbr-phone-confirm{border:1px solid #9ccea7;background:#eff9f0;padding:12px;border-radius:12px;margin:10px 0;font-size:.9rem}
     .kbr-phone-confirm strong{display:block;font-size:1.05rem;margin:4px 0}
     .kbr-qr-sheet button.kbr-qr-btn.kbr-confirm-button{background:#267449}
+    .kbr-qr-register{border:1px solid #c6b49d;border-radius:12px;padding:12px;background:#fffaf0;margin:12px 0}
+    .kbr-qr-register label.kbr-register-consent{display:flex;gap:9px;align-items:flex-start;font-weight:500;font-size:.76rem;line-height:1.4}
+    .kbr-qr-register input[type=checkbox]{width:auto;display:inline;margin:2px 0}
+    .kbr-qr-sheet button.kbr-register-open{background:#267449}
+    .kbr-temp-password{display:block;font-size:1.45rem;letter-spacing:1px;background:#fff2d1;border:1px solid #e5c98f;border-radius:10px;padding:12px;margin:12px 0;overflow-wrap:anywhere}
   `}));
   const overlay=el('div',{id:'kbrQrOverlay',role:'dialog','aria-modal':'true','aria-label':'KBR rewards'});
   const sheet=el('div',{class:'kbr-qr-sheet'});
@@ -54,9 +59,21 @@
   const phoneFindButton=el('button',{type:'button',class:'kbr-qr-btn',text:'Find Customer'});
   const phoneConfirm=el('div',{class:'kbr-phone-confirm',hidden:''});
   const phoneConfirmButton=el('button',{type:'button',class:'kbr-qr-btn kbr-confirm-button',text:'Confirm & Link Order'});
+  const registerButton=el('button',{type:'button',class:'kbr-qr-btn kbr-register-open',text:'➕ Register New Customer',hidden:''});
+  const registerName=el('input',{id:'kbrRegisterCustomerName',type:'text',maxlength:'80',placeholder:'Customer full name',autocomplete:'off'});
+  const registerConsent=el('input',{id:'kbrRegisterConsent',type:'checkbox'});
+  const registerSubmit=el('button',{type:'button',class:'kbr-qr-btn',text:'Create Account & Link Order'});
+  const registerForm=el('div',{class:'kbr-qr-register',hidden:''},[
+    el('label',{for:'kbrRegisterCustomerName',text:'Customer name'}),registerName,
+    el('label',{class:'kbr-register-consent'},[
+      registerConsent,
+      el('span',{text:'Customer agrees to KBR Rewards Terms & Conditions and Privacy Policy.'})
+    ]),
+    registerSubmit
+  ]);
   const phonePanel=el('div',{class:'kbr-qr-manual',hidden:''},[
     el('label',{for:'kbrRewardsPhone',text:'Customer mobile number'}),phoneInput,phoneKeyboard,
-    phoneFindButton,phoneConfirm,phoneConfirmButton
+    phoneFindButton,phoneConfirm,phoneConfirmButton,registerButton,registerForm
   ]);
   let pendingPhoneCustomer=null;
   for(const digit of ['1','2','3','4','5','6','7','8','9','Clear','0','⌫']){
@@ -92,6 +109,8 @@
     phoneConfirm.style.display='none';
     phoneConfirmButton.hidden=true;
     phoneConfirmButton.style.display='none';
+    registerButton.hidden=true;registerButton.style.display='none';
+    registerForm.hidden=true;registerForm.style.display='none';
   }
   manualOpen(false);
   phoneOpen(false);
@@ -115,7 +134,7 @@
     selectedOrderNo=value;scanLocked=false;busy=false;
     receipt.textContent='Order #'+value.slice(-3).padStart(3,'0');
     codeInput.value='';manualOpen(false);
-    phoneInput.value='';phoneOpen(false);invalidatePhoneLookup();
+    phoneInput.value='';phoneOpen(false);invalidatePhoneLookup();registerName.value='';registerConsent.checked=false;
     status.textContent='Choose Scan QR Code, Enter Customer Code, or Enter Phone Number.';
     overlay.classList.add('open');
   }
@@ -136,8 +155,8 @@
     const value=String(code||'').trim();
     const full=/^KBR-CUSTOMER:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
     const short=/^[0-9a-f]{4}(?:-?[0-9a-f]{4}){2}$/i.test(value);
-    if(!full&&!short){status.textContent='Enter a valid 12-character customer code or scan their QR.';return;}
-    if(!window.KBRCloud){status.textContent='Sign in to the Barista App first.';return;}
+    if(!full&&!short){status.textContent='Enter a valid 12-character customer code or scan their QR.';return false;}
+    if(!window.KBRCloud){status.textContent='Sign in to the Barista App first.';return false;}
     busy=true;linkButton.disabled=true;scanButton.disabled=true;phoneFindButton.disabled=true;phoneConfirmButton.disabled=true;
     status.textContent='Linking customer to order #'+selectedOrderNo+'…';
     try{
@@ -156,7 +175,8 @@
       }
       close();
       codeInput.value='';
-    }catch(error){status.textContent=error?.message||'Could not link this customer. Please try again.';}
+      return true;
+    }catch(error){status.textContent=error?.message||'Could not link this customer. Please try again.';return false;}
     finally{busy=false;linkButton.disabled=false;scanButton.disabled=false;phoneFindButton.disabled=false;phoneConfirmButton.disabled=false;}
   }
   scanButton.onclick=async()=>{
@@ -222,8 +242,62 @@
       phoneConfirm.hidden=false;phoneConfirm.style.display='block';
       phoneConfirmButton.hidden=false;phoneConfirmButton.style.display='block';
       status.textContent='Confirm the customer name, then link the order.';
-    }catch(error){status.textContent=error?.message||'Customer not found. Please check the phone number.';}
+    }catch(error){
+      const message=error?.message||'Customer not found. Please check the phone number.';
+      status.textContent=message;
+      if(message.includes('No KBR Rewards account found')){
+        registerButton.hidden=false;registerButton.style.display='block';
+        status.textContent='Customer not registered. You can register them now using their name.';
+      }
+    }
     finally{busy=false;phoneFindButton.disabled=false;}
+  };
+  registerButton.onclick=()=>{
+    registerForm.hidden=false;registerForm.style.display='block';
+    registerName.focus();
+  };
+  const tempDialog=el('div',{id:'kbrTempPasswordOverlay',role:'dialog','aria-modal':'true','aria-label':'New KBR temporary password'});
+  tempDialog.style.cssText='display:none;position:fixed;inset:0;z-index:11000;background:rgba(25,15,10,.8);align-items:center;justify-content:center;padding:14px';
+  const tempSheet=el('div',{class:'kbr-qr-sheet'});
+  tempDialog.append(tempSheet);document.body.append(tempDialog);
+  function showTempPassword(name,password,linked){
+    tempSheet.replaceChildren(
+      el('h2',{text:'✓ Customer Registered'}),
+      el('p',{text:name+' has a new KBR Rewards account.'}),
+      el('p',{text:'Give this temporary password directly to the customer. It is shown only now; they must change it at first login.'}),
+      el('strong',{class:'kbr-temp-password',text:password}),
+      el('p',{text:linked?'Order linked successfully. Points will be credited when the order qualifies.':'Account created, but the order was not linked. Please link the order using the customer phone number.'})
+    );
+    const done=el('button',{type:'button',class:'kbr-qr-btn',text:'Done — I gave the password to the customer'});
+    done.onclick=()=>{tempDialog.style.display='none';tempSheet.replaceChildren();};
+    tempSheet.append(done);
+    tempDialog.style.display='flex';
+  }
+  registerSubmit.onclick=async()=>{
+    if(busy)return;
+    const name=registerName.value.trim(),phone=phoneInput.value.trim();
+    if(name.length<2){status.textContent='Enter the customer name.';return;}
+    if(!registerConsent.checked){status.textContent='Customer must agree to the Terms and Privacy Policy.';return;}
+    const staff=window.KBRCloud?.session?.();
+    if(!staff?.access_token){status.textContent='Staff login required. Please sign in again.';return;}
+    busy=true;registerSubmit.disabled=true;
+    status.textContent='Creating KBR Rewards account…';
+    let created=null;
+    try{
+      const response=await fetch('https://wkyyuyyfauyhpivebrdg.supabase.co/functions/v1/kbr-staff-customer-registration',{
+        method:'POST',
+        headers:{apikey:window.KBRCloud.config.key,Authorization:'Bearer '+staff.access_token,'Content-Type':'application/json'},
+        body:JSON.stringify({action:'register',name,phone,consent:true})
+      });
+      const body=await response.json().catch(()=>({}));
+      if(!response.ok||!body.ok)throw Error(body.error||'Registration failed.');
+      created=body;
+      status.textContent='Account created. Linking the order…';
+    }catch(error){status.textContent=error?.message||'Could not register customer.';}
+    finally{busy=false;registerSubmit.disabled=false;}
+    if(!created)return;
+    const linked=await linkOrder(created.customerCode);
+    showTempPassword(created.customerName,created.temporaryPassword,linked);
   };
   phoneConfirmButton.onclick=async()=>{
     if(!pendingPhoneCustomer||busy)return;
