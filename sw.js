@@ -1,4 +1,3 @@
-const CACHE="kbr-ordering-v154-rewards-deploy";
 const CACHE="kbr-ordering-v155-reliable-offline-updates";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
