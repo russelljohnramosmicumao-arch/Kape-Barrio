@@ -657,7 +657,7 @@
       <button type="button" id="changeCustomerPasswordClose" class="modal-close" aria-label="Close">×</button>
       <div class="eyebrow">KBR Account Security</div>
       <h2>Change Password</h2>
-      <p class="account-copy">After the shop resets your password, sign in with the temporary password and replace it here. Forgotten passwords must still be reset at Kape Barrio.</p>
+      <p id="changeCustomerPasswordInstructions" class="account-copy">Change your password here. Forgotten passwords can be reset at Kape Bar-Rio.</p>
       <form id="changeCustomerPasswordForm" autocomplete="off">
         <label class="password-change-field">Current or temporary password
           <input id="changeCustomerOldPassword" type="password" autocomplete="current-password" minlength="6" required>
@@ -674,6 +674,7 @@
     </div>
   </dialog>
 
+  <style>.kbr-initial-change #changeCustomerPasswordClose{display:none!important}</style>
   <footer class="legal-footer">
     <button id="footerTermsButton" type="button">Terms &amp; Conditions</button>
     <span>·</span>
@@ -684,7 +685,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="online-orders.js?v=83-free-drink-tiers" defer></script>
+  <script src="online-orders.js?v=84-first-login-password" defer></script>
 
 
 
