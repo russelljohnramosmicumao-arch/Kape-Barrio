@@ -1346,11 +1346,31 @@ function updateHeaderPoints(){
   if(pill)pill.textContent=points.toLocaleString('en-PH');
 }
 
+const REWARD_THRESHOLD=1000;
+function renderCustomerPointsProgress(){
+ const balance=Math.max(0,Math.floor(Number(customerProfile?.points||0)));
+ const progress=balance>0&&balance%REWARD_THRESHOLD===0?REWARD_THRESHOLD:balance%REWARD_THRESHOLD;
+ const remaining=REWARD_THRESHOLD-progress;
+ const ready=balance>=REWARD_THRESHOLD;
+ const fill=$('kbrRewardProgressFill'),track=$('kbrRewardProgressTrack'),label=$('kbrRewardProgressLabel');
+ if(fill)fill.style.width=(progress/REWARD_THRESHOLD*100)+'%';
+ if(track){track.setAttribute('aria-valuenow',String(progress));}
+ if(label)label.textContent=ready&&remaining===0
+   ?'🎁 You have enough points for a ₱50 reward!'
+   :ready?'🎁 ₱50 reward available! '+remaining.toLocaleString('en-PH')+' points until your next 1,000-point milestone.'
+   :remaining.toLocaleString('en-PH')+' points until your ₱50 reward.';
+}
+function customerShortCode(id){
+ const compact=String(id||'').replace(/-/g,'').slice(0,12).toUpperCase();
+ return compact.length===12?compact.match(/.{4}/g).join('-'):'';
+}
 let lastRenderedRewardQr='';
 function renderCustomerRewardQr(){
  const holder=$('kbrCustomerQr'),status=$('kbrCustomerQrStatus');
  if(!holder||!status)return;
  const id=customerSession?.user?.id||'';
+ const codeEl=$('kbrCustomerShortCode');
+ if(codeEl)codeEl.textContent=customerShortCode(id)||'—';
  if(!id){holder.replaceChildren();lastRenderedRewardQr='';status.textContent='Sign in to display your QR.';return;}
  const payload='KBR-CUSTOMER:'+id.toLowerCase();
  if(payload===lastRenderedRewardQr&&holder.childElementCount)return;
@@ -1397,6 +1417,7 @@ function updateAccountUI(){
     'KBR Customer';
 
   $('customerPoints').textContent=Number(customerProfile?.points||0).toLocaleString('en-PH');
+  renderCustomerPointsProgress();
   renderCustomerRewardQr();
 
   const avatar=customerProfile?.avatarUrl||user.user_metadata?.avatar_url||'';
@@ -1687,6 +1708,16 @@ $('changeCustomerPasswordOpen')?.addEventListener('click',()=>{
 });
 $('changeCustomerPasswordClose')?.addEventListener('click',()=>{$('changeCustomerPasswordDialog')?.close();});
 $('changeCustomerPasswordForm')?.addEventListener('submit',changeCustomerPassword);
+$('kbrCopyCustomerCode')?.addEventListener('click',async()=>{
+ const code=customerShortCode(customerSession?.user?.id);
+ if(!code)return;
+ try{
+  await navigator.clipboard.writeText(code);
+  toast('Customer code copied.');
+ }catch{
+  toast('Code: '+code);
+ }
+});
 $('customerSignOutButton')?.addEventListener('click',signOutCustomer);
 $('cartButton')?.addEventListener('click',openCart);
 document.querySelectorAll('[data-close-cart]').forEach(el=>el.addEventListener('click',closeCart));
@@ -1796,7 +1827,7 @@ loadMenu();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=78-30-day-history',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=79-reward-progress',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
