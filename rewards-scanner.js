@@ -1,64 +1,74 @@
 'use strict';
 (()=>{
-  // Loads only when the barista requests QR rewards. No timers or Supabase polling.
-  let camera=null,busy=false,selectedOrderNo='';
+  // No background polling or camera use. Scanner is opened per selected order.
+  let camera=null,busy=false,selectedOrderNo='',scanLocked=false;
   function el(tag,attrs={},children=[]){
-    const e=document.createElement(tag);
-    Object.entries(attrs).forEach(([k,v])=>{if(k==='text')e.textContent=v;else e.setAttribute(k,v);});
-    for(const child of children)e.append(child);
-    return e;
+    const node=document.createElement(tag);
+    for(const [key,val] of Object.entries(attrs)){
+      if(key==='text')node.textContent=val;
+      else node.setAttribute(key,val);
+    }
+    children.forEach(child=>node.append(child));
+    return node;
   }
-  const css=el('style',{text:`
+  document.head.append(el('style',{text:`
     #kbrQrOverlay{position:fixed;inset:0;z-index:10000;background:rgba(25,15,10,.76);display:none;align-items:center;justify-content:center;padding:14px}
     #kbrQrOverlay.open{display:flex}
     .kbr-qr-sheet{width:min(440px,100%);background:#fffaf5;color:#38281e;border-radius:18px;padding:20px;max-height:94dvh;overflow:auto}
-    .kbr-qr-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:12px}
+    .kbr-qr-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:10px}
     .kbr-qr-head h2{font-size:1.2rem;margin:0}
-    .kbr-qr-close{font-size:1.6rem;background:transparent;border:0}
-    .kbr-qr-sheet label{display:block;font-size:.85rem;font-weight:750;margin:12px 0}
-    .kbr-qr-sheet input{box-sizing:border-box;display:block;width:100%;padding:12px;border:1px solid #d8c6b3;border-radius:10px;font-size:1rem;margin-top:5px}
-    .kbr-qr-sheet button.kbr-qr-btn{background:#65432d;color:#fff;border:0;border-radius:11px;padding:12px;font-size:.9rem;font-weight:bold;width:100%;margin:5px 0}
-    #kbrQrVideo{min-height:0;overflow:hidden}
-    #kbrQrMessage{font-size:.85rem;line-height:1.45;margin:10px 0}
-    .kbr-qr-help{font-size:.8rem;color:#716052}
-    .kbr-qr-selected-order{display:block;font-size:1.5rem;color:#245a32;margin:4px 0 12px}
-    .kbr-qr-order-label{font-size:.8rem;color:#716052}
-  `});
-  document.head.append(css);
-  const overlay=el('div',{id:'kbrQrOverlay',role:'dialog','aria-modal':'true','aria-label':'Credit KBR customer points'});
+    .kbr-qr-close{font-size:1.6rem;background:transparent;border:0;cursor:pointer}
+    .kbr-qr-sheet button.kbr-qr-btn{background:#65432d;color:#fff;border:0;border-radius:11px;padding:13px;font-size:.95rem;font-weight:800;width:100%;margin:6px 0;cursor:pointer}
+    .kbr-qr-sheet button.kbr-qr-btn:disabled{opacity:.55;cursor:wait}
+    .kbr-qr-sheet button.kbr-qr-alt{background:#eee0d4;color:#543923}
+    .kbr-qr-sheet label{display:block;font-size:.86rem;font-weight:800;margin:12px 0 5px}
+    .kbr-qr-sheet input{box-sizing:border-box;display:block;width:100%;padding:12px;border:1px solid #d8c6b3;border-radius:10px;font-size:1rem;letter-spacing:1px;text-transform:uppercase}
+    .kbr-qr-sheet input:focus{outline:2px solid #3478be;outline-offset:1px}
+    .kbr-qr-selected-order{display:block;font-size:1.45rem;color:#245a32;margin:8px 0 14px}
+    #kbrQrVideo{margin-top:6px;overflow:hidden;border-radius:12px}
+    #kbrQrMessage{font-size:.86rem;line-height:1.45;margin:12px 0 0;min-height:20px}
+    .kbr-qr-manual{padding:12px;border:1px solid #e5d3c3;border-radius:12px;background:#fff}
+  `}));
+  const overlay=el('div',{id:'kbrQrOverlay',role:'dialog','aria-modal':'true','aria-label':'KBR rewards'});
   const sheet=el('div',{class:'kbr-qr-sheet'});
   const header=el('div',{class:'kbr-qr-head'},[
     el('h2',{text:'🎟 KBR Rewards QR'}),
-    el('button',{type:'button',class:'kbr-qr-close','aria-label':'Close rewards scanner',text:'×'})
+    el('button',{type:'button',class:'kbr-qr-close','aria-label':'Close scanner',text:'×'})
   ]);
-  const receipt=el('strong',{id:'kbrQrReceipt',class:'kbr-qr-selected-order',text:'No order selected'});
-  const token=el('input',{id:'kbrQrToken',type:'text',placeholder:'Scan QR or paste customer code',autocomplete:'off'});
-  const scan=el('button',{type:'button',class:'kbr-qr-btn',text:'📷 Scan Customer QR'});
-  const credit=el('button',{type:'button',class:'kbr-qr-btn',text:'Link Customer to This Order'});
-  const msg=el('p',{id:'kbrQrMessage',role:'status',text:'Scan before payment. Points will be earned only when this order is paid and completed.'});
+  const receipt=el('strong',{class:'kbr-qr-selected-order',text:'No order selected'});
+  const scanButton=el('button',{type:'button',class:'kbr-qr-btn',text:'📷 Scan QR Code'});
+  const codeButton=el('button',{type:'button',class:'kbr-qr-btn kbr-qr-alt',text:'⌨ Enter Customer Code','aria-expanded':'false'});
+  const codeInput=el('input',{id:'kbrQrCustomerCode',type:'text',maxlength:'24',placeholder:'XXXX-XXXX-XXXX',autocomplete:'off',spellcheck:'false'});
+  const linkButton=el('button',{type:'button',class:'kbr-qr-btn',text:'Link Order'});
+  const manual=el('div',{class:'kbr-qr-manual',hidden:''},[
+    el('label',{for:'kbrQrCustomerCode',text:'Customer code'},[codeInput]),
+    linkButton
+  ]);
   const video=el('div',{id:'kbrQrVideo'});
-  sheet.append(header,
-    el('p',{class:'kbr-qr-help',text:'This is the selected POS transaction. Scan the customer’s personal QR from My Account before taking payment. No receipt number is needed.'}),
-    el('div',{class:'kbr-qr-order-label',text:'Selected transaction'},[receipt]),
-    el('label',{text:'Customer rewards QR code'},[token]),
-    scan,video,credit,msg);
+  const status=el('p',{id:'kbrQrMessage',role:'status',text:'Choose Scan QR Code or Enter Customer Code.'});
+  sheet.append(header,receipt,scanButton,video,codeButton,manual,status);
   overlay.append(sheet);document.body.append(overlay);
+  // Hidden needs to work despite any global styles.
+  function manualOpen(value){manual.hidden=!value;manual.style.display=value?'block':'none';codeButton.setAttribute('aria-expanded',String(value));}
+  manualOpen(false);
   async function stopCamera(){
     const active=camera;camera=null;
     if(active){try{await active.stop();}catch{}try{await active.clear();}catch{}}
     video.replaceChildren();
+    scanButton.textContent='📷 Scan QR Code';
   }
   function close(){
     overlay.classList.remove('open');
     stopCamera();
+    manualOpen(false);
   }
   function openForOrder(orderNo){
-    const value=String(orderNo||'').replace(/[^0-9]/g,'');
-    if(!/^\d{1,12}$/.test(value)){alert('Select an active order to scan rewards.');return;}
-    selectedOrderNo=value;
+    const value=String(orderNo||'').replace(/\D/g,'');
+    if(!/^\d{1,12}$/.test(value)){alert('Select a valid order to scan rewards.');return;}
+    selectedOrderNo=value;scanLocked=false;busy=false;
     receipt.textContent='Order #'+value.slice(-3).padStart(3,'0');
-    token.value='';
-    msg.textContent='Scan the QR to link this customer. Points are awarded after payment and completion.';
+    codeInput.value='';manualOpen(false);
+    status.textContent='Choose Scan QR Code or Enter Customer Code.';
     overlay.classList.add('open');
   }
   header.lastChild.onclick=close;
@@ -68,54 +78,64 @@
     if(window.Html5Qrcode)return Promise.resolve();
     return new Promise((resolve,reject)=>{
       const script=el('script',{src:'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js'});
-      script.onload=()=>window.Html5Qrcode?resolve():reject(Error('Scanner did not load'));
-      script.onerror=()=>reject(Error('Camera scanner unavailable. Enter the customer code manually.'));
+      script.onload=()=>window.Html5Qrcode?resolve():reject(Error('Camera scanner unavailable.'));
+      script.onerror=()=>reject(Error('Could not load scanner. Use Enter Customer Code.'));
       document.head.append(script);
     });
   }
-  scan.onclick=async()=>{
-    if(camera){await stopCamera();scan.textContent='📷 Scan Customer QR';return;}
-    msg.textContent='Requesting camera access…';
+  async function linkOrder(code){
+    if(busy)return;
+    const value=String(code||'').trim();
+    const full=/^KBR-CUSTOMER:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    const short=/^[0-9a-f]{4}(?:-?[0-9a-f]{4}){2}$/i.test(value);
+    if(!full&&!short){status.textContent='Enter a valid 12-character customer code or scan their QR.';return;}
+    if(!window.KBRCloud){status.textContent='Sign in to the Barista App first.';return;}
+    busy=true;linkButton.disabled=true;scanButton.disabled=true;
+    status.textContent='Linking customer to order #'+selectedOrderNo+'…';
+    try{
+      const normalized=full?'KBR-CUSTOMER:'+value.slice(13).toLowerCase():value.replace(/-/g,'').toUpperCase();
+      const result=await window.KBRCloud.rpc('kbr_link_customer_qr_to_order',{
+        p_order_number:Number(selectedOrderNo),p_qr:normalized
+      });
+      status.textContent=result.status==='credited'
+        ?'✓ '+Number(result.pointsAwarded||0)+' points credited to '+(result.customerName||'customer')+'.'
+        :result.status==='already-credited'
+        ?'✓ Rewards already credited for this order.'
+        :'✓ '+(result.customerName||'Customer')+' linked! Points will be added after the order is paid and completed.';
+      manualOpen(false);codeInput.value='';
+    }catch(error){status.textContent=error?.message||'Could not link this customer. Please try again.';}
+    finally{busy=false;linkButton.disabled=false;scanButton.disabled=false;}
+  }
+  scanButton.onclick=async()=>{
+    if(busy)return;
+    if(camera){await stopCamera();return;}
+    scanLocked=false;status.textContent='Opening camera…';
     try{
       await loadScanner();
       const scanner=new window.Html5Qrcode('kbrQrVideo');
       camera=scanner;
       await scanner.start({facingMode:'environment'},{fps:8,qrbox:{width:220,height:220}},async value=>{
-        if(!String(value).startsWith('KBR-CUSTOMER:'))return;
-        token.value=value;
-        msg.textContent='Customer QR read. Linking it to the selected order…';
-        scan.textContent='📷 Scan Customer QR';
+        if(scanLocked||!/^KBR-CUSTOMER:/i.test(value))return;
+        scanLocked=true;
+        status.textContent='Customer QR scanned. Linking automatically…';
         await stopCamera();
-        credit.click();
+        await linkOrder(value);
+        scanLocked=false;
       },()=>{});
-      scan.textContent='Stop Camera';
-      msg.textContent='Point the camera at the customer’s KBR QR.';
+      scanButton.textContent='Stop Camera';
+      status.textContent='Point the camera at the customer’s rewards QR.';
     }catch(error){
-      await stopCamera();scan.textContent='📷 Scan Customer QR';
-      msg.textContent=error?.message||'Camera unavailable. Paste the QR code instead.';
+      await stopCamera();
+      status.textContent=error?.message||'Camera unavailable. Enter the customer code instead.';
     }
   };
-  credit.onclick=async()=>{
-    if(busy)return;
-    const no=selectedOrderNo, qr=token.value.trim();
-    if(!/^\d{1,12}$/.test(no)){msg.textContent='Select an order first.';return;}
-    if(!/^KBR-CUSTOMER:[0-9a-f-]{36}$/i.test(qr)){msg.textContent='Scan a valid KBR customer QR first.';return;}
-    if(!window.KBRCloud){msg.textContent='The POS is not connected. Sign in and try again.';return;}
-    busy=true;credit.disabled=true;msg.textContent='Linking customer to the selected transaction…';
-    try{
-      const result=await window.KBRCloud.rpc('kbr_link_customer_qr_to_order',{
-        p_order_number:Number(no),p_qr:qr.toLowerCase().replace('kbr-customer:','KBR-CUSTOMER:')
-      });
-      msg.textContent=result.status==='credited'
-        ?'✓ '+result.pointsAwarded+' points credited to '+(result.customerName||'customer')+' for order #'+result.orderNumber+'.'
-        :result.status==='already-credited'
-        ?'✓ Points were already credited for this order.'
-        :'✓ '+(result.customerName||'Customer')+' linked to order #'+result.orderNumber+
-         '. Points will be credited once payment and service are completed.';
-      token.value='';
-      await stopCamera();
-    }catch(error){msg.textContent=error.message||'Could not credit points.';}
-    finally{busy=false;credit.disabled=false;}
+  codeButton.onclick=async()=>{
+    await stopCamera();
+    const show=manual.hidden;
+    manualOpen(show);
+    if(show)codeInput.focus();
   };
+  codeInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();linkButton.click();}});
+  linkButton.onclick=()=>linkOrder(codeInput.value);
   window.KBRRewardsScanner={openForOrder,close};
 })();
