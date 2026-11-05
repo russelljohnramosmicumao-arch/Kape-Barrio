@@ -336,6 +336,10 @@ async function loadRewards(){
       return;
     }
 
+    if(session.user?.app_metadata?.kbr_temporary_password===true){
+      window.location.href='./online.html#account';
+      return;
+    }
     const snapshot=await rpc('kbr_customer_rewards_snapshot',{});
     renderRewards(snapshot);
   }catch(error){
