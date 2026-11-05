@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v78-30-day-history';
+const CACHE='kbr-online-customer-v79-reward-progress';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=78-30-day-history',
-  './online-orders.js?v=78-30-day-history',
+  './online-orders.css?v=79-reward-progress',
+  './online-orders.js?v=79-reward-progress',
   './online-manifest.webmanifest?v=71'
 ];
 
