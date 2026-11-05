@@ -1903,7 +1903,7 @@ loadMenu();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=86-welcome-choices',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=87-password-session-fix',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
