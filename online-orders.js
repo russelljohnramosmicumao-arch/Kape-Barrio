@@ -1736,7 +1736,13 @@ $('changeCustomerPasswordOpen')?.addEventListener('click',()=>{
   $('changeCustomerPasswordForm').reset();
   $('changeCustomerPasswordDialog')?.showModal();
 });
-$('changeCustomerPasswordClose')?.addEventListener('click',()=>{$('changeCustomerPasswordDialog')?.close();});
+$('changeCustomerPasswordClose')?.addEventListener('click',()=>{
+  if(requiresInitialPasswordChange())return;
+  $('changeCustomerPasswordDialog')?.close();
+});
+$('changeCustomerPasswordDialog')?.addEventListener('cancel',event=>{
+  if(requiresInitialPasswordChange())event.preventDefault();
+});
 $('changeCustomerPasswordForm')?.addEventListener('submit',changeCustomerPassword);
 $('kbrCopyCustomerCode')?.addEventListener('click',async()=>{
  const code=customerShortCode(customerSession?.user?.id);
