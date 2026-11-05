@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v81-dynamic-milestone';
+const CACHE='kbr-online-customer-v82-near-goal';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=81-dynamic-milestone',
-  './online-orders.js?v=81-dynamic-milestone',
+  './online-orders.css?v=82-near-goal',
+  './online-orders.js?v=82-near-goal',
   './online-manifest.webmanifest?v=71'
 ];
 
