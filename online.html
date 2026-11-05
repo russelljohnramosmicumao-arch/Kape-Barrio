@@ -8,7 +8,7 @@
   <link rel="manifest" href="online-manifest.webmanifest?v=71">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=81-dynamic-milestone">
+  <link rel="stylesheet" href="online-orders.css?v=82-near-goal">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -408,14 +408,14 @@
         <section class="points-card kbr-progress-points" aria-label="Your KBR reward progress">
           <div class="kbr-points-heading"><span>Your KBR Points</span></div>
           <div class="kbr-progress-track-wrap">
-            <div id="kbrRewardProgressTrack" class="kbr-progress-track" role="progressbar" aria-label="Progress to the next 1,000-point milestone" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+            <div id="kbrRewardProgressTrack" class="kbr-progress-track" role="progressbar" aria-label="Progress toward your next drink reward milestone" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
               <div id="kbrRewardProgressFill" class="kbr-progress-fill"></div>
             </div>
-            <span class="kbr-progress-gift" aria-label="Drink reward" title="Drink reward milestone">☕</span>
+            <span class="kbr-progress-gift" aria-label="Next drink reward milestone" title="Next drink reward milestone">🥤</span>
           </div>
           <div class="kbr-progress-scale">
             <strong><span id="customerPoints">0</span> points</strong>
-            <strong><span id="kbrRewardNextGoal">1,000</span> points <span aria-hidden="true">🥤</span></strong>
+            <strong class="kbr-progress-goal-label"><span id="kbrRewardNextGoal">1,000</span> points <span aria-hidden="true">🎁</span></strong>
           </div>
         </section>
 
@@ -705,7 +705,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="online-orders.js?v=81-dynamic-milestone" defer></script>
+  <script src="online-orders.js?v=82-near-goal" defer></script>
 
 
 
