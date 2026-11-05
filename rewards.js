@@ -7,7 +7,6 @@ const authClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
 
 let session=null;
 const $=id=>document.getElementById(id);
-const money=v=>`₱${Number(v||0).toLocaleString('en-PH',{maximumFractionDigits:2})}`;
 
 function esc(value=''){
   return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
@@ -96,7 +95,6 @@ function updateRewardsHeader(){
 
   if($('rewardsHeaderPoints'))$('rewardsHeaderPoints').textContent=available.toLocaleString('en-PH');
   if($('pointsBalance'))$('pointsBalance').textContent=available.toLocaleString('en-PH');
-  if($('rewardValue'))$('rewardValue').textContent=money(Math.floor(available/1000)*50);
   if($('rewardsCartCount'))$('rewardsCartCount').textContent=String(count);
 }
 function animateRewardToCart(card,onArrive){
@@ -266,7 +264,6 @@ function renderRewards(snapshot){
   rewardsSnapshot=snapshot||{};
   updateRewardsHeader();
   $('pointsBalance').textContent=Number(snapshot?.points||0).toLocaleString('en-PH');
-  $('rewardValue').textContent=money(snapshot?.rewardValue||0);
   const eligible=Array.isArray(snapshot?.eligible)?snapshot.eligible:[];
   renderRewardCategories(eligible);
   renderRewardItems(eligible);
