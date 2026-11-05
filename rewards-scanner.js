@@ -150,7 +150,12 @@
         :result.status==='already-credited'
         ?'✓ Rewards already credited for this order.'
         :'✓ '+(result.customerName||'Customer')+' linked! Points will be added after the order is paid and completed.';
-      manualOpen(false);codeInput.value='';
+      const linkedName=String(result?.customerName||'').trim();
+      if(linkedName){
+        window.KBRRewardOrderNames?.note(selectedOrderNo,linkedName);
+      }
+      close();
+      codeInput.value='';
     }catch(error){status.textContent=error?.message||'Could not link this customer. Please try again.';}
     finally{busy=false;linkButton.disabled=false;scanButton.disabled=false;phoneFindButton.disabled=false;phoneConfirmButton.disabled=false;}
   }
@@ -234,5 +239,47 @@
   };
   codeInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();linkButton.click();}});
   linkButton.onclick=()=>linkOrder(codeInput.value);
+  // Keep linked customer names visible in Barista order headers, including after refresh.
+  const linkedNames=new Map();
+  let lastNamesFetch=0;
+  let loadingNames=false;
+  function getLinkedName(orderNo){
+    const key=String(orderNo||'').replace(/\D/g,'');
+    return linkedNames.get(key)||'';
+  }
+  function updateOrderHeaders(){
+    if(typeof window.renderBaristaOrders==='function')window.renderBaristaOrders();
+  }
+  function noteLinkedName(orderNo,name){
+    const key=String(orderNo||'').replace(/\D/g,'');
+    const label=String(name||'').trim();
+    if(!key||!label)return;
+    linkedNames.set(key,label);
+    updateOrderHeaders();
+  }
+  async function refreshLinkedNames(force=false){
+    if(loadingNames||!window.KBRCloud?.rpc)return;
+    if(!force&&Date.now()-lastNamesFetch<90000)return;
+    loadingNames=true;
+    lastNamesFetch=Date.now();
+    try{
+      const rows=await window.KBRCloud.rpc('kbr_recent_linked_order_customers',{});
+      if(Array.isArray(rows)){
+        linkedNames.clear();
+        for(const row of rows){
+          const key=String(row.orderNumber||'').replace(/\D/g,'');
+          if(key&&row.customerName)linkedNames.set(key,String(row.customerName));
+        }
+        updateOrderHeaders();
+      }
+    }catch(error){
+      console.warn('Could not load linked customer names',error?.message||error);
+    }finally{loadingNames=false;}
+  }
+  window.KBRRewardOrderNames={
+    get:getLinkedName,
+    note:noteLinkedName,
+    refresh:refreshLinkedNames
+  };
   window.KBRRewardsScanner={openForOrder,close};
 })();
