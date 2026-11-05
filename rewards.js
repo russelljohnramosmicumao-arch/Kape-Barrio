@@ -49,7 +49,14 @@ function toast(message){
 
 
 const CATEGORY_ORDER=['Frappe & Smoothies','Coffee Series','Matcha Series','Milk Tea Series','Soda','Floats','Snackies','Ice Cream'];
+const REWARD_TIERS={
+  bronze:{label:'Bronze',emoji:'🥉',min:1000,max:1500},
+  silver:{label:'Silver',emoji:'🥈',min:2000,max:2500},
+  gold:{label:'Gold',emoji:'🥇',min:3000,max:3500}
+};
+const REWARD_MILESTONES=[1000,1500,2000,2500,3000,3500];
 let rewardCategory='';
+let rewardTier='all';
 let rewardsSnapshot=null;
 
 function categoryLabel(name){
@@ -57,25 +64,78 @@ function categoryLabel(name){
   if(name==='Ice Cream')return 'Ice Creams';
   return name;
 }
+function tierForPoints(points){
+  const value=Number(points||0);
+  if(value<=1500)return 'bronze';
+  if(value<=2500)return 'silver';
+  return 'gold';
+}
+function rewardsForSelectedTier(items){
+  return rewardTier==='all'?items:items.filter(item=>tierForPoints(item.pointCost)===rewardTier);
+}
 function rewardCategories(items){
   const present=new Set(items.map(x=>x.category).filter(Boolean));
-  return CATEGORY_ORDER.filter(x=>present.has(x));
+  const ordered=CATEGORY_ORDER.filter(x=>present.has(x));
+  return [...ordered,...[...present].filter(x=>!ordered.includes(x))];
+}
+function renderRewardTiers(){
+  const available=availableRewardPoints();
+  const options=[{id:'all',label:'All Tiers',emoji:'🎁'},...Object.entries(REWARD_TIERS).map(([id,tier])=>({
+    id,label:tier.label,emoji:tier.emoji,required:tier.min
+  }))];
+  $('rewardTierBar').innerHTML=options.map(tier=>{
+    const status=tier.required&&available<tier.required?' · Locked':'';
+    return `<button type="button" class="reward-tier-button ${rewardTier===tier.id?'active':''}" data-tier="${tier.id}" aria-pressed="${rewardTier===tier.id}">${tier.emoji} ${tier.label}${status}</button>`;
+  }).join('');
+  $('rewardTierBar').querySelectorAll('[data-tier]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      rewardTier=button.dataset.tier;
+      rewardCategory='';
+      renderRewardBrowser();
+    });
+  });
 }
 function renderRewardCategories(items){
   const cats=rewardCategories(items);
   if(!cats.includes(rewardCategory))rewardCategory=cats[0]||'';
   $('rewardCategoryBar').innerHTML=cats.map(cat=>`
-    <button class="reward-category-button ${cat===rewardCategory?'active':''}" data-reward-category="${attr(cat)}" type="button">${esc(categoryLabel(cat))}</button>
+    <button class="reward-category-button ${cat===rewardCategory?'active':''}" data-reward-category="${attr(cat)}" type="button" aria-pressed="${cat===rewardCategory}">${esc(categoryLabel(cat))}</button>
   `).join('');
   $('rewardCategoryBar').querySelectorAll('[data-reward-category]').forEach(btn=>{
     btn.addEventListener('click',()=>{
       rewardCategory=btn.dataset.rewardCategory;
-      renderRewardCategories(items);
-      renderRewardItems(items);
+      renderRewardBrowser();
     });
   });
 }
-
+function renderRewardProgress(){
+  const available=availableRewardPoints();
+  const next=REWARD_MILESTONES.find(goal=>goal>available);
+  const goal=next||3500;
+  const pct=next?Math.min(100,available/goal*100):100;
+  const fill=$('rewardProgressFill');
+  if(fill)fill.style.width=pct.toFixed(2)+'%';
+  const track=$('rewardProgressTrack');
+  if(track){
+    track.setAttribute('aria-valuemax',String(goal));
+    track.setAttribute('aria-valuenow',String(Math.min(available,goal)));
+    track.setAttribute('aria-label',available.toLocaleString('en-PH')+' of '+goal.toLocaleString('en-PH')+' points');
+  }
+  $('rewardProgressGoal').textContent=goal.toLocaleString('en-PH')+' points 🎁';
+  const label=tierForPoints(goal);
+  const tier=REWARD_TIERS[label];
+  $('rewardProgressMessage').textContent=next
+    ? 'Only '+(next-available).toLocaleString('en-PH')+' more points to unlock more '+tier.label+' rewards!'
+    : 'All reward levels available! Choose your FREE drink.';
+  $('rewardProgressIcon').textContent=next?tier.emoji:'🎁';
+}
+function renderRewardBrowser(){
+  const items=Array.isArray(rewardsSnapshot?.eligible)?rewardsSnapshot.eligible:[];
+  renderRewardTiers();
+  const selected=rewardsForSelectedTier(items);
+  renderRewardCategories(selected);
+  renderRewardItems(selected);
+}
 function rewardsGroupedCartCount(){
   return rewardCart().length;
 }
@@ -96,6 +156,7 @@ function updateRewardsHeader(){
   if($('rewardsHeaderPoints'))$('rewardsHeaderPoints').textContent=available.toLocaleString('en-PH');
   if($('pointsBalance'))$('pointsBalance').textContent=available.toLocaleString('en-PH');
   if($('rewardsCartCount'))$('rewardsCartCount').textContent=String(count);
+  renderRewardProgress();
 }
 function animateRewardToCart(card,onArrive){
   const img=card?.querySelector('img');
@@ -214,43 +275,40 @@ function addRewardToCart(item,card){
     if(card)card.dataset.flying='';
 
     updateRewardsHeader();
-    renderRewardCategories(Array.isArray(rewardsSnapshot?.eligible)?rewardsSnapshot.eligible:[]);
-    renderRewardItems(Array.isArray(rewardsSnapshot?.eligible)?rewardsSnapshot.eligible:[]);
+    renderRewardBrowser();
     toast(`${item.name} ${item.size} added for ${pointCost.toLocaleString('en-PH')} points.`);
   });
 }
 
 function renderRewardItems(items){
   const available=availableRewardPoints();
-  const indexed=items.map((item,index)=>({item,index}));
-  const filtered=indexed
-    .filter(x=>x.item.category===rewardCategory && Number(x.item.pointCost||0)<=available)
-    .sort((a,b)=>{
-      if(rewardCategory==='Frappe & Smoothies'){
-        if(Number(b.item.price)!==Number(a.item.price))return Number(b.item.price)-Number(a.item.price);
-        return b.index-a.index;
-      }
-      return a.item.name.localeCompare(b.item.name);
-    }).map(x=>x.item);
-
-  $('rewardCategoryTitle').textContent=categoryLabel(rewardCategory);
+  const filtered=items
+    .filter(item=>item.category===rewardCategory && Number(item.pointCost||0)>0)
+    .sort((a,b)=>Number(b.pointCost||0)-Number(a.pointCost||0)||a.name.localeCompare(b.name)||String(b.size).localeCompare(String(a.size)));
+  const tierText=rewardTier==='all'?'All Reward Tiers':REWARD_TIERS[rewardTier].emoji+' '+REWARD_TIERS[rewardTier].label+' Rewards';
+  $('rewardCategoryTitle').textContent=tierText+(rewardCategory?' · '+categoryLabel(rewardCategory):'');
+  $('rewardResultsInfo').textContent=filtered.length+' drink options';
   $('rewardEmpty').classList.toggle('hidden',filtered.length>0);
 
-  $('rewardGrid').innerHTML=filtered.map((item,index)=>`
-    <article class="reward-card" data-reward-index="${index}" tabindex="0">
-      <img src="${attr(resolveImage(item.image))}" alt="${attr(item.name)}" loading="lazy"
-           onerror="this.style.visibility='hidden'">
+  $('rewardGrid').innerHTML=filtered.map((item,index)=>{
+    const pointCost=Number(item.pointCost||0);
+    const locked=pointCost>available;
+    const badge=tierForPoints(pointCost);
+    return `
+    <article class="reward-card ${locked?'locked':''}" data-reward-index="${index}" ${locked?'':'role="button" tabindex="0"'} aria-label="${attr(item.name+', '+item.size+', '+pointCost+' points'+(locked?', locked':''))}">
+      <img src="${attr(resolveImage(item.image))}" alt="${attr(item.name)}" loading="lazy" onerror="this.style.visibility='hidden'">
       <div class="reward-card-body">
         <h3>${esc(item.name)}</h3>
         <div class="reward-meta">${esc(item.size)}${item.type==='premium'?' · Premium':''}</div>
-        <div class="reward-point-price">${Number(item.pointCost||0).toLocaleString('en-PH')} pts</div>
-        <span class="reward-tap-hint">Tap to add to cart</span>
+        <span class="reward-tier-badge ${badge}">${REWARD_TIERS[badge].emoji} ${REWARD_TIERS[badge].label}</span>
+        <div class="reward-point-price">${pointCost.toLocaleString('en-PH')} pts</div>
+        <span class="reward-tap-hint">${locked?'🔒 '+(pointCost-available).toLocaleString('en-PH')+' more pts':'Tap to add to cart'}</span>
       </div>
-    </article>
-  `).join('');
-
+    </article>`;
+  }).join('');
   $('rewardGrid').querySelectorAll('[data-reward-index]').forEach(card=>{
     const item=filtered[Number(card.dataset.rewardIndex)];
+    if(Number(item.pointCost||0)>available)return;
     card.addEventListener('click',()=>addRewardToCart(item,card));
     card.addEventListener('keydown',e=>{
       if(e.key==='Enter'||e.key===' '){
@@ -263,10 +321,7 @@ function renderRewardItems(items){
 function renderRewards(snapshot){
   rewardsSnapshot=snapshot||{};
   updateRewardsHeader();
-  $('pointsBalance').textContent=Number(snapshot?.points||0).toLocaleString('en-PH');
-  const eligible=Array.isArray(snapshot?.eligible)?snapshot.eligible:[];
-  renderRewardCategories(eligible);
-  renderRewardItems(eligible);
+  renderRewardBrowser();
 }
 
 async function loadRewards(){
