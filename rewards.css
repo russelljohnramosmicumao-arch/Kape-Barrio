@@ -275,3 +275,52 @@ button{font:inherit;cursor:pointer}
   pointer-events:none;
   opacity:.75;
 }
+
+/* KBR Rewards: progress tracker and Bronze / Silver / Gold browser */
+.rewards-shell{max-width:1480px;padding:20px 24px 44px}
+.rewards-intro{position:relative;overflow:hidden;padding:24px 30px 22px;margin-bottom:15px;border:1px solid #ead5bf;border-radius:25px;background:radial-gradient(circle at 96% 0%,#e2bd88 0%,transparent 32%),linear-gradient(115deg,#fffaf4,#f0dbc6)}
+.rewards-intro::after{content:'☕';position:absolute;right:35px;bottom:-25px;font-size:105px;opacity:.12;pointer-events:none}
+.rewards-intro h1{font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.1;margin:6px 0}
+.rewards-intro p{font-size:clamp(.93rem,1.5vw,1.12rem);line-height:1.5;margin:5px 0 8px}
+.rewards-intro small{color:var(--muted)}
+.balance-card{display:grid;grid-template-columns:minmax(0,2fr) minmax(220px,1fr);align-items:center;background:linear-gradient(115deg,#fdf5ed,#f1dfcd);color:var(--ink);border:1px solid #eacbb0;padding:22px 26px;gap:22px;box-shadow:0 6px 20px rgba(90,49,22,.07)}
+.balance-main h2{font-size:1.45rem;margin:0 0 17px}
+.points-progress-row{display:flex;align-items:center;gap:14px}
+.points-progress-track{height:22px;border-radius:999px;background:#e5d6c6;box-shadow:inset 0 2px 5px rgba(76,45,26,.1);overflow:hidden;flex:1}
+.points-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#875233,#d8ab5c);border-radius:999px;transition:width .35s ease}
+.points-progress-icon{width:50px;height:50px;border-radius:15px;background:#fffaf3;border:1px solid #e6bc77;display:grid;place-items:center;font-size:1.5rem;box-shadow:0 3px 12px rgba(76,45,26,.08)}
+.points-progress-labels{display:flex;justify-content:space-between;gap:10px;margin-top:11px;align-items:center;color:#69402a}
+.points-progress-labels strong{font-size:clamp(.88rem,1.6vw,1.25rem)}
+.points-progress-message{margin:0;padding-left:20px;border-left:1px solid #e1c6aa;font-size:1rem;line-height:1.5;font-weight:750;color:#714522}
+.tier-browser{margin-top:22px}
+.tier-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 17px}
+.tier-info{display:flex;gap:13px;align-items:center;padding:15px 18px;border-radius:20px;border:1px solid #dec4ae;min-height:118px}
+.tier-info.bronze{background:linear-gradient(125deg,#f2d0b7,#fceadf)}
+.tier-info.silver{background:linear-gradient(125deg,#d4d6db,#f1f2f4);border-color:#cbd0d7}
+.tier-info.gold{background:linear-gradient(125deg,#f6d17a,#fff0b8);border-color:#e4ba5d}
+.tier-medal{font-size:2.6rem}
+.tier-info h3{margin:0 0 3px;font-size:1.2rem}
+.tier-info strong{font-size:.86rem}
+.tier-info p{font-size:.78rem;color:#624936;margin:6px 0 0}
+.reward-tier-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:3px 0 12px}
+.reward-tier-bar::-webkit-scrollbar{display:none}
+.reward-tier-button{flex:1 0 auto;min-width:135px;padding:11px 14px;border-radius:999px;border:1px solid #dfcbbb;background:#fff;color:#573d2c;font-weight:850;white-space:nowrap}
+.reward-tier-button.active{color:#fff;background:#76492b;border-color:#76492b;box-shadow:0 4px 12px rgba(76,45,26,.15)}
+.reward-tier-button[data-tier=bronze]:not(.active){background:#f4e4d8}
+.reward-tier-button[data-tier=silver]:not(.active){background:#eceef1}
+.reward-tier-button[data-tier=gold]:not(.active){background:#fff0cc}
+.reward-category-bar{margin:2px 0 8px}
+.reward-results-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:10px 0}
+.reward-results-heading .reward-category-title{margin:0;font-size:1.2rem}
+.reward-results-info{font-size:.8rem;color:var(--muted)}
+.reward-card{position:relative}
+.reward-card.locked{cursor:default;opacity:.75}
+.reward-card.locked:hover{transform:none}
+.reward-tier-badge{display:inline-block;font-size:.66rem;font-weight:900;border-radius:999px;padding:4px 8px;margin-top:7px}
+.reward-tier-badge.bronze{background:#f5dfd0;color:#7b4a2c}
+.reward-tier-badge.silver{background:#e5e7ed;color:#586070}
+.reward-tier-badge.gold{background:#fff1c9;color:#876010}
+.reward-card.locked .reward-tap-hint{background:#eee9e3;color:#71665e}
+.reward-card:focus-visible,.reward-tier-button:focus-visible,.reward-category-button:focus-visible{outline:3px solid #bb883d;outline-offset:2px}
+@media(max-width:800px){.balance-card{grid-template-columns:1fr}.points-progress-message{border-left:0;border-top:1px solid #e1c6aa;padding:12px 0 0}.tier-info{padding:12px}.tier-medal{font-size:2rem}}
+@media(max-width:640px){.rewards-shell{padding:12px 12px 38px}.rewards-intro{padding:18px}.balance-card{padding:17px}.balance-main h2{font-size:1.2rem;margin-bottom:12px}.points-progress-track{height:16px}.points-progress-icon{height:42px;width:42px}.points-progress-labels strong{font-size:.9rem}.tier-cards{grid-template-columns:1fr;gap:8px}.tier-info{min-height:0;gap:9px}.tier-info p{margin-top:2px}.tier-info h3{font-size:1rem}.tier-medal{font-size:2rem}.reward-tier-button{min-width:115px;padding:9px 12px}.reward-results-heading{flex-wrap:wrap}}
