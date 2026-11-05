@@ -1415,3 +1415,13 @@ button{cursor:pointer}
 .kbr-progress-points .kbr-progress-scale{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px}
 .kbr-progress-points .kbr-progress-scale strong{font-size:.83rem;font-weight:850;color:var(--brown);white-space:nowrap}
 @media(max-width:380px){.kbr-progress-points .kbr-progress-scale strong{font-size:.73rem}}
+
+/* Progress to next cumulative thousand: visually close when the goal is close. */
+.kbr-progress-points{background:linear-gradient(145deg,#faf1e7,#f4e4d3)!important;border:1px solid #ead4be}
+.kbr-progress-points .kbr-points-heading{margin-bottom:17px}
+.kbr-progress-points .kbr-progress-track{height:17px;box-shadow:inset 0 1px 2px rgba(70,43,20,.11)}
+.kbr-progress-points .kbr-progress-fill{background:linear-gradient(90deg,#865735 0%,#bb8a4f 75%,#d7ad63 100%);box-shadow:0 0 8px rgba(192,139,78,.3)}
+.kbr-progress-points .kbr-progress-gift{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:14px;background:#fff8ed;border:1px solid #e4be87;font-size:1.45rem;box-shadow:0 2px 6px rgba(83,49,23,.11)}
+.kbr-progress-points .kbr-progress-scale{margin-top:10px}
+.kbr-progress-points .kbr-progress-scale strong{font-size:.9rem}
+.kbr-progress-points .kbr-progress-goal-label{color:#895326!important}
