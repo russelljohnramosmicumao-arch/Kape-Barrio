@@ -8,7 +8,7 @@
   <link rel="manifest" href="online-manifest.webmanifest?v=71">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="online-orders.css?v=78-30-day-history">
+  <link rel="stylesheet" href="online-orders.css?v=79-reward-progress">
 </head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
@@ -405,15 +405,29 @@
           </div>
         </div>
 
-        <div class="points-card">
-          <span>Your KBR Points</span>
-          <strong id="customerPoints">0</strong>
-        </div>
+        <section class="points-card kbr-progress-points" aria-label="Your KBR reward progress">
+          <div class="kbr-points-heading">
+            <span>Your KBR Points</span>
+            <strong><span id="customerPoints">0</span> <small>points</small></strong>
+          </div>
+          <p id="kbrRewardProgressLabel" class="kbr-progress-explainer">1,000 points unlocks ₱50 off your next eligible purchase.</p>
+          <div id="kbrRewardProgressTrack" class="kbr-progress-track" role="progressbar" aria-label="Progress toward your next ₱50 reward" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+            <div id="kbrRewardProgressFill" class="kbr-progress-fill"></div>
+          </div>
+          <div class="kbr-progress-scale"><span>0 pts</span><span>1,000 pts</span></div>
+        </section>
 
         <section class="kbr-rewards-qr-card" aria-label="Your KBR Rewards QR code">
           <strong>My KBR Rewards QR</strong>
           <p>Show this QR to the barista after paying for an in-shop order to earn KBR Points.</p>
           <div id="kbrCustomerQr" class="kbr-customer-qr"></div>
+          <div class="kbr-customer-code-wrap">
+            <span class="kbr-customer-code-label">Customer code</span>
+            <div class="kbr-customer-code-line">
+              <strong id="kbrCustomerShortCode" class="kbr-customer-code-text">—</strong>
+              <button id="kbrCopyCustomerCode" class="kbr-customer-copy" type="button">Copy</button>
+            </div>
+          </div>
           <small id="kbrCustomerQrStatus">Sign in to display your rewards QR.</small>
         </section>
 
@@ -689,7 +703,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="online-orders.js?v=78-30-day-history" defer></script>
+  <script src="online-orders.js?v=79-reward-progress" defer></script>
 
 
 
