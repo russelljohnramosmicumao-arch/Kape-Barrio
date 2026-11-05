@@ -543,6 +543,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 }
 .barista-order-card.online-order-selected details[open] .kbr-customer-info-extra{display:grid;gap:7px}
 .barista-order-card.online-order-selected .note-preview{display:none}
+.kbr-reward-linked-name{display:inline-flex;align-items:center;margin:3px 5px;padding:4px 8px;border-radius:999px;background:#e9f5e9;color:#205c35;font-weight:850;font-size:12px;max-width:100%;overflow-wrap:anywhere;vertical-align:middle}
+.barista-order-thumb .kbr-reward-linked-name{font-size:11px;padding:3px 6px}
 </style>
 
 
@@ -1524,7 +1526,12 @@ function onlineCustomerInfoHtml(order){
     rows+'</div></details>';
 }
 
+function kbrLinkedRewardNameHtml(orderNo){
+  const name=window.KBRRewardOrderNames?.get(orderNo);
+  return name?'<span class="kbr-reward-linked-name">👤 '+escapeHtml(name)+'</span>':'';
+}
 function renderBaristaOrders(){
+  window.KBRRewardOrderNames?.refresh();
   ensureAllOpenUnits();
   updatePendingOrdersTab();
   const orders=getOrdersForBaristaView();
@@ -1552,7 +1559,7 @@ function renderBaristaOrders(){
       const online=isOnlineBaristaOrder(o);
       const summary=compactBaristaOrderSummary(o);
       return `<button class="barista-order-thumb ${svcClass} ${online?'online-order-thumb':''}" onclick="selectOpenOrder('${o.no}')">
-        <div class="barista-order-thumb-head"><b>Order #${displayNo} <span class="barista-order-counts">· ${escapeHtml(summary)}</span></b><span class="barista-order-thumb-total">${peso(total)}</span></div>
+        <div class="barista-order-thumb-head"><b>Order #${displayNo} ${kbrLinkedRewardNameHtml(o.no)} <span class="barista-order-counts">· ${escapeHtml(summary)}</span></b><span class="barista-order-thumb-total">${peso(total)}</span></div>
         <div class="barista-order-thumb-meta">${online?'🌐 Online · ':''}${orderServiceLabel(o)||'Order'}</div>
         <div class="barista-order-thumb-items">${items}${more}</div>
       </button>`;
@@ -1615,9 +1622,9 @@ function renderBaristaOrders(){
   const cleanHeader=onlineSelected
     ?(onlineOrderNumber?' · Online #'+escapeHtml(onlineOrderNumber):' · Online Order')
     :(order.note?' · '+escapeHtml(order.note):'');
-  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${orderSvcClass} ${onlineSelected?'online-order-selected':''}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
+  baristaOrdersView.innerHTML=`<button class="barista-selected-order-toggle ${orderSvcClass} ${onlineSelected?'online-order-selected':''}" onclick="closeBaristaOrderDetail()"><span><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${kbrLinkedRewardNameHtml(order.no)}<small>Tap this order again to show the order list</small></span><strong>${peso(total)}</strong></button>
     <div class="barista-order-card ${orderSvcClass} ${onlineSelected?'online-order-selected':''}">
-      <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span><span class="muted">${cleanHeader}</span><div class="barista-order-meta">${onlineSelected?'🌐 Online · ':''}${orderServiceLabel(order)} · ${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
+      <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${kbrLinkedRewardNameHtml(order.no)}<span class="muted">${cleanHeader}</span><div class="barista-order-meta">${onlineSelected?'🌐 Online · ':''}${orderServiceLabel(order)} · ${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
       ${onlineSelected?onlineCustomerInfoHtml(order):`<div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>`}
       ${noteEditorOpenNo===String(order.no)?`<div class="note-editor"><textarea id="pendingOrderNoteInput" maxlength="250" placeholder="Add name, less ice, less sugar, special request, etc.">${escapeHtml(order.note||'')}</textarea><div class="note-editor-actions"><button class="secondary" onclick="closePendingNoteEditor()">Close</button><button class="primary" style="background:#2f8f4e;border-color:#2f8f4e" onclick="savePendingOrderNote()">Save note</button></div></div>`:''}
       <div class="report-note">Original total: ${peso(originalTotal)}. Drink discounts apply per cup. Add-ons are charged at full price.</div>
@@ -2102,7 +2109,7 @@ setInterval(()=>runDailyCsvCheck(),60000);
 render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
-<script src="sync-config.js"></script><script src="sync-core.js?v=usage-reads-v1"></script><script src="sync-ui.js"></script><script src="pay-later.js?v=30-day-settled-v1"></script><script src="app-sync-v135.js?v=137-low-egress"></script><script src="rewards-scanner.js?v=5-phone-first"></script>
+<script src="sync-config.js"></script><script src="sync-core.js?v=usage-reads-v1"></script><script src="sync-ui.js"></script><script src="pay-later.js?v=30-day-settled-v1"></script><script src="app-sync-v135.js?v=137-low-egress"></script><script src="rewards-scanner.js?v=6-linked-name"></script>
 <script src="app-links.js"></script><script src="page-tools.js"></script>
 <script id="kbr-online-order-blue-script">
 (()=>{
