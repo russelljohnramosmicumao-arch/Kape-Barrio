@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v80-rewards-deploy';
+const CACHE='kbr-online-customer-v81-dynamic-milestone';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=79-reward-progress',
-  './online-orders.js?v=79-reward-progress',
+  './online-orders.css?v=81-dynamic-milestone',
+  './online-orders.js?v=81-dynamic-milestone',
   './online-manifest.webmanifest?v=71'
 ];
 
