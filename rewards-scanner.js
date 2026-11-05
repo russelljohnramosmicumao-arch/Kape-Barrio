@@ -76,7 +76,7 @@
   ]);
   const video=el('div',{id:'kbrQrVideo'});
   const status=el('p',{id:'kbrQrMessage',role:'status',text:'Choose Scan QR Code, Enter Customer Code, or Enter Phone Number.'});
-  sheet.append(header,receipt,scanButton,video,codeButton,manual,phoneButton,phonePanel,status);
+  sheet.append(header,receipt,phoneButton,phonePanel,scanButton,video,codeButton,manual,status);
   overlay.append(sheet);document.body.append(overlay);
   // Hidden needs to work despite any global styles.
   function manualOpen(value){manual.hidden=!value;manual.style.display=value?'block':'none';codeButton.setAttribute('aria-expanded',String(value));}
