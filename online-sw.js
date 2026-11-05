@@ -1,5 +1,5 @@
 
-const CACHE='kbr-online-customer-v79-reward-progress';
+const CACHE='kbr-online-customer-v80-rewards-deploy';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=79-reward-progress',
