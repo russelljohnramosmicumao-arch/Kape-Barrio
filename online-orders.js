@@ -1349,16 +1349,19 @@ function updateHeaderPoints(){
 const REWARD_THRESHOLD=1000;
 function renderCustomerPointsProgress(){
  const balance=Math.max(0,Math.floor(Number(customerProfile?.points||0)));
- const progress=balance>0&&balance%REWARD_THRESHOLD===0?REWARD_THRESHOLD:balance%REWARD_THRESHOLD;
- const remaining=REWARD_THRESHOLD-progress;
- const ready=balance>=REWARD_THRESHOLD;
- const fill=$('kbrRewardProgressFill'),track=$('kbrRewardProgressTrack'),label=$('kbrRewardProgressLabel');
+ // The scale always measures the progress *within* the next 1,000 points.
+ // Example: 3,457 points => 457 / 1,000 (45.7%), next goal 4,000.
+ const progress=balance%REWARD_THRESHOLD;
+ const goal=(Math.floor(balance/REWARD_THRESHOLD)+1)*REWARD_THRESHOLD;
+ const fill=$('kbrRewardProgressFill');
+ const track=$('kbrRewardProgressTrack');
+ const goalLabel=$('kbrRewardNextGoal');
  if(fill)fill.style.width=(progress/REWARD_THRESHOLD*100)+'%';
- if(track){track.setAttribute('aria-valuenow',String(progress));}
- if(label)label.textContent=ready&&remaining===0
-   ?'🎁 You have enough points for a ₱50 reward!'
-   :ready?'🎁 ₱50 reward available! '+remaining.toLocaleString('en-PH')+' points until your next 1,000-point milestone.'
-   :remaining.toLocaleString('en-PH')+' points until your ₱50 reward.';
+ if(track){
+  track.setAttribute('aria-valuenow',String(progress));
+  track.setAttribute('aria-label',balance.toLocaleString('en-PH')+' points; next milestone '+goal.toLocaleString('en-PH')+' points');
+ }
+ if(goalLabel)goalLabel.textContent=goal.toLocaleString('en-PH');
 }
 function customerShortCode(id){
  const compact=String(id||'').replace(/-/g,'').slice(0,12).toUpperCase();
@@ -1827,7 +1830,7 @@ loadMenu();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=79-reward-progress',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=81-dynamic-milestone',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
