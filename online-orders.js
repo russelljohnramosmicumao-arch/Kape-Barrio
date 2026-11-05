@@ -549,13 +549,7 @@ function eligibleDrinkSubtotal(){
     return sum+((food||iceCream)?0:Number(line.unitPrice||0)*Number(line.qty||0));
   },0);
 }
-function maxRedeemBlocks(){
-  if(!customerSession?.user)return 0;
-  return Math.max(0,Math.min(
-    Math.floor(spendablePointsAfterRewardCart()/1000),
-    Math.floor(eligibleDrinkSubtotal()/50)
-  ));
-}
+function maxRedeemBlocks(){return 0;} // Rewards are free drinks only.
 function clampRedeemPoints(){
   const max=maxRedeemBlocks()*1000;
   selectedRedeemPoints=Math.max(0,Math.min(max,Math.floor(selectedRedeemPoints/1000)*1000));
@@ -1346,12 +1340,11 @@ function updateHeaderPoints(){
   if(pill)pill.textContent=points.toLocaleString('en-PH');
 }
 
-const REWARD_THRESHOLD=1000;
+const REWARD_TIERS=[1000,1500,2000,2500,3000,3500];
 function renderCustomerPointsProgress(){
  const balance=Math.max(0,Math.floor(Number(customerProfile?.points||0)));
- const goal=(Math.floor(balance/REWARD_THRESHOLD)+1)*REWARD_THRESHOLD;
- // Display cumulative progress to the *next* milestone; earned points are not reset.
- // 3,457 of 4,000 => 86.425% full, rather than 457/1,000.
+ const goal=REWARD_TIERS.find(tier=>tier>balance)||3500;
+ // Progress toward the next free-drink tier, capped at the highest tier.
  const percent=goal>0?Math.min(100,balance/goal*100):0;
  const fill=$('kbrRewardProgressFill');
  const track=$('kbrRewardProgressTrack');
