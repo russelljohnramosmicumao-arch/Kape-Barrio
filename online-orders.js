@@ -1623,6 +1623,10 @@ $('signInGoogleButton')?.addEventListener('click',()=>{
   $('googleSignInButton')?.click();
 });
 
+$('welcomeSignInButton')?.addEventListener('click',()=>{
+  $('accountDialog')?.close();
+  $('signInChoiceDialog')?.showModal();
+});
 $('createPointsAccountButton')?.addEventListener('click',()=>showAccountEntryStep('register'));
 $('backToEntryChoiceButton')?.addEventListener('click',()=>showAccountEntryStep('entry'));
 
