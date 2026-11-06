@@ -1362,7 +1362,10 @@ function baristaAddonControls(unit,paid){
 }
 
 function orderUnitTotal(unit){
-  const original=Number(unit.originalPrice||unit.price||0);
+  // Reward drinks are fully paid with points. Keep originalPrice for audit only,
+  // never include it in the amount the cashier should collect.
+  if(unit.paidByPoints===true)return unitAddonTotal(unit);
+  const original=Number(unit.originalPrice??unit.price??0);
   const pct=unit.food?0:(Number(unit.discountPercent)||0);
   const raw=original*(1-pct/100);
   // Discounted drinks are rounded UP to the next whole peso so change stays whole.
@@ -1400,7 +1403,7 @@ function baristaDiscount(uid,pct){
   if(!order)return;
   ensurePendingUnits(order);
   const u=order.units.find(x=>x.uid===uid);
-  if(!u || u.food || order.paid)return;
+  if(!u || u.food || u.paidByPoints || order.paid)return;
   const nextPct=Number(pct)||0;
   if(nextPct===50||nextPct===100){
     if(!promoDiscountSetting.enabled||nextPct!==promoDiscountSetting.percent){
@@ -1457,7 +1460,7 @@ function baristaDisplayGroups(order){
   const groups=new Map();
   for(const u of order.units||[]){
     if(u.cancelled)continue;
-    const key=JSON.stringify([u.productId||u.name,u.name,u.category||'',u.type||'',u.size||'',u.flavor||'',u.sweetness||'',u.serviceType||'',!!u.food,Number(u.originalPrice||u.price)||0]);
+    const key=JSON.stringify([u.productId||u.name,u.name,u.category||'',u.type||'',u.size||'',u.flavor||'',u.sweetness||'',u.serviceType||'',!!u.food,!!u.paidByPoints,Number(u.originalPrice??u.price)||0]);
     if(!groups.has(key))groups.set(key,{item:u,units:[]});
     groups.get(key).units.push(u);
   }
