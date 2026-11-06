@@ -1025,6 +1025,8 @@ async function placeOrder(){
   if(service==='delivery'&&address.length<5)return toast('Please enter your complete delivery address.');
   if(!cart.length)return toast('Your cart is empty.');
 
+  const submitMessage=$('checkoutSubmissionStatus');
+  if(submitMessage){submitMessage.style.display='none';submitMessage.textContent='';}
   const button=$('placeOrderButton');
   button.disabled=true;
   button.textContent='Sending order…';
@@ -1117,7 +1119,9 @@ async function placeOrder(){
   }catch(error){
     const message=error?.message||'Could not send your order.';
     if(!navigator.onLine||/failed to fetch|networkerror|network request|timed out|load failed/i.test(message)){
-      toast('Connection interrupted. Keep your cart and tap Send Order again to safely check this same order.');
+      const warning='Connection interrupted. Your order may have reached the shop. Keep this cart and tap Send Order again to safely confirm the same order without duplicating it.';
+      if(submitMessage){submitMessage.textContent=warning;submitMessage.style.display='block';}
+      toast('Connection interrupted. Please read the message below Send Order.');
     }else{
       toast(message);
     }
