@@ -1417,7 +1417,7 @@ function baristaDiscount(uid,pct){
   renderBaristaOrders();
 }
 function removeBaristaUnit(uid){
-  const order=getPendingOrder();if(!order)return;if(order.paid){showActionToast('Items cannot be removed after payment is confirmed.');return;}ensurePendingUnits(order);const u=order.units.find(x=>x.uid===uid&&!x.cancelled);if(!u)return;const activeCount=order.units.filter(x=>!x.cancelled).length;
+  const order=getPendingOrder();if(!order)return;if(order.units?.some(u=>u.uid===uid&&u.paidByPoints)){showActionToast('To refund a redeemed drink, cancel the online order through the normal cancellation flow.');return;}if(order.paid){showActionToast('Items cannot be removed after payment is confirmed.');return;}ensurePendingUnits(order);const u=order.units.find(x=>x.uid===uid&&!x.cancelled);if(!u)return;const activeCount=order.units.filter(x=>!x.cancelled).length;
   if(activeCount<=1){if(confirm('Remove the last item? This will cancel the entire transaction.'))cancelPendingTransaction(order.no);return;}
   u.cancelled=true;if(order.items?.[u.sourceIndex])order.items[u.sourceIndex].qty=Math.max(0,(Number(order.items[u.sourceIndex].qty)||0)-1);
   syncOpenOrderLifecycle(order);showActionToast(`Removed 1x ${u.name} from Order #${order.no}`);
@@ -1586,7 +1586,9 @@ function renderBaristaOrders(){
 
     const unitRows=units.map((u)=>{
       const pct=u.food?0:(Number(u.discountPercent)||0),net=orderUnitTotal(u);
-      const discountUI=u.food
+      const discountUI=u.paidByPoints
+        ? '<div class="muted" style="font-size:12px;font-weight:800;color:#267449">✓ Paid by Points — no cash due for this drink</div>'
+        : u.food
         ? `<div class="discount-buttons"><span class="muted" style="font-size:12px;font-weight:800">No discount on food</span><button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`
         : `<div class="discount-buttons"><button class="discount-btn none ${pct===0?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',0)">None</button><button class="discount-btn ${pct===10?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',10)">10%</button><button class="discount-btn ${pct===20?'active':''}" onclick="event.stopPropagation();baristaDiscount('${u.uid}',20)">20%</button>${promoDiscountButton(u.uid,pct)}<button class="discount-btn remove" onclick="event.stopPropagation();removeBaristaUnit('${u.uid}')">Remove</button></div>`;
       const discountPrice=!u.food&&pct?`<div class="discount-price">Original ${peso(u.originalPrice)} · ${promoDiscountLabel(pct)} · <b>${peso(net)}</b></div>`:'';
@@ -1630,7 +1632,7 @@ function renderBaristaOrders(){
       <div class="barista-order-head"><div><span class="order-number-badge">Order #${String(order.no).replace(/\D/g,'').slice(-3).padStart(3,'0')}</span>${kbrLinkedRewardNameHtml(order.no)}<span class="muted">${cleanHeader}</span><div class="barista-order-meta">${onlineSelected?'🌐 Online · ':''}${orderServiceLabel(order)} · ${order.date} · ${order.time}</div></div><div class="barista-order-total">${peso(total)}</div></div>
       ${onlineSelected?onlineCustomerInfoHtml(order):`<div class="note-preview">${order.note?`📝 ${escapeHtml(order.note)}`:'No note added.'}</div>`}
       ${noteEditorOpenNo===String(order.no)?`<div class="note-editor"><textarea id="pendingOrderNoteInput" maxlength="250" placeholder="Add name, less ice, less sugar, special request, etc.">${escapeHtml(order.note||'')}</textarea><div class="note-editor-actions"><button class="secondary" onclick="closePendingNoteEditor()">Close</button><button class="primary" style="background:#2f8f4e;border-color:#2f8f4e" onclick="savePendingOrderNote()">Save note</button></div></div>`:''}
-      <div class="report-note">Original total: ${peso(originalTotal)}. Drink discounts apply per cup. Add-ons are charged at full price.</div>
+      <div class="report-note">${order.units.some(u=>u.paidByPoints)?'⭐ Reward drinks are already paid with points. Cash remaining: '+peso(total)+'.':'Original total: '+peso(originalTotal)+'. Drink discounts apply per cup.'} Add-ons are charged separately.</div>
       ${groups}${paymentBlock}
     </div>`;
   if(baristaView!=='unserved-paid')renderBaristaPaymentPanel();
