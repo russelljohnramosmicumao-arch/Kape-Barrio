@@ -1010,11 +1010,13 @@ async function placeOrder(){
   let notes=$('orderNotes').value.trim();
   const cashAmount=Number($('cashAmount')?.value||0);
 
-  if(payment==='cash'&&service==='delivery'){
-    if(!cashAmount||cashAmount<Math.max(0,total()+(service==='delivery'?selectedDeliveryFee:0)-pointsDiscount()))return toast('Please enter enough cash for the order total.');
-    notes=[notes,`Cash tendered: ₱${cashAmount}`].filter(Boolean).join(' | ');
-  }else{
-    notes=[notes,'GCash selected. Customer instructed to send receipt to Kape Bar-Rio.'].filter(Boolean).join(' | ');
+  if(payment==='cash'){
+    if(service==='delivery'){
+      if(!cashAmount||cashAmount<Math.max(0,total()+selectedDeliveryFee-pointsDiscount()))return toast('Please enter enough cash for the order total.');
+      notes=[notes,`Cash tendered: ₱${cashAmount}`].filter(Boolean).join(' | ');
+    }
+  }else if(payment==='gcash'){
+    notes=[notes,'GCash selected. Payment pending verification; customer instructed to send receipt to Kape Bar-Rio.'].filter(Boolean).join(' | ');
   }
 
   if(customerName.length<2)return toast('Please enter your name.');
@@ -1028,7 +1030,9 @@ async function placeOrder(){
   button.textContent='Sending order…';
 
   try{
-    const result=await rpc('kbr_create_online_order',{
+    // Keep the same request ID when a network timeout forces the customer
+    // to retry. The server will return the original order, not create another.
+    const requestPayload={
       p_customer_name:customerName,
       p_phone:contact,
       p_service_type:service,
@@ -1050,7 +1054,15 @@ async function placeOrder(){
         paidByPoints:x.paidByPoints===true,
         rewardPointsCost:Number(x.rewardPointsCost||0)
       }))
-    });
+    };
+    const requestFingerprint=JSON.stringify(requestPayload);
+    let previousAttempt=null;
+    try{previousAttempt=JSON.parse(sessionStorage.getItem('kbr_online_pending_submission_v1')||'null');}catch{}
+    const requestId=previousAttempt?.fingerprint===requestFingerprint&&previousAttempt.id
+      ? previousAttempt.id : crypto.randomUUID();
+    sessionStorage.setItem('kbr_online_pending_submission_v1',JSON.stringify({id:requestId,fingerprint:requestFingerprint}));
+    const result=await rpc('kbr_submit_online_order_once',{p_request_id:requestId,...requestPayload});
+    sessionStorage.removeItem('kbr_online_pending_submission_v1');
 
     const sentItems=cart.map(x=>({name:x.name,qty:x.qty,size:x.size,sweetness:x.sweetness,flavor:x.flavor}));
     cart=[];
@@ -1103,7 +1115,12 @@ async function placeOrder(){
       loadCustomerProfile();
     }
   }catch(error){
-    toast(error.message||'Could not send your order.');
+    const message=error?.message||'Could not send your order.';
+    if(!navigator.onLine||/failed to fetch|networkerror|network request|timed out|load failed/i.test(message)){
+      toast('Connection interrupted. Keep your cart and tap Send Order again to safely check this same order.');
+    }else{
+      toast(message);
+    }
   }finally{
     button.disabled=false;
     button.textContent='Send order';
