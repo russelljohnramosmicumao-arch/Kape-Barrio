@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v87-password-session-fix';
+const CACHE='kbr-online-customer-v88-public-launch';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=87-password-session-fix',
+  './online-orders.js?v=88-public-launch-hardening',
   './online-manifest.webmanifest?v=71'
 ];
 
