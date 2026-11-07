@@ -1901,12 +1901,22 @@ $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrde
 $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 
 let lastAccountResume=0;
+let lastSharedMenuRefresh=0,sharedMenuRefreshing=false;
+async function refreshSharedMenuIfNeeded(){
+  if(document.hidden||sharedMenuRefreshing||Date.now()-lastSharedMenuRefresh<60000)return;
+  sharedMenuRefreshing=true;
+  try{
+    await loadMenu();
+    lastSharedMenuRefresh=Date.now();
+  }finally{sharedMenuRefreshing=false;}
+}
 function resumeCustomerApp(){
   if(document.hidden)return;
   const now=Date.now();
   if(now-lastAccountResume<5000)return;
   lastAccountResume=now;
   if(customerSession?.user&&now-lastCartOrdersRefresh>60000)loadCustomerProfile();
+  refreshSharedMenuIfNeeded();
   startCartOrdersTimer();
 }
 document.addEventListener('visibilitychange',()=>{
@@ -1920,7 +1930,8 @@ renderCart();
 setPayment('cash');
 initCustomerAuth();
 loadDeliveryZones();
-loadMenu();
+refreshSharedMenuIfNeeded();
+setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
