@@ -245,14 +245,17 @@ function openItem(key){
 }
 
 function renderSizeOptions(){
-  const sizes=selectedType==='premium'?selected.premiumSizes:selected.sizes;
-  const prices=selectedType==='premium'?selected.premium:selected.prices;
-  $('sizeOptions').innerHTML=(Array.isArray(sizes)?sizes:[]).map((size,i)=>`
+  if(!selected)return;
+  const variants=itemVariants(selected).filter(v=>v.type===selectedType);
+  const hasAny=itemVariants(selected).length>0;
+  $('sizeOptions').innerHTML=variants.length?variants.map((variant,i)=>`
     <label class="option-choice">
-      <span><input type="radio" name="itemSize" value="${attr(size)}" ${i===0?'checked':''}> ${esc(size)}</span>
-      <strong>${money(prices?.[i])}</strong>
+      <span><input type="radio" name="itemSize" value="${attr(variant.size)}" ${i===0?'checked':''}> ${esc(variant.size)}</span>
+      <strong>${money(variant.price)}</strong>
     </label>
-  `).join('');
+  `).join(''):'<p class="empty-state">This size or variant is currently unavailable.</p>';
+  const addButton=$('addToCartButton')||document.querySelector('#itemDialog button[type="submit"]');
+  if(addButton)addButton.disabled=!variants.length||!hasAny;
 }
 
 
@@ -301,10 +304,9 @@ function addSelected(){
   if(!sizeEl)return toast('Please choose a size.');
 
   const size=sizeEl.value;
-  const sizes=selectedType==='premium'?selected.premiumSizes:selected.sizes;
-  const prices=selectedType==='premium'?selected.premium:selected.prices;
-  const idx=sizes.indexOf(size);
-  const price=Number(prices[idx]);
+  const allowed=itemVariants(selected).find(v=>v.type===selectedType&&v.size===size);
+  if(!allowed)return toast('This size is no longer available. Please choose an available size.');
+  const price=allowed.price;
   const qty=Math.max(1,Math.min(20,Number($('qtyInput').value)||1));
   const sweetness=$('sweetnessField').classList.contains('hidden')?'':selectedSweetness;
   const flavor=isFriesProduct(selected)
