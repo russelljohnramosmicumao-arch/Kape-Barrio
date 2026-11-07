@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v156-reward-payment-fix";
+const CACHE="kbr-ordering-v157-menu-size-availability";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
