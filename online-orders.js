@@ -1611,10 +1611,34 @@ async function signOutCustomer(){
 
 
 
+function currentRewardTier(price,item,size){
+  let points=price<=49?1000:price<=79?1500:price<=99?2000:price<=129?2500:price<=139?3000:3500;
+  if(String(item.category||'').toLowerCase()==='frappe & smoothies'&&String(size).toLowerCase().startsWith('22 oz'))
+    points=Math.max(points,3000);
+  return points;
+}
+function syncCartToSharedMenu(){
+  let changed=false;
+  for(const entry of cart){
+    const product=menu.find(item=>item.productId===entry.productId)
+      ||menu.find(item=>item.name===entry.name&&item.category===entry.category);
+    if(!product)continue;
+    const variant=itemVariants(product).find(v=>v.type===(entry.type||'standard')&&v.size===entry.size);
+    if(!variant)continue;
+    const newUnit=entry.paidByPoints?0:variant.price;
+    if(Number(entry.unitPrice)!==newUnit){entry.unitPrice=newUnit;changed=true;}
+    if(entry.paidByPoints){
+      const newPoints=currentRewardTier(variant.price,product,entry.size);
+      if(Number(entry.rewardPointsCost)!==newPoints){entry.rewardPointsCost=newPoints;changed=true;}
+    }
+  }
+  if(changed){saveCart();renderCart();toast('The shop updated its prices. Your cart has been refreshed.');}
+}
 async function loadMenu(){
   try{
     const snapshot=await rpc('kbr_online_menu_snapshot');
     menu=Array.isArray(snapshot?.items)?snapshot.items:[];
+    syncCartToSharedMenu();
     const tabs=categories();
     if(!tabs.includes(category))category=tabs[0]||'Frappe & Smoothies';
     currentShopOpen=!!snapshot?.shopOpen;
