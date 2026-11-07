@@ -365,4 +365,14 @@ $('rewardsAccountButton')?.addEventListener('click',()=>{
 });
 
 $('backButton')?.addEventListener('click',()=>window.location.href='./online.html');
-window.addEventListener('DOMContentLoaded',loadRewards);
+let lastRewardRefresh=0,rewardsRefreshing=false;
+async function refreshRewardsWhenVisible(){
+  if(document.hidden||rewardsRefreshing||Date.now()-lastRewardRefresh<60000)return;
+  rewardsRefreshing=true;
+  try{await loadRewards();lastRewardRefresh=Date.now();}
+  finally{rewardsRefreshing=false;}
+}
+window.addEventListener('DOMContentLoaded',refreshRewardsWhenVisible);
+window.addEventListener('focus',refreshRewardsWhenVisible);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshRewardsWhenVisible();});
+setInterval(()=>{if(!document.hidden)refreshRewardsWhenVisible();},60000);
