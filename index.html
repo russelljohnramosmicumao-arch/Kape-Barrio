@@ -906,9 +906,9 @@ products.addEventListener('touchend',e=>{
 
 function productFlavors(p){if(p.name==='Fries')return ['Plain','Cheese','Sour Cream'];if(p.category==='Ice Cream'&&/^creambar$/i.test(p.name))return ['Cookies and Cream','Rocky Road','Ube'];if(p.category==='Ice Cream'&&/^pinipig(?: ice cream)?$/i.test(p.name))return ['Strawberry','Rocky Road'];return [];}
 function chooseProduct(p){
-  if(p.availability==='not-available'||p.availability==='out-of-stock'){showActionToast('Not Available');return;}
+  if(['not-available','unavailable','out-of-stock'].includes(p.availability)){showActionToast('Not Available');return;}
   if(p.pricePending){showActionToast('Set this item’s price in Menu Manager first.');return;}
-  selected={p,type:p.premium?'premium':'standard',sizeIndex:p.category==='Frappe & Smoothies'&&p.sizes.length>1?1:0,qty:1,sweetness:'Normal',flavor:productFlavors(p)[0]||''};
+  selected={p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1,sweetness:'Normal',flavor:productFlavors(p)[0]||''};
   selName.textContent=p.name;
   selImage.src=p.image||"";
   selImage.alt=p.name;
@@ -933,12 +933,24 @@ function renderTypes(){
       <small>${isMatcha?'Milky Matcha':'Syrup-based'}</small>
     </button>`;
 }
+function availableStoreSizes(product,type){
+  const variant=type==='premium'?'premium':'standard';
+  const names=variant==='premium'?product.premiumSizes:product.sizes;
+  const prices=variant==='premium'?product.premium:product.prices;
+  const hidden=product.sizeUnavailable?.[variant]||[];
+  return (names||[]).map((size,i)=>({size,price:prices?.[i],index:i}))
+    .filter(x=>!hidden.includes(x.size)&&Number.isFinite(Number(x.price)));
+}
 function renderSizes(){
-  const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
-  const prices=selected.type==='premium'?p.premium:p.prices;
-  selected.sizeIndex=Math.min(selected.sizeIndex,prices.length-1);
-  if(p.category==='Frappe & Smoothies' && selected.sizeIndex<0) selected.sizeIndex=1;
-  sizeOptions.innerHTML=sizes.map((s,i)=>`<button class="opt ${i===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${i};renderSizes()">${escapeHtml(s)}<span>${peso(prices[i])}</span></button>`).join("");
+  const product=selected.p;
+  const available=availableStoreSizes(product,selected.type);
+  if(!available.length){
+    sizeOptions.innerHTML='<p>This size or variant is currently unavailable.</p>';
+    selected.sizeIndex=-1;
+    return;
+  }
+  if(!available.some(x=>x.index===selected.sizeIndex))selected.sizeIndex=available[0].index;
+  sizeOptions.innerHTML=available.map(x=>`<button class="opt ${x.index===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${x.index};renderSizes()">${escapeHtml(x.size)}<span>${peso(x.price)}</span></button>`).join("");
   selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
 }
 function renderFlavor(){
@@ -958,10 +970,13 @@ function changeQty(d){selected.qty=Math.max(1,selected.qty+d);selQty.textContent
 function addSelected(){
   if(!selected?.p)return;
   const current=MenuStore.load().find(p=>p.name===selected.p.name&&p.category===selected.p.category);
-  if(!current||current.availability==='not-available'||current.availability==='out-of-stock'||current.pricePending){selector.classList.remove('open');refreshManagedMenu();showActionToast('Not Available');return;}
+  if(!current||['not-available','unavailable','out-of-stock'].includes(current.availability)||current.pricePending){selector.classList.remove('open');refreshManagedMenu();showActionToast('Not Available');return;}
 
   const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);
   const prices=selected.type==='premium'?p.premium:p.prices;
+  if(selected.sizeIndex<0||!availableStoreSizes(current,selected.type).some(x=>x.index===selected.sizeIndex)){
+    showActionToast('This size is no longer available.');refreshManagedMenu();return;
+  }
   const item={productId:p.productId||null,name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor:productFlavors(p).length?selected.flavor:''};
   const key=JSON.stringify([item.name,item.type,item.size,item.price,item.sweetness,item.flavor]);
   const old=cart.find(x=>x.key===key);
