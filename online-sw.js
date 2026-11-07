@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v88-public-launch';
+const CACHE='kbr-online-customer-v89-shared-prices';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=88-public-launch-hardening',
+  './online-orders.js?v=89-shared-prices',
   './online-manifest.webmanifest?v=71'
 ];
 
