@@ -1649,6 +1649,24 @@ async function loadMenu(){
     const snapshot=await rpc('kbr_online_menu_snapshot');
     menu=Array.isArray(snapshot?.items)?snapshot.items:[];
     syncCartToSharedMenu();
+    // An already-open item dialog must also reflect newly hidden sizes.
+    if(selected&&$('itemDialog')?.open){
+      const latest=menu.find(p=>p.productId===selected.productId);
+      if(latest&&itemVariants(latest).length){
+        selected=latest;
+        if(!itemVariants(latest).some(v=>v.type===selectedType)){
+          selectedType=itemVariants(latest)[0].type;
+          $('typeOptions').querySelectorAll('input[name="itemType"]').forEach(input=>{
+            input.checked=input.value===selectedType;
+          });
+        }
+        renderSizeOptions();
+      }else{
+        $('itemDialog').close();
+        selected=null;
+        toast('This product is no longer available.');
+      }
+    }
     const tabs=categories();
     if(!tabs.includes(category))category=tabs[0]||'Frappe & Smoothies';
     currentShopOpen=!!snapshot?.shopOpen;
