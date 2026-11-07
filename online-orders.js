@@ -117,11 +117,13 @@ function renderCategories(){
 }
 
 function itemVariants(item){
+  const hidden=item.sizeUnavailable||{};
   const standard=(Array.isArray(item.sizes)?item.sizes:[]).map((size,i)=>({
     type:'standard',size,price:Number(item.prices?.[i]||0)
-  }));
+  })).filter(x=>!(hidden.standard||[]).includes(x.size));
   const premium=(Array.isArray(item.premiumSizes)&&Array.isArray(item.premium))
     ? item.premiumSizes.map((size,i)=>({type:'premium',size,price:Number(item.premium?.[i]||0)}))
+      .filter(x=>!(hidden.premium||[]).includes(x.size))
     : [];
   return [...standard,...premium].filter(x=>x.size&&Number.isFinite(x.price));
 }
@@ -144,7 +146,7 @@ function resolveImage(item){
 function renderMenu(){
   const indexed=menu.map((item,index)=>({item,index}));
   const filtered=indexed
-    .filter(({item})=>item.category===category)
+    .filter(({item})=>item.category===category&&itemVariants(item).length>0)
     .sort((a,b)=>{
       if(category==='Frappe & Smoothies'){
         const aMax=Math.max(...itemVariants(a.item).map(x=>x.price),0);
@@ -993,6 +995,7 @@ async function tryClaimPendingGuestOrder(){
 }
 
 async function placeOrder(){
+  if(cart.some(x=>x.unavailableSize)){toast('Your cart contains a size that is no longer available. Please remove it before ordering.');return;}
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
 
   let requested=null;
@@ -1624,7 +1627,11 @@ function syncCartToSharedMenu(){
       ||menu.find(item=>item.name===entry.name&&item.category===entry.category);
     if(!product)continue;
     const variant=itemVariants(product).find(v=>v.type===(entry.type||'standard')&&v.size===entry.size);
-    if(!variant)continue;
+    if(!variant){
+      entry.unavailableSize=true;
+      continue;
+    }
+    if(entry.unavailableSize){delete entry.unavailableSize;changed=true;}
     const newUnit=entry.paidByPoints?0:variant.price;
     if(Number(entry.unitPrice)!==newUnit){entry.unitPrice=newUnit;changed=true;}
     if(entry.paidByPoints){
