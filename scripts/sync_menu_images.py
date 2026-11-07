@@ -46,11 +46,11 @@ for item in assets:
             if mime != "image/jpeg":
                 raise ValueError(f"Unexpected image MIME for {product_id}: {mime}")
             body = response.read(2_097_153)
-        if not body or len(body) > 2_097_152 or not body.startswith(b"\\xff\\xd8"):
+        if not body or len(body) > 2_097_152 or body[:2] != bytes((255,216)):
             raise ValueError("Invalid or oversized JPEG upload")
         path.write_bytes(body)
     manifest[product_id] = "./images/menu-managed/" + filename
 
 index = target / "manifest.json"
-index.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\\n")
+index.write_text(json.dumps(manifest, indent=2, sort_keys=True) + chr(10))
 print(f"Mirrored {len(manifest)} shared menu image(s) to GitHub.")
