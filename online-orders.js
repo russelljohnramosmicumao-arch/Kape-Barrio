@@ -94,7 +94,7 @@ function categories(){
     'Ice Cream'
   ];
   const present=new Set(menu.map(x=>x.category).filter(Boolean));
-  return preferred.filter(x=>present.has(x));
+  return [...preferred.filter(x=>present.has(x)),...([...present].filter(x=>!preferred.includes(x)).sort())];
 }
 
 function categoryLabel(name){
@@ -386,7 +386,7 @@ function renderCart(){
   $('cartItems').innerHTML=cart.map((item,i)=>`
     <div class="cart-line">
       <div>
-        <h4>${esc(item.name)}</h4>
+        <h4>${esc(item.name)}</h4>${item.unavailableSize?'<p style="color:#ad3030;font-weight:800">This size is unavailable. Please remove it and choose another size.</p>':''}
         <p>${esc(item.type==='premium'?'Premium · ':'')}${esc(item.size)}${item.sweetness?` · ${esc(item.sweetness)}`:''}${item.flavor?` · ${esc(item.flavor)}`:''}</p>
         <p>${item.paidByPoints
           ? `${Number(item.rewardPointsCost||0).toLocaleString('en-PH')} pts · Paid by Points`
@@ -1628,6 +1628,7 @@ function syncCartToSharedMenu(){
     if(!product)continue;
     const variant=itemVariants(product).find(v=>v.type===(entry.type||'standard')&&v.size===entry.size);
     if(!variant){
+      if(!entry.unavailableSize)changed=true;
       entry.unavailableSize=true;
       continue;
     }
