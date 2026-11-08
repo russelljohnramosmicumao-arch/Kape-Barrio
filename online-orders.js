@@ -37,7 +37,33 @@ let selected=null;
 let selectedType='standard';
 let selectedPayment='cash';
 let selectedRedeemPoints=0;
-const GCASH_NUMBER='09672365176';
+let paymentMethods=[
+ {code:'cash',label:'Cash',type:'cash',enabled:true,onlineEnabled:true,instructions:'Pay at pickup or delivery.',accountNumber:''},
+ {code:'gcash',label:'GCash',type:'digital',enabled:true,onlineEnabled:true,instructions:'Send your GCash receipt to Kape Bar-Rio after paying.',accountNumber:'09672365176'}
+];
+let lastPaymentRefresh=0,paymentRefreshing=false;
+function paymentOption(code){return paymentMethods.find(p=>p.code===code);}
+function digitalPaymentFallback(){return paymentMethods.find(p=>p.type==='digital')?.code||'gcash';}
+function renderPaymentChoices(){
+ const host=document.querySelector('.payment-buttons');if(!host)return;
+ host.replaceChildren(...paymentMethods.map(p=>{
+  const b=document.createElement('button');b.type='button';
+  b.className='payment-choice'+(p.type==='digital'?' gcash':'');
+  b.dataset.payment=p.code;b.textContent=p.label;b.onclick=()=>setPayment(p.code);
+  return b;
+ }));
+ if(!paymentOption(selectedPayment))selectedPayment=paymentOption('cash')?'cash':paymentMethods[0]?.code||'cash';
+ setPayment(selectedPayment);
+}
+async function loadPaymentMethods(){
+ if(paymentRefreshing||Date.now()-lastPaymentRefresh<45000)return;
+ paymentRefreshing=true;
+ try{
+  const list=await rpc('kbr_payment_methods_snapshot',{});
+  if(Array.isArray(list)&&list.length){paymentMethods=list.filter(p=>p.enabled&&p.onlineEnabled);renderPaymentChoices();lastPaymentRefresh=Date.now();}
+ }catch(e){console.warn('Unable to refresh shared payment methods',e);}
+ finally{paymentRefreshing=false;}
+}
 let deliveryZones=[];
 let selectedDeliveryFee=0;
 let currentShopOpen=false;
@@ -595,7 +621,7 @@ function updateCheckoutTotals(){
   const cashBtn=$('cashPaymentButton');
   if(cashBtn){
     cashBtn.disabled=finalTotal>300;
-    cashBtn.title=finalTotal>300?'Orders above ₱300 after points require GCash.':'';
+    cashBtn.title=finalTotal>300?'Orders above ₱300 require digital payment.':'';
   }
 
   let note=document.getElementById('paymentLimitNote');
@@ -606,8 +632,8 @@ function updateCheckoutTotals(){
       note.className='payment-limit-note';
       document.querySelector('.payment-buttons')?.insertAdjacentElement('afterend',note);
     }
-    note.textContent='Orders above ₱300 after points require GCash payment.';
-    if(selectedPayment!=='gcash')setPayment('gcash');
+    note.textContent='Orders above ₱300 require an enabled digital payment method.';
+    if(paymentOption(selectedPayment)?.type==='cash')setPayment(digitalPaymentFallback());
   }else if(note){
     note.remove();
   }
@@ -660,26 +686,28 @@ function updateServiceFields(){
 
 function setPayment(method){
   const finalTotal=Math.max(0,total()+((document.querySelector('input[name="serviceType"]:checked')?.value||'pickup')==='delivery'?selectedDeliveryFee:0)-pointsDiscount());
-  if(method==='cash'&&finalTotal>300){
-    selectedPayment='gcash';
-    toast('Orders above ₱300 require GCash.');
-  }else{
-    selectedPayment=method==='gcash'?'gcash':'cash';
-  }
-
+  const requested=paymentOption(method)||paymentOption('cash')||paymentMethods[0];
+  if(!requested)return;
+  if(requested.type==='cash'&&finalTotal>300){
+    selectedPayment=digitalPaymentFallback();
+    toast('Orders above ₱300 require digital payment.');
+  }else selectedPayment=requested.code;
+  const chosen=paymentOption(selectedPayment)||requested;
   document.querySelectorAll('.payment-choice').forEach(btn=>{
     btn.classList.toggle('active',btn.dataset.payment===selectedPayment);
+    btn.disabled=paymentOption(btn.dataset.payment)?.type==='cash'&&finalTotal>300;
   });
-
-  $('cashAmountField').classList.toggle('hidden',selectedPayment!=='cash');
-  $('gcashDetails').classList.toggle('hidden',selectedPayment!=='gcash');
-  if($('gcashNumber'))$('gcashNumber').textContent=GCASH_NUMBER;
-
+  const cashField=$('cashAmountField'),digital=$('gcashDetails');
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||lockedServiceType||'pickup';
-  $('cashAmountField')?.classList.toggle('hidden',!(method==='cash'&&service==='delivery'));
+  cashField?.classList.toggle('hidden',!(chosen.type==='cash'&&service==='delivery'));
+  digital?.classList.toggle('hidden',chosen.type!=='digital');
+  const number=$('gcashNumber');
+  if(number)number.textContent=chosen.accountNumber||'Ask the shop for payment details';
+  const title=digital?.querySelector('.gcash-number-label');
+  if(title)title.textContent='Pay with '+chosen.label;
+  const instructions=digital?.querySelector('p');
+  if(instructions)instructions.textContent=chosen.instructions||'Please contact Kape Bar-Rio to confirm payment instructions.';
 }
-
-
 
 
 function getManilaNow(){
@@ -1012,6 +1040,8 @@ async function placeOrder(){
   const barangay=$('deliveryBarangay')?.value||'';
   const address=$('deliveryAddress').value.trim();
   const payment=selectedPayment;
+  if(!paymentOption(payment))return toast('Payment method changed. Please select an available method.');
+  if(paymentOption(payment)?.type==='cash'&&Math.max(0,total()+selectedDeliveryFee-pointsDiscount())>300)return toast('Orders above ₱300 require digital payment.');
   let notes=$('orderNotes').value.trim();
   const cashAmount=Number($('cashAmount')?.value||0);
 
@@ -1020,8 +1050,9 @@ async function placeOrder(){
       if(!cashAmount||cashAmount<Math.max(0,total()+selectedDeliveryFee-pointsDiscount()))return toast('Please enter enough cash for the order total.');
       notes=[notes,`Cash tendered: ₱${cashAmount}`].filter(Boolean).join(' | ');
     }
-  }else if(payment==='gcash'){
-    notes=[notes,'GCash selected. Payment pending verification; customer instructed to send receipt to Kape Bar-Rio.'].filter(Boolean).join(' | ');
+  }else if(paymentOption(payment)?.type==='digital'){
+    const method=paymentOption(payment);
+    notes=[notes,method.label+' selected. Payment pending staff verification.'].filter(Boolean).join(' | ');
   }
 
   if(customerName.length<2)return toast('Please enter your name.');
@@ -1976,10 +2007,12 @@ document.addEventListener('visibilitychange',()=>{
   else resumeCustomerApp();
 });
 window.addEventListener('focus',resumeCustomerApp);
+window.addEventListener('focus',loadPaymentMethods);
 
 loadCart();
 renderCart();
 setPayment('cash');
+loadPaymentMethods();
 initCustomerAuth();
 loadDeliveryZones();
 refreshSharedMenuIfNeeded();
