@@ -1634,7 +1634,7 @@ function renderBaristaOrders(){
   if(baristaView==='unserved-paid')statusNote=KBRPayments.isNonSale(order)?`<div class="barista-status-note">${escapeHtml(KBRPayments.label(order))} confirmed · excluded from sales. Waiting for remaining items to be served.</div>`:`<div class="barista-status-note">💳 ${escapeHtml(KBRPayments.label(order))} recorded. Waiting for remaining items to be served.</div>`;
   const paymentBlock=baristaView==='unserved-paid'
     ? statusNote
-    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">GCash</button><button class="barista-pay-btn ${selectedBaristaPayment==='pay-later'?'selected':''}" onclick="selectBaristaPayment('pay-later')">Pay Later</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Barista Drinks</button><button class="barista-pay-btn qr-rewards-btn" type="button" onclick="window.KBRRewardsScanner?.openForOrder('${String(order.no).replace(/\D/g,'')}')">▦ Scan for Points</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
+    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">GCash</button>${baristaExtraPaymentButtons()}<button class="barista-pay-btn ${selectedBaristaPayment==='pay-later'?'selected':''}" onclick="selectBaristaPayment('pay-later')">Pay Later</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Barista Drinks</button><button class="barista-pay-btn qr-rewards-btn" type="button" onclick="window.KBRRewardsScanner?.openForOrder('${String(order.no).replace(/\D/g,'')}')">▦ Scan for Points</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
   const orderSvcClass=orderServiceClass(order);
   const onlineSelected=isOnlineBaristaOrder(order);
@@ -1661,6 +1661,29 @@ function closeBaristaOrderDetail(){
   noteEditorOpenNo="";
   renderBaristaOrders();
 }
+let baristaSharedPaymentMethods=[
+ {code:'cash',label:'Cash',type:'cash'},
+ {code:'gcash',label:'GCash',type:'digital',accountNumber:'09672365176'}
+];
+let baristaPaymentMethodRefresh=0;
+function baristaPaymentInfo(code){return baristaSharedPaymentMethods.find(x=>x.code===code)}
+function baristaExtraPaymentButtons(){
+ return baristaSharedPaymentMethods.filter(x=>!['cash','gcash'].includes(x.code))
+  .map(x=>'<button class="barista-pay-btn '+(selectedBaristaPayment===x.code?'selected':'')+
+  '" onclick="selectBaristaPayment('+JSON.stringify(x.code).replace(/"/g,'&quot;')+')">'+escapeHtml(x.label)+'</button>').join('');
+}
+async function refreshBaristaSharedPayments(){
+ if(!window.KBRCloud||document.hidden||Date.now()-baristaPaymentMethodRefresh<60000)return;
+ try{
+  const methods=await KBRCloud.rpc('kbr_barista_payment_methods_snapshot',{});
+  if(Array.isArray(methods)&&methods.length){
+   baristaSharedPaymentMethods=methods;baristaPaymentMethodRefresh=Date.now();
+   if(document.getElementById('baristaPaymentPanel'))renderBaristaOrders();
+  }
+ }catch(e){console.warn('Barista payment methods unavailable',e);}
+}
+window.addEventListener('focus',refreshBaristaSharedPayments);
+window.addEventListener('load',()=>setTimeout(refreshBaristaSharedPayments,2200));
 function selectBaristaPayment(method){
   selectedBaristaPayment=method;
   if(!['cash','pay-later','split'].includes(method))cashReceived=0;
@@ -1751,13 +1774,21 @@ function renderBaristaPaymentPanel(){
     const message=available===null||available===undefined?(window.KBRBaristaDrinkError||'Checking today’s available barista drinks…'):available.length?'Choose the barista:':'No available free drinks. Clock in first; each employee can redeem one drink per day.';
     host.innerHTML=`<div class="barista-pay-panel"><b>One free drink per barista per day</b><p>${eligible?message:'Use an order containing exactly one drink and no food.'}</p><div class="comp-choice-list">${(available||[]).map(name=>`<button ${eligible?'':'disabled'} onclick="chooseBaristaDrink('${name}')">${name}</button>`).join('')}</div><p class="muted">Recorded in history and inventory usage. Sales amount: ₱0.</p></div>`;return;
   }
-  host.innerHTML=`<div class="barista-pay-panel"><img class="barista-gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src='images/gcash-card.png';"><div class="gcash-number">GCash Number: 09672365176</div><div class="gcash-help">Confirm the customer has completed the GCash payment before pressing Complete.</div><button class="barista-close-pay" onclick="completePendingPayment('gcash')">Complete GCash Payment</button><button class="secondary" onclick="selectBaristaPayment('split')">Cash + GCash</button></div>`;
+  const pay=baristaPaymentInfo(selectedBaristaPayment)||baristaPaymentInfo('gcash')||{code:'gcash',label:'GCash',type:'digital'};
+  if(pay.type!=='digital'){host.innerHTML='<p>Choose an available payment method.</p>';return;}
+  const gcashArtwork=pay.code==='gcash'?'<img class="barista-gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src=\'images/gcash-card.png\';">':'';
+  host.innerHTML=`<div class="barista-pay-panel">${gcashArtwork}
+   <div class="gcash-number">${escapeHtml(pay.label)}${pay.accountNumber?' · '+escapeHtml(pay.accountNumber):''}</div>
+   <div class="gcash-help">${escapeHtml(pay.instructions||'Confirm payment before marking as paid.')}</div>
+   <button class="barista-close-pay" onclick="completePendingPayment('${pay.code}')">Confirm ${escapeHtml(pay.label)} Payment</button>
+   ${pay.code==='gcash'?'<button class="secondary" onclick="selectBaristaPayment(\'split\')">Cash + GCash</button>':''}
+  </div>`;
 }
 function completePendingPayment(method,authorization=null){
   const order=getCurrentBaristaOrder();if(!order)return;ensurePendingUnits(order);ensureUnitServedFlags(order);
   const items=buildHistoryItemsFromPending(order);const total=Math.round(items.reduce((s,x)=>s+(Number(x.price)||0),0)*100)/100;let change=0,received=0;
   if(method==='cash'){received=Math.round((Number(cashReceived)||0)*100)/100;if(received<total){updateCashReceived(received);return;}change=Math.round((received-total)*100)/100;}
-  if(!['cash','gcash','barista-drink'].includes(method))return;
+  if(!['cash','gcash','barista-drink'].includes(method)&&baristaPaymentInfo(method)?.type!=='digital')return;
   if(method==='barista-drink'){if(!authorization?.token){alert('Authorize this payment first.');return;}order.compAuthorization=authorization.token;order.compRecord={kind:method,person:authorization.person,retailValue:total};order.nonSale=true;order.retailValue=total;order.salesTotal=0;}
   order.paid=true;order.paymentMethod=method;order.cashReceived=method==='cash'?received:0;order.change=method==='cash'?change:0;order.paidAt=new Date().toISOString();selectedBaristaPayment='';cashReceived=0;
   if(isOrderFullyServed(order))finalizeOpenOrder(order);else{removeOpenOrderFromBuckets(order.no);unservedPaidOrders.unshift(order);activePendingOrderNo=order.no;setPendingOrderStorage();renderBaristaOrders();showActionToast(`Order #${order.no} is paid and waiting to be served`);}
