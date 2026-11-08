@@ -13,7 +13,7 @@ const OPTIONAL_ASSETS=[
  "./shifts.js?v=coins-carry-v4","./sync.css?v=turnover-v3","./receipt-lines.js",
  "./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png",
  "./icons/icon-512.png","./manager-access.js","./worker-clock.js",
- "./app-links.js","./comp-payments.js?v=points-paid-v2","./manager.html","./menu.js",
+ "./app-links.js","./comp-payments.js?v=payment-labels-v3","./manager.html","./menu.js",
  "./pay-later.js?v=30-day-settled-v1","./reset-password.html","./reset-password.js",
  "./shifts.js","./sync-login.html","./sync.css","./menu-store.js",
  "./online.html","./rewards.html"
