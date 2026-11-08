@@ -2020,7 +2020,7 @@ setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=93-payment-settings',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=94-configurable-payments',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
