@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v92-hidden-sizes-dialog';
+const CACHE='kbr-online-customer-v93-payment-settings';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=92-hidden-sizes-dialog',
+  './online-orders.js?v=93-payment-settings',
   './online-manifest.webmanifest?v=71'
 ];
 
