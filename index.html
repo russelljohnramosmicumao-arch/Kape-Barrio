@@ -1677,7 +1677,7 @@ async function refreshBaristaSharedPayments(){
  try{
   const methods=await KBRCloud.rpc('kbr_barista_payment_methods_snapshot',{});
   if(Array.isArray(methods)&&methods.length){
-   baristaSharedPaymentMethods=methods;baristaPaymentMethodRefresh=Date.now();
+   baristaSharedPaymentMethods=methods;window.KBRPaymentLabels=Object.fromEntries(methods.map(p=>[p.code,p.label]));baristaPaymentMethodRefresh=Date.now();
    if(document.getElementById('baristaPaymentPanel'))renderBaristaOrders();
   }
  }catch(e){console.warn('Barista payment methods unavailable',e);}
