@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v157-menu-size-availability";
+const CACHE="kbr-ordering-v158-payment-coins";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
@@ -10,7 +10,7 @@ const CORE_ASSETS=[
 ];
 const OPTIONAL_ASSETS=[
  "./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html",
- "./shifts.js?v=turnover-v3","./sync.css?v=turnover-v3","./receipt-lines.js",
+ "./shifts.js?v=coins-carry-v4","./sync.css?v=turnover-v3","./receipt-lines.js",
  "./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png",
  "./icons/icon-512.png","./manager-access.js","./worker-clock.js",
  "./app-links.js","./comp-payments.js?v=points-paid-v2","./manager.html","./menu.js",
