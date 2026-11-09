@@ -1820,10 +1820,9 @@ function renderHistory(){
   }
 
   const kitchenNames=new Set(['Fries','Shiang hai','Nachos','Samyang Buldak']);
-  let kitchenFoodTotal=0, kapeBarRioTotal=0, freeDrinkValue=0, ownerChargeValue=0;
+  let kitchenFoodTotal=0, kapeBarRioTotal=0;
   receipts.forEach(r=>{
     if(r.cancelled)return;
-    if(r.payment==='barista-drink')freeDrinkValue+=KBRPayments.value(r);if(r.payment==='kuya-john')ownerChargeValue+=KBRPayments.value(r);
     (r.items||[]).forEach(x=>{
       const line=(Number(x.price)||0)*(Number(x.qty)||0);
       if(kitchenNames.has(x.name)) kitchenFoodTotal+=line;
@@ -1834,7 +1833,6 @@ function renderHistory(){
   baristaHistoryList.innerHTML=`<div class="history-total-strip">
     <div class="history-total-card"><small>Kitchen total · Fries, Shiang Hai, Nachos, Samyang Buldak · excludes siomai</small><b>${peso(kitchenFoodTotal)}</b></div>
     <div class="history-total-card"><small>Kape' Bar-Rio sales (Drinks + Siomai)</small><b>${peso(kapeBarRioTotal)}</b></div>
-    <div class="history-total-card"><small>Barista Drinks · value excluded from sales</small><b>${peso(freeDrinkValue)}</b></div><div class="history-total-card"><small>Charged to Kuya John · excluded from sales</small><b>${peso(ownerChargeValue)}</b></div>
   </div>
   <div class="history-thumb-grid">${receipts.map(r=>{
     const items=groupHistoryItems(r.items).map(x=>{

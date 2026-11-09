@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v162-mobile-qr";
+const CACHE="kbr-ordering-v163-barista-sales-two-cards";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
