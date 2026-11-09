@@ -656,6 +656,37 @@ function updateCheckoutTotals(){
 }
 
 
+function refreshServiceAvailability(){
+  const settings=shopRules?.settings;
+  if(!settings)return;
+  const available={
+    pickup:!!settings.online_enabled&&!!settings.pickup_enabled,
+    delivery:!!settings.online_enabled&&!!settings.delivery_enabled
+  };
+  const notice=$('serviceAvailabilityNotice');
+  if(notice){
+    const messages=[];
+    if(!available.delivery)messages.push('Delivery is currently unavailable.');
+    if(!available.pickup)messages.push('Pickup is currently unavailable.');
+    if(!available.delivery&&available.pickup)messages.push('You can still order for pickup!');
+    notice.textContent=messages.join(' ');
+    notice.style.display=messages.length?'block':'none';
+  }
+  for(const service of ['pickup','delivery']){
+    const radio=document.querySelector('input[name="serviceType"][value="'+service+'"]');
+    if(radio){
+      radio.disabled=!available[service];
+      radio.closest('label')?.classList.toggle('service-locked-off',!available[service]);
+    }
+    const button=$(service==='pickup'?'closedPickupButton':'closedDeliveryButton');
+    if(button){button.disabled=!available[service];button.title=available[service]?'':service+' is currently unavailable';}
+  }
+  const chosen=document.querySelector('input[name="serviceType"]:checked');
+  if(chosen&&!available[chosen.value]){
+    const alternative=document.querySelector('input[name="serviceType"][value="'+(available.pickup?'pickup':'delivery')+'"]');
+    if(alternative&&available[alternative.value]&&!lockedServiceType)alternative.checked=true;
+  }
+}
 function applyServiceLock(){
   const radios=[...document.querySelectorAll('input[name="serviceType"]')];
   radios.forEach(radio=>{
@@ -663,8 +694,9 @@ function applyServiceLock(){
     const locked=!!lockedServiceType;
     const isSelected=!locked||radio.value===lockedServiceType;
 
-    radio.disabled=locked&&!isSelected;
-    label?.classList.toggle('service-locked-off',locked&&!isSelected);
+    const unavailable=!!shopRules?.settings&&!shopRules.serviceEnabled(radio.value);
+    radio.disabled=(locked&&!isSelected)||unavailable;
+    label?.classList.toggle('service-locked-off',(locked&&!isSelected)||unavailable);
     label?.classList.toggle('service-locked-on',locked&&isSelected);
 
     if(locked&&isSelected)radio.checked=true;
@@ -968,6 +1000,7 @@ function populateClosedPreorderTimes(){
 }
 
 function startClosedPreorderService(service){
+  if(!shopRules?.serviceEnabled(service))return toast(service==='delivery'?'Delivery is currently unavailable. Please select Pickup.':'Pickup is currently unavailable.');
   closedPreorderService=service;
   $('closedPreorderTimeTitle').textContent=service==='delivery'
     ? 'Choose your delivery time'
@@ -1728,6 +1761,7 @@ async function loadMenu(){
     const tabs=categories();
     if(!tabs.includes(category))category=tabs[0]||'Frappe & Smoothies';
     shopRules?.set(snapshot?.shopSettings);
+    refreshServiceAvailability();
     operationalShiftOpen=!!snapshot?.shopOpen;
     const currentService=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
     currentShopOpen=!!shopRules?.immediateAllowed(operationalShiftOpen,currentService);
