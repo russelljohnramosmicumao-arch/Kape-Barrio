@@ -2035,6 +2035,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('focus',resumeCustomerApp);
 window.addEventListener('focus',loadPaymentMethods);
+setInterval(()=>{if(!document.hidden)loadPaymentMethods();},60000);
 
 loadCart();
 renderCart();
@@ -2047,7 +2048,7 @@ setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=94-configurable-payments',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=95-mobile-qr',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
