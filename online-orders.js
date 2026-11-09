@@ -81,6 +81,8 @@ async function loadPaymentMethods(){
 let deliveryZones=[];
 let selectedDeliveryFee=0;
 let currentShopOpen=false;
+let operationalShiftOpen=false;
+const shopRules=window.KBRShopHoursClient;
 let closedPreorderConfigured=false;
 let closedPreorderService='pickup';
 let lockedServiceType='';
@@ -654,6 +656,37 @@ function updateCheckoutTotals(){
 }
 
 
+function refreshServiceAvailability(){
+  const settings=shopRules?.settings;
+  if(!settings)return;
+  const available={
+    pickup:!!settings.online_enabled&&!!settings.pickup_enabled,
+    delivery:!!settings.online_enabled&&!!settings.delivery_enabled
+  };
+  const notice=$('serviceAvailabilityNotice');
+  if(notice){
+    const messages=[];
+    if(!available.delivery)messages.push('Delivery is currently unavailable.');
+    if(!available.pickup)messages.push('Pickup is currently unavailable.');
+    if(!available.delivery&&available.pickup)messages.push('You can still order for pickup!');
+    notice.textContent=messages.join(' ');
+    notice.style.display=messages.length?'block':'none';
+  }
+  for(const service of ['pickup','delivery']){
+    const radio=document.querySelector('input[name="serviceType"][value="'+service+'"]');
+    if(radio){
+      radio.disabled=!available[service];
+      radio.closest('label')?.classList.toggle('service-locked-off',!available[service]);
+    }
+    const button=$(service==='pickup'?'closedPickupButton':'closedDeliveryButton');
+    if(button){button.disabled=!available[service];button.title=available[service]?'':service+' is currently unavailable';}
+  }
+  const chosen=document.querySelector('input[name="serviceType"]:checked');
+  if(chosen&&!available[chosen.value]){
+    const alternative=document.querySelector('input[name="serviceType"][value="'+(available.pickup?'pickup':'delivery')+'"]');
+    if(alternative&&available[alternative.value]&&!lockedServiceType)alternative.checked=true;
+  }
+}
 function applyServiceLock(){
   const radios=[...document.querySelectorAll('input[name="serviceType"]')];
   radios.forEach(radio=>{
@@ -661,8 +694,9 @@ function applyServiceLock(){
     const locked=!!lockedServiceType;
     const isSelected=!locked||radio.value===lockedServiceType;
 
-    radio.disabled=locked&&!isSelected;
-    label?.classList.toggle('service-locked-off',locked&&!isSelected);
+    const unavailable=!!shopRules?.settings&&!shopRules.serviceEnabled(radio.value);
+    radio.disabled=(locked&&!isSelected)||unavailable;
+    label?.classList.toggle('service-locked-off',(locked&&!isSelected)||unavailable);
     label?.classList.toggle('service-locked-on',locked&&isSelected);
 
     if(locked&&isSelected)radio.checked=true;
@@ -768,20 +802,14 @@ function openingHourFor(date){
 }
 
 function earliestHourMinute(date,service){
-  const day=date.getUTCDay();
-  const weekend=day===0||day===6;
-
-  if(weekend){
-    return service==='delivery'
-      ? {hour:16,minute:0}
-      : {hour:15,minute:30};
-  }
-
-  return {hour:11,minute:30};
+ const window=shopRules?.timeWindow(date,service);
+ if(!window)return {hour:24,minute:0};
+ return {hour:Math.floor(window.earliest/60),minute:window.earliest%60};
 }
-
-function latestHourMinute(service){
-  return service==='delivery'?{hour:22,minute:30}:{hour:22,minute:45};
+function latestHourMinute(service,date=manilaPseudoDate()){
+ const window=shopRules?.timeWindow(date,service);
+ if(!window)return {hour:0,minute:0};
+ return {hour:Math.floor(window.latest/60),minute:window.latest%60};
 }
 
 function defaultScheduledTime(){
@@ -799,7 +827,7 @@ function defaultScheduledTime(){
 
   for(let i=0;i<8;i++){
     const earliest=earliestHourMinute(candidate,service);
-    const latest=latestHourMinute(service);
+    const latest=latestHourMinute(service,candidate);
 
     const opening=new Date(candidate);
     opening.setUTCHours(earliest.hour,earliest.minute,0,0);
@@ -827,15 +855,17 @@ function scheduledValueIsValid(value,service){
   const selected=new Date(Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5]));
   const now=manilaPseudoDate();
 
-  if(selected.getTime()<now.getTime()+30*60000){
+  if(selected.getTime()<now.getTime()+Number(shopRules?.settings?.advance_notice_minutes??30)*60000){
     return {ok:false,message:'Please choose a time at least 30 minutes from now.'};
   }
-  if(selected.getTime()>now.getTime()+7*24*60*60000){
+  if(selected.getTime()>now.getTime()+Number(shopRules?.settings?.advance_days||7)*24*60*60000){
     return {ok:false,message:'You can schedule up to 7 days ahead.'};
   }
 
+  const policy=shopRules?.validateScheduled(selected,service);
+  if(!policy?.ok)return {ok:false,message:policy?.message||'No available order times.'};
   const earliest=earliestHourMinute(selected,service);
-  const latest=latestHourMinute(service);
+  const latest=latestHourMinute(service,selected);
   const mins=selected.getUTCHours()*60+selected.getUTCMinutes();
   const earliestMins=earliest.hour*60+earliest.minute;
   const latestMins=latest.hour*60+latest.minute;
@@ -877,7 +907,7 @@ function updateTimingFields(){
   input.min=formatDateTimeLocal(minDate);
 
   const maxDate=manilaPseudoDate();
-  maxDate.setUTCDate(maxDate.getUTCDate()+7);
+  maxDate.setUTCDate(maxDate.getUTCDate()+Number(shopRules?.settings?.advance_days||7));
   input.max=formatDateTimeLocal(maxDate);
 
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
@@ -890,7 +920,8 @@ function updateTimingFields(){
 
 function deliveryCutoffPassed(){
   const now=getManilaNow();
-  return now.hour>22 || (now.hour===22 && now.minute>=30);
+  const win=shopRules?.timeWindow(manilaPseudoDate(),'delivery');
+  return !win||now.hour*60+now.minute>=win.latest;
 }
 
 
@@ -911,7 +942,7 @@ function configureClosedPreorderDate(){
 
   const now=manilaPseudoDate();
   const max=new Date(now);
-  max.setUTCDate(max.getUTCDate()+7);
+  max.setUTCDate(max.getUTCDate()+Number(shopRules?.settings?.advance_days||7));
 
   input.min=localDateString(now);
   input.max=localDateString(max);
@@ -937,7 +968,7 @@ function populateClosedPreorderTimes(){
 
   const date=new Date(Date.UTC(+m[1],+m[2]-1,+m[3],0,0));
   const earliest=earliestHourMinute(date,closedPreorderService);
-  const latest=latestHourMinute(closedPreorderService);
+  const latest=latestHourMinute(closedPreorderService,date);
   const now=manilaPseudoDate();
   const sameDay=localDateString(date)===localDateString(now);
 
@@ -961,15 +992,15 @@ function populateClosedPreorderTimes(){
     : '<option value="">No remaining times for this date</option>';
 
   const weekend=date.getUTCDay()===0||date.getUTCDay()===6;
-  const earliestLabel=weekend
-    ? (closedPreorderService==='delivery'?'4:00 PM':'3:30 PM')
-    : '11:30 AM';
-  $('closedPreorderTimeHelp').textContent=closedPreorderService==='delivery'
-    ? `Delivery times: ${earliestLabel}–10:30 PM`
-    : `Pickup times: ${earliestLabel}–10:45 PM`;
+  const win=shopRules?.timeWindow(date,closedPreorderService);
+  const fmt=mins=>{const h=Math.floor(mins/60);return (h%12||12)+':'+String(mins%60).padStart(2,'0')+(h>=12?' PM':' AM')};
+  $('closedPreorderTimeHelp').textContent=win?
+    'Available '+closedPreorderService+' times: '+fmt(win.earliest)+'–'+fmt(win.latest):
+    'No times available for this service on this date.';
 }
 
 function startClosedPreorderService(service){
+  if(!shopRules?.serviceEnabled(service))return toast(service==='delivery'?'Delivery is currently unavailable. Please select Pickup.':'Pickup is currently unavailable.');
   closedPreorderService=service;
   $('closedPreorderTimeTitle').textContent=service==='delivery'
     ? 'Choose your delivery time'
@@ -1054,7 +1085,7 @@ async function tryClaimPendingGuestOrder(){
 async function placeOrder(){
   if(cart.some(x=>x.unavailableSize)){toast('Your cart contains a size that is no longer available. Please remove it before ordering.');return;}
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
-
+  if(!shopRules?.settings||!shopRules.serviceEnabled(service))return toast('This ordering channel is temporarily unavailable.');
   let requested=null;
   if(!currentShopOpen){
     const check=scheduledValueIsValid($('scheduledTime')?.value||'',service);
@@ -1095,6 +1126,8 @@ async function placeOrder(){
   button.textContent='Sending order…';
 
   try{
+    const policy=await rpc('kbr_shop_order_decision',{p_service:service,p_requested:requested});
+    if(!policy?.allowed)throw Error(policy?.reason||'This order service is unavailable.');
     // Keep the same request ID when a network timeout forces the customer
     // to retry. The server will return the original order, not create another.
     const requestPayload={
@@ -1727,10 +1760,15 @@ async function loadMenu(){
     }
     const tabs=categories();
     if(!tabs.includes(category))category=tabs[0]||'Frappe & Smoothies';
-    currentShopOpen=!!snapshot?.shopOpen;
+    shopRules?.set(snapshot?.shopSettings);
+    refreshServiceAvailability();
+    operationalShiftOpen=!!snapshot?.shopOpen;
+    const currentService=document.querySelector('input[name="serviceType"]:checked')?.value||'pickup';
+    currentShopOpen=!!shopRules?.immediateAllowed(operationalShiftOpen,currentService);
     if($('shopStatus')){
-      $('shopStatus').textContent='';
-      $('shopStatus').className='shop-status hidden';
+      const paused=shopRules?.settings&&!shopRules.settings.online_enabled;
+      $('shopStatus').textContent=paused?'Online orders are temporarily paused.':'';
+      $('shopStatus').className=paused?'shop-status closed':'shop-status hidden';
     }
 
     if(currentShopOpen){
@@ -1739,6 +1777,10 @@ async function loadMenu(){
     }else if(!closedPreorderConfigured){
       $('closedPreorderGate')?.classList.remove('hidden');
       closedPreorderShow('intro');
+      const preorder=!!shopRules?.settings?.advance_enabled&&!!shopRules?.settings?.online_enabled&&shopRules?.mode()!=='closed';
+      const note=$('closedPreorderIntro')?.querySelector('p');
+      if(note)note.textContent=preorder?'You can schedule an order for a future open period.':'Online ordering is not accepting new orders right now.';
+      if($('closedOrderLaterButton'))$('closedOrderLaterButton').disabled=!preorder;
     }
 
     updateTimingFields();
@@ -2048,7 +2090,7 @@ setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=95-mobile-qr',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=96-shop-hours-stage',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
