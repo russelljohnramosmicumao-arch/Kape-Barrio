@@ -46,13 +46,27 @@ function paymentOption(code){return paymentMethods.find(p=>p.code===code);}
 function digitalPaymentFallback(){return paymentMethods.find(p=>p.type==='digital')?.code||'gcash';}
 function renderPaymentChoices(){
  const host=document.querySelector('.payment-buttons');if(!host)return;
- host.replaceChildren(...paymentMethods.map(p=>{
-  const b=document.createElement('button');b.type='button';
-  b.className='payment-choice'+(p.type==='digital'?' gcash':'');
-  b.dataset.payment=p.code;b.textContent=p.label;b.onclick=()=>setPayment(p.code);
-  return b;
- }));
- if(!paymentOption(selectedPayment))selectedPayment=paymentOption('cash')?'cash':paymentMethods[0]?.code||'cash';
+ const digital=paymentMethods.filter(p=>p.type==='digital');
+ host.replaceChildren();
+ if(paymentOption('cash')){
+  const cash=document.createElement('button');cash.type='button';
+  cash.id='cashPaymentButton';cash.className='payment-choice';cash.dataset.payment='cash';
+  cash.textContent='Cash';cash.onclick=()=>setPayment('cash');host.append(cash);
+ }
+ if(digital.length){
+  const mobile=document.createElement('button');mobile.type='button';
+  mobile.id='mobilePaymentButton';mobile.className='payment-choice gcash';mobile.dataset.payment='mobile';
+  mobile.textContent='Mobile Payments';mobile.onclick=()=>setPayment(digitalPaymentFallback());
+  host.append(mobile);
+  const choices=document.createElement('div');choices.id='mobilePaymentOptions';choices.className='mobile-payment-options';
+  for(const p of digital){
+   const b=document.createElement('button');b.type='button';b.className='mobile-method-choice';
+   b.dataset.method=p.code;b.textContent=p.label;b.onclick=()=>setPayment(p.code);
+   choices.append(b);
+  }
+  host.append(choices);
+ }
+ if(!paymentOption(selectedPayment))selectedPayment=paymentOption('cash')?'cash':digital[0]?.code||'cash';
  setPayment(selectedPayment);
 }
 async function loadPaymentMethods(){
@@ -694,9 +708,14 @@ function setPayment(method){
   }else selectedPayment=requested.code;
   const chosen=paymentOption(selectedPayment)||requested;
   document.querySelectorAll('.payment-choice').forEach(btn=>{
-    btn.classList.toggle('active',btn.dataset.payment===selectedPayment);
-    btn.disabled=paymentOption(btn.dataset.payment)?.type==='cash'&&finalTotal>300;
+    btn.classList.toggle('active',btn.dataset.payment==='mobile'?chosen.type==='digital':btn.dataset.payment===selectedPayment);
+    btn.disabled=btn.dataset.payment==='cash'&&finalTotal>300;
   });
+  const options=$('mobilePaymentOptions');
+  if(options){
+   options.classList.toggle('hidden',chosen.type!=='digital');
+   options.querySelectorAll('[data-method]').forEach(b=>b.classList.toggle('active',b.dataset.method===selectedPayment));
+  }
   const cashField=$('cashAmountField'),digital=$('gcashDetails');
   const service=document.querySelector('input[name="serviceType"]:checked')?.value||lockedServiceType||'pickup';
   cashField?.classList.toggle('hidden',!(chosen.type==='cash'&&service==='delivery'));
@@ -707,6 +726,14 @@ function setPayment(method){
   if(title)title.textContent='Pay with '+chosen.label;
   const instructions=digital?.querySelector('p');
   if(instructions)instructions.textContent=chosen.instructions||'Please contact Kape Bar-Rio to confirm payment instructions.';
+  let qr=$('mobilePaymentQR');
+  if(!qr&&digital){qr=document.createElement('img');qr.id='mobilePaymentQR';qr.alt='Scan selected mobile payment QR';qr.className='mobile-payment-qr';digital.insertBefore(qr,digital.querySelector('.gcash-number-label'));}
+  if(qr){
+    const valid=typeof chosen.qrUrl==='string'&&chosen.qrUrl.startsWith(SUPABASE_URL+'/storage/v1/object/public/kbr-payment-qrs/');
+    qr.hidden=!valid;
+    if(valid)qr.src=chosen.qrUrl;
+    else qr.removeAttribute('src');
+  }
 }
 
 
@@ -1979,7 +2006,7 @@ $('pointsMinusButton')?.addEventListener('click',()=>{selectedRedeemPoints=Math.
 $('pointsPlusButton')?.addEventListener('click',()=>{selectedRedeemPoints=Math.min(maxRedeemBlocks()*1000,selectedRedeemPoints+1000);updateCheckoutTotals()});
 
 $('cashPaymentButton')?.addEventListener('click',()=>setPayment('cash'));
-$('gcashPaymentButton')?.addEventListener('click',()=>setPayment('gcash'));
+// Mobile payment choices are populated from Manager Settings.
 $('placeOrderButton')?.addEventListener('click',e=>{e.preventDefault();placeOrder()});
 $('successClose')?.addEventListener('click',()=>$('successDialog')?.close());
 
