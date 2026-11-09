@@ -9,7 +9,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="online-orders.css?v=82-near-goal">
-</head>
+<style id="kbr-mobile-payments-style">
+.payment-buttons .mobile-payment-options{display:flex;flex-wrap:wrap;gap:9px;grid-column:1/-1;width:100%}
+.payment-buttons .mobile-payment-options.hidden{display:none}
+.payment-buttons .mobile-method-choice{border:1.5px solid #d7bba3;border-radius:11px;background:#fff9f3;color:#5c3c29;padding:11px 15px;font:inherit;font-weight:750;cursor:pointer}
+.payment-buttons .mobile-method-choice.active{background:#69432b;color:white;border-color:#69432b}
+.mobile-payment-qr{display:block;object-fit:contain;max-width:245px;max-height:245px;width:100%;height:auto;margin:15px auto 10px;border:1px solid #dbc9b8;border-radius:12px;background:white;padding:6px}
+.mobile-payment-qr[hidden]{display:none!important}
+</style></head>
 <body>
   <div id="closedPreorderGate" class="closed-preorder-gate hidden">
     <div class="closed-preorder-card">
@@ -287,7 +294,7 @@
 
         <div class="payment-buttons">
           <button type="button" id="cashPaymentButton" class="payment-choice active" data-payment="cash">Cash</button>
-          <button type="button" id="gcashPaymentButton" class="payment-choice gcash" data-payment="gcash">GCash</button>
+          <button type="button" id="mobilePaymentButton" class="payment-choice gcash" data-payment="mobile">Mobile Payments</button>
         </div>
 
         <label id="cashAmountField" class="field payment-detail">
@@ -694,7 +701,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="online-orders.js?v=94-configurable-payments" defer></script>
+  <script src="online-orders.js?v=95-mobile-qr" defer></script>
 
 
 
