@@ -69,14 +69,16 @@ async function action(kind){try{await loadWorkers();}catch(e){KBRSyncUI.screen('
    const food=await KBRCloud.rpc('kbr_kitchen_settlement_snapshot',{p_shift:s.id});
    if(food?.remaining>0){
     const due=Number(food.remaining);
-    const rows=(food.items||[]).map(i=>'<div style="display:flex;justify-content:space-between;gap:12px"><span>'+escapeHtml(i.name)+' · '+i.qty+' pcs</span><b>'+money(i.amount)+'</b></div>').join('');
-    KBRSyncUI.screen('STOP — Pay the Kitchen First',
-     '<p style="color:#a6332c;font-weight:900;font-size:19px">DO NOT COUNT THE CLOSING MONEY YET.</p>'+
-     '<p>Settle all kitchen food first. Pay the amount below from the cash drawer, then record the kitchen cash out. Only count the remaining cash afterward.</p>'+
-     '<div style="padding:12px;background:#fff4e8;border:1px solid #d9b394;border-radius:12px">'+rows+
-     '<p><strong>Food sold: '+money(food.foodTotal)+'</strong></p><p>Already paid: '+money(food.paidToKitchen)+'</p>'+
-     '<h2>PAY KITCHEN: '+money(due)+'</h2></div>',
+    const rows=(food.items||[]).map(i=>String(i.name)+' · '+i.qty+' pcs — '+money(i.amount)).join('\n');
+    const text='DO NOT COUNT THE CLOSING MONEY YET.\n\n'+
+     'Pay all kitchen food FIRST. Only count the remaining drawer cash after the kitchen has been paid.\n\n'+
+     rows+'\n\nFood sold: '+money(food.foodTotal)+
+     '\nAlready paid: '+money(food.paidToKitchen)+
+     '\n\nAMOUNT TO PAY KITCHEN: '+money(due);
+    KBRSyncUI.screen('STOP — Pay the Kitchen First',text,
      [['Back — Do not close',()=>KBRSyncUI.close()],['Pay Kitchen & Record Cash Out',()=>cashAction('cash-out',s,due)]]);
+    const notice=document.querySelector('#cloudScreen .cloud-box>p');
+    if(notice){notice.style.whiteSpace='pre-line';notice.style.textAlign='left';notice.style.lineHeight='1.6';notice.style.fontWeight='650';}
     return;
    }
   }catch(e){KBRSyncUI.screen('Unable to verify kitchen settlement','Closing is blocked until the kitchen balance can be checked: '+(e.message||e),[['Back',()=>KBRSyncUI.close()]]);return;}
