@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v94-configurable-payments';
+const CACHE='kbr-online-customer-v95-mobile-qr';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=94-configurable-payments',
+  './online-orders.js?v=95-mobile-qr',
   './online-manifest.webmanifest?v=71'
 ];
 
