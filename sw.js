@@ -1,11 +1,11 @@
-const CACHE="kbr-ordering-v163-barista-sales-two-cards";
+const CACHE="kbr-ordering-v164-cancel-pin-six";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
  "./","./index.html","./manifest.json","./icons/icon-192.png",
  "./sync-config.js","./sync-core.js?v=usage-reads-v1",
  "./sync-ui.js","./menu-store.js","./menu-defaults.js",
- "./app-sync-v135.js?v=137-low-egress","./rewards-scanner.js?v=7-quick-registration",
+ "./app-sync-v135.js?v=138-cancel-pin-six","./rewards-scanner.js?v=7-quick-registration",
  "./page-tools.js","./page-tools.css"
 ];
 const OPTIONAL_ASSETS=[
