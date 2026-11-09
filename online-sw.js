@@ -1,9 +1,10 @@
 
-const CACHE='kbr-online-customer-v95-mobile-qr';
+const CACHE='kbr-online-customer-v96-shop-hours-stage';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=95-mobile-qr',
+  './online-orders.js?v=96-shop-hours-stage',
+  './shop-hours-client.js?v=1',
   './online-manifest.webmanifest?v=71'
 ];
 
