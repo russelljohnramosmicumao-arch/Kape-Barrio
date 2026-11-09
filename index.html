@@ -1634,7 +1634,7 @@ function renderBaristaOrders(){
   if(baristaView==='unserved-paid')statusNote=KBRPayments.isNonSale(order)?`<div class="barista-status-note">${escapeHtml(KBRPayments.label(order))} confirmed · excluded from sales. Waiting for remaining items to be served.</div>`:`<div class="barista-status-note">💳 ${escapeHtml(KBRPayments.label(order))} recorded. Waiting for remaining items to be served.</div>`;
   const paymentBlock=baristaView==='unserved-paid'
     ? statusNote
-    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${selectedBaristaPayment==='gcash'?'selected':''}" onclick="selectBaristaPayment('gcash')">GCash</button>${baristaExtraPaymentButtons()}<button class="barista-pay-btn ${selectedBaristaPayment==='pay-later'?'selected':''}" onclick="selectBaristaPayment('pay-later')">Pay Later</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Barista Drinks</button><button class="barista-pay-btn qr-rewards-btn" type="button" onclick="window.KBRRewardsScanner?.openForOrder('${String(order.no).replace(/\D/g,'')}')">▦ Scan for Points</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
+    : `${statusNote}<div class="barista-payment"><div class="barista-payment-title"><h3>Payment</h3><div class="barista-payment-total">${peso(total)}</div></div><div class="barista-payment-options"><button class="barista-pay-btn cancel-pending-btn payment-top-action" onclick="cancelPendingTransaction('${order.no}')">Cancel</button><button class="barista-pay-btn payment-top-action" onclick="addAdditionalOrder('${order.no}')">➕ Add additional order</button><button class="barista-pay-btn cash ${selectedBaristaPayment==='cash'?'selected':''}" onclick="selectBaristaPayment('cash')">Cash</button><button class="barista-pay-btn gcash ${baristaPaymentInfo(selectedBaristaPayment)?.type==='digital'?'selected':''}" onclick="selectBaristaPayment('mobile')">Mobile Payments</button><button class="barista-pay-btn ${selectedBaristaPayment==='pay-later'?'selected':''}" onclick="selectBaristaPayment('pay-later')">Pay Later</button><button class="barista-pay-btn free ${selectedBaristaPayment==='barista-drink'?'selected':''}" onclick="selectBaristaPayment('barista-drink')">Barista Drinks</button><button class="barista-pay-btn qr-rewards-btn" type="button" onclick="window.KBRRewardsScanner?.openForOrder('${String(order.no).replace(/\D/g,'')}')">▦ Scan for Points</button></div><div style="margin-top:10px;text-align:right"><button class="secondary" onclick="openPendingNoteEditor('${order.no}')">📝 Add note</button></div><div id="baristaPaymentPanel"></div></div>`;
 
   const orderSvcClass=orderServiceClass(order);
   const onlineSelected=isOnlineBaristaOrder(order);
@@ -1667,11 +1667,14 @@ let baristaSharedPaymentMethods=[
 ];
 let baristaPaymentMethodRefresh=0;
 function baristaPaymentInfo(code){return baristaSharedPaymentMethods.find(x=>x.code===code)}
-function baristaExtraPaymentButtons(){
- return baristaSharedPaymentMethods.filter(x=>!['cash','gcash'].includes(x.code))
-  .map(x=>'<button class="barista-pay-btn '+(selectedBaristaPayment===x.code?'selected':'')+
-  '" onclick="selectBaristaPayment('+JSON.stringify(x.code).replace(/"/g,'&quot;')+')">'+escapeHtml(x.label)+'</button>').join('');
+function baristaExtraPaymentButtons(){return '';}
+function baristaMobileOptions(){
+ return baristaSharedPaymentMethods.filter(x=>x.type==='digital').map(p=>
+  '<button class="barista-pay-btn '+(selectedBaristaPayment===p.code?'selected':'')+
+  '" onclick="selectBaristaPayment('+JSON.stringify(p.code).replace(/"/g,'&quot;')+')">'+escapeHtml(p.label)+'</button>'
+ ).join('');
 }
+
 async function refreshBaristaSharedPayments(){
  if(!window.KBRCloud||document.hidden||Date.now()-baristaPaymentMethodRefresh<60000)return;
  try{
@@ -1738,6 +1741,10 @@ function renderBaristaPaymentPanel(){
     host.innerHTML='<div class="muted" style="margin-top:10px;text-align:center">Select a payment method when the customer is ready to pay.</div>';
     return;
   }
+  if(selectedBaristaPayment==='mobile'){
+   host.innerHTML='<div class="barista-pay-panel"><h3>Mobile Payments</h3><p>Choose a payment provider to display its QR and account instructions.</p><div class="barista-payment-mobile-grid">'+baristaMobileOptions()+'</div></div>';
+   return;
+  }
   if(['pay-later','split'].includes(selectedBaristaPayment)){KBRDeferred.panel();return;}
   if(selectedBaristaPayment==='cash'){
     const total=pendingOrderTotal(getCurrentBaristaOrder());
@@ -1776,7 +1783,10 @@ function renderBaristaPaymentPanel(){
   }
   const pay=baristaPaymentInfo(selectedBaristaPayment)||baristaPaymentInfo('gcash')||{code:'gcash',label:'GCash',type:'digital'};
   if(pay.type!=='digital'){host.innerHTML='<p>Choose an available payment method.</p>';return;}
-  const gcashArtwork=pay.code==='gcash'?'<img class="barista-gcash-card" src="images/gcash-card.jpg" alt="GCash QR code" onerror="this.onerror=null;this.src=\'images/gcash-card.png\';">':'';
+  const validQR=typeof pay.qrUrl==='string'&&pay.qrUrl.startsWith('https://wkyyuyyfauyhpivebrdg.supabase.co/storage/v1/object/public/kbr-payment-qrs/');
+  const gcashArtwork=validQR?'<img class="barista-gcash-card" src="'+escapeHtml(pay.qrUrl)+'" alt="'+escapeHtml(pay.label)+' payment QR">':
+    pay.code==='gcash'?'<img class="barista-gcash-card" src="images/gcash-card.jpg" alt="GCash QR code">':'';
+
   host.innerHTML=`<div class="barista-pay-panel">${gcashArtwork}
    <div class="gcash-number">${escapeHtml(pay.label)}${pay.accountNumber?' · '+escapeHtml(pay.accountNumber):''}</div>
    <div class="gcash-help">${escapeHtml(pay.instructions||'Confirm payment before marking as paid.')}</div>
