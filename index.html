@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5b3825">
-<meta name="kbr-deployment" content="2026-11-09-barista-six-digit-pin-release">
+<meta name="kbr-deployment" content="2026-11-10-event-driven-kitchen-sync">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kape' Bar-Rio POS">
@@ -615,7 +615,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div id="baristaAppView">
       <div class="barista-top">
         <div><h2>Barista Page</h2><div class="muted">Orders, kitchen alerts, add-ons, discounts and payment</div></div>
-        <div class="barista-actions"><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
+        <div class="barista-actions"><button type="button" class="secondary" data-refresh-orders aria-label="Refresh shared orders">↻ Refresh Orders</button><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
       </div>
       <div class="barista-tabs">
         <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Pending Orders</button>
@@ -1180,8 +1180,8 @@ setInterval(()=>{
   if(!document.hidden&&baristaDrawer?.classList.contains('open'))refreshPromoDiscountSetting();
 },180000);
 function isKitchenUrgentItem(item){
-  const n=String(item?.name||'').trim().toLowerCase();
-  return ['fries','shiang hai','nachos','samyang buldak'].includes(n);
+  const normalized=String(item?.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  return ['fries','shianghai','shanghai','nachos','samyangbuldak','chickbfries','chicknfries'].includes(normalized);
 }
 function getKitchenUrgentSummary(){
   let quantity=0,total=0,orders=0;
@@ -1208,7 +1208,7 @@ function renderKitchenAlerts(){
   const summary=getKitchenUrgentSummary();
   updateKitchenAlertTab();
   if(!summary.orders){baristaKitchenView.innerHTML='<div class="barista-empty">No urgent kitchen orders right now.</div>';return;}
-  const cards=pendingOrders.map(o=>{
+  const cards=getAllOpenOrders().map(o=>{
     const urgent=(o.items||[]).filter(isKitchenUrgentItem);
     if(!urgent.length)return '';
     const done=!!o.kitchenDone;
@@ -1225,7 +1225,7 @@ function renderKitchenAlerts(){
       <div class="kitchen-thumb-action"><button class="kitchen-done-btn ${done?'sent':''}" onclick="markKitchenDone('${o.no}')">${done?'Done':'Done'}</button></div>
     </div>`;
   }).join('');
-  baristaKitchenView.innerHTML=`<div class="kitchen-summary"><div class="kitchen-total-row"><div class="kitchen-total-big">${summary.quantity} item${summary.quantity===1?'':'s'}</div><div class="kitchen-total-big">${peso(summary.total)}</div></div><div class="muted" style="margin-top:8px">${summary.orders} order${summary.orders===1?'':'s'} · Fries, Shiang Hai, Nachos and Samyang Buldak</div></div><div class="kitchen-thumb-grid">${cards}</div>`;
+  baristaKitchenView.innerHTML=`<div class="kitchen-summary"><div class="kitchen-total-row"><div class="kitchen-total-big">${summary.quantity} item${summary.quantity===1?'':'s'}</div><div class="kitchen-total-big">${peso(summary.total)}</div></div><div class="muted" style="margin-top:8px">${summary.orders} order${summary.orders===1?'':'s'} · Fries, Shiang Hai, Nachos, Samyang Buldak and Chick N’ Fries</div></div><div class="kitchen-thumb-grid">${cards}</div>`;
 }
 
 function setPendingOrderStorage(){
@@ -1820,19 +1820,19 @@ function renderHistory(){
     return;
   }
 
-  const kitchenNames=new Set(['Fries','Shiang hai','Nachos','Samyang Buldak']);
+  // Use the same kitchen-food classification for alerts and transaction subtotals.
   let kitchenFoodTotal=0, kapeBarRioTotal=0;
   receipts.forEach(r=>{
     if(r.cancelled)return;
     (r.items||[]).forEach(x=>{
       const line=(Number(x.price)||0)*(Number(x.qty)||0);
-      if(kitchenNames.has(x.name)) kitchenFoodTotal+=line;
+      if(isKitchenUrgentItem(x)) kitchenFoodTotal+=line;
       else if(!KBRPayments.isNonSale(r))kapeBarRioTotal+=line;
     });
   });
 
   baristaHistoryList.innerHTML=`<div class="history-total-strip">
-    <div class="history-total-card"><small>Kitchen total · Fries, Shiang Hai, Nachos, Samyang Buldak · excludes siomai</small><b>${peso(kitchenFoodTotal)}</b></div>
+    <div class="history-total-card"><small>Kitchen total · includes Chick N’ Fries · excludes Siomai</small><b>${peso(kitchenFoodTotal)}</b></div>
     <div class="history-total-card"><small>Kape' Bar-Rio sales (Drinks + Siomai)</small><b>${peso(kapeBarRioTotal)}</b></div>
   </div>
   <div class="history-thumb-grid">${receipts.map(r=>{
@@ -2169,7 +2169,7 @@ setInterval(()=>runDailyCsvCheck(),60000);
 render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
-<script src="sync-config.js"></script><script src="sync-core.js?v=usage-reads-v1"></script><script src="sync-ui.js"></script><script src="pay-later.js?v=30-day-settled-v1"></script><script src="app-sync-v135.js?v=138-cancel-pin-six"></script><script src="rewards-scanner.js?v=7-quick-registration"></script>
+<script src="sync-config.js"></script><script src="sync-core.js?v=usage-reads-v1"></script><script src="sync-ui.js"></script><script src="pay-later.js?v=30-day-settled-v1"></script><script src="app-sync-v135.js?v=139-realtime-orders"></script><script src="rewards-scanner.js?v=7-quick-registration"></script>
 <script src="app-links.js"></script><script src="page-tools.js"></script>
 <script id="kbr-online-order-blue-script">
 (()=>{
