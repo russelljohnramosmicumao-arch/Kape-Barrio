@@ -6,22 +6,8 @@
  let rosterNames=[],claimDay='',claimedNames=null,claimRequest=null;
  let lastMenuCheck=0,lastClaimsPoll=0,lastDeferredPoll=0;
  const MENU_POLL_MS=60000,CLAIMS_POLL_MS=180000,DEFERRED_POLL_MS=90000;
- // Same-device tabs coordinate reads; the foreground tab polls for new orders.
- // This lease never guards writes, so submitting/saving orders still works in any tab.
- const pollLeaseKey='kbr_order_poll_leader_v1',tabId=crypto.randomUUID();
- function claimPollLease(takeOver=false){
-  if(document.hidden)return false;
-  try{
-   const now=Date.now();
-   const old=JSON.parse(localStorage.getItem(pollLeaseKey)||'null');
-   if(!takeOver&&old?.owner&&old.owner!==tabId&&now-Number(old.at||0)<25000)return false;
-   localStorage.setItem(pollLeaseKey,JSON.stringify({owner:tabId,at:now}));
-   return JSON.parse(localStorage.getItem(pollLeaseKey)||'null')?.owner===tabId;
-  }catch{return true;} // Storage unavailable: preserve reliable order synchronization.
- }
- function releasePollLease(){
-  try{const old=JSON.parse(localStorage.getItem(pollLeaseKey)||'null');if(old?.owner===tabId)localStorage.removeItem(pollLeaseKey);}catch{}
- }
+ // Coordinate event-triggered reads across tabs; a WebSocket message (not a timer) triggers refresh.
+ // This lease never guards writes, so saving orders still works in any tab.
 
  function shopDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
 window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null?rosterNames.filter(name=>!claimedNames.has(name)):null};
@@ -76,9 +62,9 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
  async function loadOrders(){const rows=await cloud.rows('/rest/v1/kbr_orders?select=*&order=order_number.desc');pendingOrders=[];servedUnpaidOrders=[];unservedPaidOrders=[];const backup=cloud.read('kbr_before_cloud_v1',{});history=structuredClone(backup.history||[]);remote.clear();rows.reverse().forEach(applyRow);}
  function display(){updatePendingOrdersTab();if(baristaDrawer.classList.contains('open')){if(baristaView==='history')renderHistory();else if(baristaView==='pay-later')KBRDeferred.render();else if(baristaView==='kitchen')renderKitchenAlerts();else renderBaristaOrders();}render();}
  function showPending(){const q=cloud.read(queueKey),draft=cloud.read(draftKey);if(q)ui.screen('Change waiting to sync','Keep this device open. Retry the saved change before making another edit.',[['Retry saved change',()=>retryUpdate()],['Sign in again',()=>location.href='sync-login.html']]);else if(draft)ui.screen('Order awaiting confirmation','The connection stopped before confirmation. Retry this same order to check whether it was received. Its ID is reused to prevent duplicates.',[['Retry order',()=>retryDraft()],['Sign in again',()=>location.href='sync-login.html']]);}
- async function poll(){if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)||document.hidden||!claimPollLease())return;polling=true;try{
+ async function poll(){if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)||document.hidden)return;polling=true;try{
   let changedUI=false;
-  // Order updates keep their 10-second cadence; relatively static menu data does not.
+  // Read only in response to live database changes or explicit reconnect/focus events.
   const checkMenu=Date.now()-lastMenuCheck>=MENU_POLL_MS;
   const [menus,rows]=await Promise.all([checkMenu?cloud.request('/rest/v1/kbr_menu?id=eq.1&select=id,revision'):Promise.resolve(null),cloud.rows('/rest/v1/kbr_orders?select=id,revision,status&status=eq.open&order=order_number.desc')]);
   if(checkMenu){lastMenuCheck=Date.now();if(menus[0]&&menus[0].revision!==menuRevision){const latest=await cloud.request('/rest/v1/kbr_menu?id=eq.1&select=*');ui.applyMenu(latest[0]);menuRevision=latest[0].revision;refreshManagedMenu();changedUI=true;}}
@@ -94,8 +80,66 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
     await KBRDeferred.refresh();
     lastDeferredPoll=Date.now();
   }
-  if(changedUI)display();cloud.status('Connected · v135 · orders every 10 sec');
+  if(changedUI)display();cloud.status('Connected · order updates on changes');
  }catch(e){cloud.status('Offline or disconnected · orders cannot be sent',true);}finally{polling=false;}}
+ // Supabase Realtime Phoenix protocol (v1 JSON) signals changes without scheduled order reads.
+ let liveSocket=null,liveHeartbeat=null,liveRetry=null,liveDebounce=null,liveDelay=2000,liveSequence=0,liveJoinRef=null,liveToken='';
+ function liveSend(topic,event,payload={},joinRef=null){if(!liveSocket||liveSocket.readyState!==WebSocket.OPEN)return;liveSocket.send(JSON.stringify({topic,event,payload,ref:String(++liveSequence),join_ref:joinRef}));}
+ function stopLive(){
+  clearInterval(liveHeartbeat);clearTimeout(liveRetry);clearTimeout(liveDebounce);
+  liveHeartbeat=liveRetry=liveDebounce=null;
+  const previous=liveSocket;liveSocket=null;liveJoinRef=null;
+  if(previous){previous.onclose=null;previous.onerror=null;previous.onmessage=null;previous.close();}
+ }
+ function liveRefresh(table){
+  if(table==='kbr_menu')lastMenuCheck=0;
+  if(table==='kbr_barista_drinks')lastClaimsPoll=0;
+  if(document.hidden||!ready)return;
+  clearTimeout(liveDebounce);
+  liveDebounce=setTimeout(()=>{liveDebounce=null;poll();},350);
+ }
+ function startLive(){
+  if(!ready||document.hidden||!navigator.onLine||liveSocket||typeof WebSocket==='undefined')return;
+  const session=cloud.session(),config=cloud.config;
+  if(!session?.access_token||!config?.url||!config.key)return;
+  const url=config.url.replace(/^http/,'ws')+'/realtime/v1/websocket?apikey='+encodeURIComponent(config.key)+'&vsn=1.0.0';
+  const socket=new WebSocket(url);liveSocket=socket;
+  const channel='realtime:kbr-order-events';
+  socket.onopen=()=>{
+   if(liveSocket!==socket)return;
+   liveDelay=2000;liveToken=cloud.session()?.access_token||session.access_token;liveJoinRef=String(++liveSequence);
+   socket.send(JSON.stringify({topic:channel,event:'phx_join',payload:{config:{
+    private:false,broadcast:{ack:false,self:false},presence:{enabled:false,key:''},
+    postgres_changes:['kbr_orders','kbr_menu','kbr_barista_drinks'].map(table=>({event:'*',schema:'public',table}))
+   },access_token:liveToken},ref:liveJoinRef,join_ref:liveJoinRef}));
+   liveHeartbeat=setInterval(()=>{
+    if(liveSocket!==socket||socket.readyState!==WebSocket.OPEN)return;
+    liveSend('phoenix','heartbeat',{});
+    const token=cloud.session()?.access_token;
+    if(token&&token!==liveToken){liveToken=token;liveSend(channel,'access_token',{access_token:token},liveJoinRef);}
+   },25000);
+  };
+  socket.onmessage=event=>{
+   if(liveSocket!==socket)return;
+   let message;try{message=JSON.parse(event.data);}catch{return;}
+   if(message.event==='postgres_changes'){liveRefresh(message.payload?.data?.table);return;}
+   if(message.event==='phx_reply'&&message.ref===liveJoinRef){
+    if(message.payload?.status==='ok'){liveRefresh('kbr_orders');cloud.status('Connected · live order notifications');}
+    else socket.close();
+   }
+   if(message.event==='phx_error'||message.event==='phx_close')socket.close();
+  };
+  socket.onerror=()=>socket.close();
+  socket.onclose=()=>{
+   if(liveSocket!==socket)return;
+   clearInterval(liveHeartbeat);liveHeartbeat=null;liveSocket=null;liveJoinRef=null;
+   if(document.hidden||!navigator.onLine)return;
+   cloud.status('Live updates disconnected · reconnecting');
+   clearTimeout(liveRetry);
+   liveRetry=setTimeout(()=>{liveRetry=null;startLive();},liveDelay);
+   liveDelay=Math.min(liveDelay*2,30000);
+  };
+ }
  async function flushUpdate(operation){
   let row;
   try{
@@ -283,7 +327,8 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
    await Promise.all([loadOrders(),refreshBaristaClaims()]);
    ready=true;
    display();
-   cloud.status('Connected · orders every 10 sec');
+   startLive();
+   cloud.status('Connected · waiting for order changes');
    showPending();
    if(['owner','operator'].includes(role)&&!cloud.read(queueKey)&&!cloud.read(draftKey)){
     const openShifts=await cloud.request('/rest/v1/kbr_shifts?status=eq.open&select=id');
@@ -310,12 +355,20 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
   if(!ready){start();return;}
   if(cloud.read(queueKey))retryUpdate();
   else if(cloud.read(draftKey))retryDraft();
-  else poll();
+  else{startLive();poll();}
  });
- window.addEventListener('focus',()=>{if(!ready)start();else{claimPollLease(true);poll();}});
- document.addEventListener('visibilitychange',()=>{if(document.hidden)releasePollLease();else if(ready){claimPollLease(true);poll();}});
- window.addEventListener('pagehide',releasePollLease);
- window.addEventListener('storage',e=>{if(e.key===pollLeaseKey&&!e.newValue&&!document.hidden)poll();});
- setInterval(()=>{if(!ready&&navigator.onLine)start();else poll();},10000);
+ window.addEventListener('focus',()=>{if(!ready)start();else{startLive();poll();}});
+ document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){stopLive();}
+  else if(ready){startLive();poll();}
+  else start();
+ });
+ window.addEventListener('pagehide',()=>{stopLive();});
+ // Manual refresh also works when a live connection is unavailable.
+ document.addEventListener('click',event=>{
+  if(!ready||document.hidden)return;
+  const button=event.target.closest?.('[data-refresh-orders],#baristaRefreshOrders,#refreshBaristaOrders');
+  if(button){startLive();poll();}
+ });
  start();
 })();
