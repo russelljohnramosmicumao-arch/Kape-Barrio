@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5b3825">
-<meta name="kbr-deployment" content="2026-11-10-event-driven-kitchen-sync">
+<meta name="kbr-deployment" content="2026-11-10-green-refresh-button">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kape' Bar-Rio POS">
@@ -313,6 +313,11 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 
 .barista-pay-panel label,.cloud-box form label{display:block;margin:12px 0;font-weight:700}.barista-pay-panel input,.cloud-box form input,.cloud-box form select{display:block;width:100%;min-height:46px;padding:10px;border:1px solid #d9c7b5;border-radius:10px;font-size:16px}
 .addon-menu{font-size:11px;max-width:100%}.addon-menu summary{cursor:pointer;border:1px solid #d2e1ca;border-radius:8px;background:#f2f7ef;padding:7px 10px;font-size:11px;font-weight:700;color:#45652b;width:max-content}.addon-menu[open] summary{margin-bottom:6px}.addon-menu .addon-controls{display:flex;flex-direction:column;align-items:stretch;gap:5px}.addon-menu .addon-control{padding:5px 7px;gap:6px}.addon-menu .addon-control span{font-size:11px;flex:1}.addon-menu .addon-control button{font-size:12px;min-width:32px;min-height:32px;padding:4px 7px}.addon-menu .addon-control b{font-size:11px;min-width:14px;text-align:center}
+
+/* Prominent manual refresh button for Barista orders */
+.barista-actions button.refresh-orders-green{background:#187943!important;color:#fff!important;border:2px solid #116033!important;font-weight:900!important;box-shadow:0 3px 9px rgba(20,98,49,.22)}
+.barista-actions button.refresh-orders-green:hover,.barista-actions button.refresh-orders-green:focus-visible{background:#116033!important;color:#fff!important}
+.barista-actions button.refresh-orders-green:active{background:#0d4d29!important}
 </style><link rel="stylesheet" href="sync.css">
 
 <link rel="stylesheet" href="page-tools.css">
@@ -615,7 +620,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
     <div id="baristaAppView">
       <div class="barista-top">
         <div><h2>Barista Page</h2><div class="muted">Orders, kitchen alerts, add-ons, discounts and payment</div></div>
-        <div class="barista-actions"><button type="button" class="secondary" data-refresh-orders aria-label="Refresh shared orders">↻ Refresh Orders</button><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
+        <div class="barista-actions"><button type="button" class="secondary refresh-orders-green" data-refresh-orders aria-label="Refresh shared orders">↻ Refresh Orders</button><button class="secondary" onclick="closeBaristaPage()">Close</button></div>
       </div>
       <div class="barista-tabs">
         <button id="baristaOrdersTab" class="barista-tab active" onclick="setBaristaView('orders')">Pending Orders</button>
