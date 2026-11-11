@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v166-green-refresh-button";
+const CACHE="kbr-ordering-v167-frappe-macchiato-merge";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
