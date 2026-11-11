@@ -1,5 +1,5 @@
 
-const CACHE='kbr-online-customer-v96-shop-hours-stage';
+const CACHE='kbr-online-customer-v97-frappe-macchiato-merge';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
