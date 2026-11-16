@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v102-salted-diabetic';
+const CACHE='kbr-online-customer-v103-customer-addons';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=101-salted-diabetic',
+  './online-orders.js?v=102-customer-addons',
   './shop-hours-client.js?v=1',
   './online-manifest.webmanifest?v=71'
 ];
