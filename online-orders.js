@@ -2103,7 +2103,7 @@ setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=96-shop-hours-stage',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=98-siomai-quick',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
