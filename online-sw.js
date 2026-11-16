@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v100-siomai-six';
+const CACHE='kbr-online-customer-v101-siomai-compact';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=99-siomai-six',
+  './online-orders.js?v=100-siomai-compact',
   './shop-hours-client.js?v=1',
   './online-manifest.webmanifest?v=71'
 ];
