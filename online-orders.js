@@ -286,6 +286,18 @@ function openItem(key){
   $('itemDialog').showModal();
 }
 
+function isSiomaiOrderProduct(p){return String(p?.name||'').trim().toLowerCase()==='siomai';}
+function renderSiomaiQuick(variants){
+ const host=$('sizeOptions');
+ const variant=variants.length===1&&variants[0];
+ if(!isSiomaiOrderProduct(selected)||!variant||!/^1\s*pc$/i.test(variant.size))return;
+ const cents=Math.round(variant.price*100);
+ if(!Number.isFinite(cents)||cents<=0)return;
+ const panel=document.createElement('div');
+ panel.innerHTML='<strong>Order by peso or pieces</strong><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">'+[20,30,50].map(amount=>{const qty=amount*100/cents;return '<button type="button" style="background:#187943;color:white;border:0;border-radius:10px;padding:10px;font-weight:800" '+(!Number.isInteger(qty)||qty<1||qty>20?'disabled':'data-siomai-qty="'+qty+'"')+'>'+money(amount)+'<br><small>'+(Number.isInteger(qty)&&qty<=20?qty+' pcs':'Unavailable')+'</small></button>';}).join('')+'</div><small>Or enter the number of pieces below.</small>';
+ host.append(panel);
+ panel.querySelectorAll('[data-siomai-qty]').forEach(btn=>btn.addEventListener('click',()=>{$('qtyInput').value=btn.dataset.siomaiQty;}));
+}
 function renderSizeOptions(){
   if(!selected)return;
   const variants=itemVariants(selected).filter(v=>v.type===selectedType);
@@ -298,6 +310,7 @@ function renderSizeOptions(){
   `).join(''):'<p class="empty-state">This size or variant is currently unavailable.</p>';
   const addButton=$('addToCartButton')||document.querySelector('#itemDialog button[type="submit"]');
   if(addButton)addButton.disabled=!variants.length||!hasAny;
+  renderSiomaiQuick(variants);
 }
 
 
