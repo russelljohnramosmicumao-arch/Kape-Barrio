@@ -915,12 +915,12 @@ products.addEventListener('touchend',e=>{
 function productFlavors(p){if(p.name==='Fries')return ['Plain','Cheese','Sour Cream'];if(p.category==='Ice Cream'&&/^creambar$/i.test(p.name))return ['Cookies and Cream','Rocky Road','Ube'];if(p.category==='Ice Cream'&&/^pinipig(?: ice cream)?$/i.test(p.name))return ['Strawberry','Rocky Road'];return [];}
 function saltedChoice(p){return /^(Caramel Macchiato|Caramel Latte)$/i.test(p?.name||'');}
 function diabeticFee(size,sweet,p){if(p?.food||/ice cream|snack/i.test(p?.category||'')||!/^diabet/i.test(sweet||''))return 0;return /^22\s*oz/i.test(size||'')?11:/^(12|16)\s*oz/i.test(size||'')?6:0;}
-function showSaltedVersion(p){const d=document.createElement('dialog');d.style.cssText='width:min(92vw,460px);border:0;border-radius:18px;padding:24px;color:#35271e';const h=document.createElement('h2');h.textContent='Choose your '+p.name;d.append(h);for(const kind of ['Salted','Regular']){const b=document.createElement('button');b.type='button';b.className='opt';b.style.cssText='display:block;width:100%;margin:10px 0;font-size:16px';b.textContent=kind+' '+p.name;b.onclick=()=>{d.close();chooseProduct(p,kind)};d.append(b)}const cancel=document.createElement('button');cancel.textContent='Cancel';cancel.type='button';cancel.onclick=()=>d.close();d.append(cancel);d.addEventListener('close',()=>d.remove());document.body.append(d);d.showModal();}
+function showSaltedVersion(p){const d=document.createElement('dialog');d.style.cssText='width:min(92vw,460px);border:0;border-radius:18px;padding:24px;color:#35271e';const h=document.createElement('h2');h.textContent='Choose your '+p.name;d.append(h);for(const kind of ['Salted','Regular']){const b=document.createElement('button');b.type='button';b.className='opt';b.style.cssText='display:block;width:100%;margin:10px 0;font-size:16px';b.textContent=kind+' '+p.name;b.onclick=()=>{d.close();chooseProduct(p,kind)};d.append(b)}const cancel=document.createElement('button');cancel.textContent='×';cancel.type='button';cancel.setAttribute('aria-label','Close');cancel.style.cssText='position:absolute;top:7px;right:12px;background:transparent;border:0;font-size:28px;cursor:pointer;color:#69432a;line-height:1';cancel.onclick=()=>d.close();d.append(cancel);d.addEventListener('close',()=>d.remove());document.body.append(d);d.showModal();}
 function chooseProduct(p,version='') {
   if(['not-available','unavailable','out-of-stock'].includes(p.availability)){showActionToast('Not Available');return;}
   if(p.pricePending){showActionToast('Set this item’s price in Menu Manager first.');return;}
   if(saltedChoice(p)&&!version){showSaltedVersion(p);return;}
-  selected={version,p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1,sweetness:'Normal',flavor:productFlavors(p)[0]||''};
+  selected={version,addons:{},p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1,sweetness:'Normal',flavor:productFlavors(p)[0]||''};
   selName.textContent=version?version+' '+p.name:p.name;
   selImage.src=p.image||"";
   selImage.alt=p.name;
@@ -958,6 +958,8 @@ function isSiomaiOrderProduct(p){return String(p?.name||'').trim().toLowerCase()
 function siomaiStoreQuick(price){const cents=Math.round(Number(price)*100);if(!Number.isFinite(cents)||cents<=0)return '';return '<div style="grid-column:1/-1;font-weight:800">Order by peso or pieces</div>'+[100,75,50,30,25,20].map(amount=>{const qty=amount*100/cents;return '<button type="button" class="opt siomai-peso-quick" '+(!Number.isInteger(qty)||qty<1?'disabled':'onclick="setSiomaiStoreQty('+qty+')"')+'>'+peso(amount)+'<span>'+ (Number.isInteger(qty)?qty+' pcs':'Not exact')+'</span></button>';}).join('')+'<div style="grid-column:1/-1;text-align:center">Or adjust pieces using − / + above.<br><strong id="siomaiStoreTotal"></strong></div>';}
 function setSiomaiStoreQty(qty){selected.qty=Math.max(1,Math.floor(qty));selQty.textContent=selected.qty;updateSiomaiStoreTotal();}
 function updateSiomaiStoreTotal(){const el=document.getElementById('siomaiStoreTotal');if(el&&isSiomaiOrderProduct(selected?.p))el.textContent=selected.qty+' pcs · '+peso(selected.qty*Number(selected.p.prices[selected.sizeIndex]));}
+function customerAddon(p){if(p?.food)return null;if(p?.category==='Coffee Series')return {key:'espressoShot',name:'Extra Shot',price:40};if(['Milk Tea Series','Matcha Series'].includes(p?.category))return {key:'pearl',name:'Extra Pearls',price:20};return null;}
+function toggleCustomerAddon(){const a=customerAddon(selected.p);if(!a)return;selected.addons=selected.addons?.[a.key]?{}:{[a.key]:1};renderSizes();}
 function renderSizes(){
   const product=selected.p;
   sizeOptions.style.gridTemplateColumns='';
@@ -969,6 +971,7 @@ function renderSizes(){
   }
   if(!available.some(x=>x.index===selected.sizeIndex))selected.sizeIndex=available[0].index;
   sizeOptions.innerHTML=available.map(x=>`<button class="opt ${x.index===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${x.index};renderSizes();renderSweetness()">${escapeHtml(x.size)}<span>${peso(Number(x.price)+diabeticFee(x.size,selected.sweetness,product))}</span></button>`).join("");
+  const addon=customerAddon(product);if(addon){sizeOptions.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';sizeOptions.innerHTML+= '<button type="button" class="opt '+(selected.addons?.[addon.key]?'selected':'')+'" onclick="toggleCustomerAddon()">'+addon.name+'<span>+'+peso(addon.price)+'</span></button>';}
   selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
   if(isSiomaiOrderProduct(product)&&available.length===1&&/^1\s*pc$/i.test(available[0].size)){sizeOptions.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';sizeOptions.innerHTML=siomaiStoreQuick(available[0].price);selType.textContent='Per piece · '+peso(available[0].price);updateSiomaiStoreTotal();}
 }
@@ -997,8 +1000,8 @@ function addSelected(){
   if(selected.sizeIndex<0||!availableStoreSizes(current,selected.type).some(x=>x.index===selected.sizeIndex)){
     showActionToast('This size is no longer available.');refreshManagedMenu();return;
   }
-  const item={productId:p.productId||null,name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:Number(prices[selected.sizeIndex])+diabeticFee(sizes[selected.sizeIndex],selected.sweetness,p),qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor: saltedChoice(p)?selected.version||'Regular':productFlavors(p).length?selected.flavor:''};
-  const key=JSON.stringify([item.name,item.type,item.size,item.price,item.sweetness,item.flavor]);
+  const item={productId:p.productId||null,name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],addons:structuredClone(selected.addons||{}),price:Number(prices[selected.sizeIndex])+diabeticFee(sizes[selected.sizeIndex],selected.sweetness,p)+unitAddonTotal(selected),qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor: saltedChoice(p)?selected.version||'Regular':productFlavors(p).length?selected.flavor:''};
+  const key=JSON.stringify([item.name,item.type,item.size,item.price,item.sweetness,item.flavor,item.addons]);
   const old=cart.find(x=>x.key===key);
   if(old) old.qty+=item.qty; else {item.key=key;cart.push(item)}
   persist();closeSelector();render();
@@ -1351,7 +1354,7 @@ function ensurePendingUnits(order){
   order.units=[];
   (order.items||[]).forEach((x,itemIndex)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
-      order.units.push({uid:`${order.no}-${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:itemIndex,productId:x.productId||null,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.originalPrice??x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,paidByPoints:!!x.paidByPoints,rewardPointsCost:Number(x.rewardPointsCost)||0,rewardNote:x.rewardNote||'',served:false});
+      order.units.push({uid:`${order.no}-${itemIndex}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:itemIndex,productId:x.productId||null,name:x.name,category:x.category,type:x.type,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',addons:structuredClone(x.addons||{}),originalPrice:(Number(x.originalPrice??x.price)||0)-unitAddonTotal(x),price:(Number(x.price)||0)-unitAddonTotal(x),discountPercent:0,food:!!x.food,paidByPoints:!!x.paidByPoints,rewardPointsCost:Number(x.rewardPointsCost)||0,rewardNote:x.rewardNote||'',served:false});
     }
   });
   setPendingOrderStorage();
@@ -1370,7 +1373,7 @@ function appendItemsToOrder(order,newItems){
   order.items=(order.items||[]).concat(stampedItems);
   (stampedItems||[]).forEach((x,offset)=>{
     for(let i=0;i<(Number(x.qty)||0);i++){
-      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,productId:x.productId||null,name:x.name,category:x.category,type:x.type,serviceType:x.serviceType,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',originalPrice:Number(x.price)||0,price:Number(x.price)||0,discountPercent:0,food:!!x.food,served:false});
+      order.units.push({uid:`${order.no}-add-${sourceBase+offset}-${i}-${Math.random().toString(36).slice(2,7)}`,sourceIndex:sourceBase+offset,productId:x.productId||null,name:x.name,category:x.category,type:x.type,serviceType:x.serviceType,size:x.size,flavor:x.flavor||'',sweetness:x.sweetness||'',addons:structuredClone(x.addons||{}),originalPrice:(Number(x.price)||0)-unitAddonTotal(x),price:(Number(x.price)||0)-unitAddonTotal(x),discountPercent:0,food:!!x.food,served:false});
     }
   });
 }
@@ -1416,6 +1419,7 @@ function buildHistoryItemsFromPending(order=getPendingOrder()){
   ensurePendingUnits(order);
   return order.units.filter(u=>!u.cancelled).map(u=>({
     name:u.name+(unitAddonLabel(u)?' + '+unitAddonLabel(u):''),
+    productId:u.productId||null,
     addons:structuredClone(u.addons||{}),
     addonsTotal:unitAddonTotal(u),
     category:u.category,
@@ -1945,7 +1949,7 @@ function renderOrder(){
   if(serviceEl)serviceEl.textContent=customerServiceType?`Order type: ${serviceLabel(customerServiceType)}`:'Select Dine In or Take Out to begin.';
   cartDrawerTotal.innerHTML=`<span>Total</span><b>${peso(total)}</b>`;
   if(!cart.length){orderList.innerHTML='<div class="empty">Your cart is empty.<br>Add a drink to get started.</div>';return}
-  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${escapeHtml(x.name)}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''} · ${peso(x.price)} each</small><div class="order-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button></div></div><strong>${peso(x.price*x.qty)}</strong></div>`).join("");
+  orderList.innerHTML=cart.map((x,i)=>`<div class="order-item"><div class="desc"><b>${escapeHtml(x.name)}</b><br><small>${x.type!=='standard'?x.type+' · ':''}${x.size}${x.flavor?` · ${x.flavor}`:''}${x.sweetness?` · ${x.sweetness}`:''}${unitAddonLabel(x)?' · '+escapeHtml(unitAddonLabel(x)):''} · ${peso(x.price)} each</small><div class="order-qty"><button onclick="changeCartQty(${i},-1)">−</button><b>${x.qty}</b><button onclick="changeCartQty(${i},1)">+</button></div></div><strong>${peso(x.price*x.qty)}</strong></div>`).join("");
 }
 function clearOrder(){if(confirm("Clear this order?")){cart=[];persist();render();renderOrder()}}
 function closeSelector(){selector.classList.remove("open")}
@@ -2188,7 +2192,7 @@ setInterval(()=>runDailyCsvCheck(),60000);
 render();
 if(customerServiceType){const start=document.getElementById('serviceStart');if(start)start.style.display='none';}else{showCustomerStart();}
 </script>
-<script src="sync-config.js"></script><script src="sync-core.js?v=usage-reads-v1"></script><script src="sync-ui.js"></script><script src="pay-later.js?v=30-day-settled-v1"></script><script src="app-sync-v135.js?v=139-realtime-orders"></script><script src="rewards-scanner.js?v=7-quick-registration"></script>
+<script src="sync-config.js"></script><script src="sync-core.js?v=usage-reads-v1"></script><script src="sync-ui.js"></script><script src="pay-later.js?v=30-day-settled-v1"></script><script src="app-sync-v135.js?v=140-customer-addons"></script><script src="rewards-scanner.js?v=7-quick-registration"></script>
 <script src="app-links.js"></script><script src="page-tools.js"></script>
 <script id="kbr-online-order-blue-script">
 (()=>{
