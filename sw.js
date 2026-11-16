@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v171-siomai-compact";
+const CACHE="kbr-ordering-v172-salted-diabetic";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
