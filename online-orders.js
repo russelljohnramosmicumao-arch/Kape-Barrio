@@ -234,15 +234,19 @@ function selectedFriesFlavor(){
 }
 
 let selectedCaramelVersion='';
+let selectedCustomerAddons={};
+function customerAddon(p){if(p?.food)return null;if(p?.category==='Coffee Series')return {key:'espressoShot',name:'Extra Shot',price:40};if(['Milk Tea Series','Matcha Series'].includes(p?.category))return {key:'pearl',name:'Extra Pearls',price:20};return null;}
+function customerAddonFee(a,p){const opt=customerAddon(p);return opt&&a?.[opt.key]?opt.price:0;}
+function customerAddonLabel(a){return a?.pearl?'Extra Pearls':a?.espressoShot?'Extra Shot':'';}
 function saltedChoice(p){return /^(Caramel Macchiato|Caramel Latte)$/i.test(p?.name||'');}
 function diabeticFee(size,sweet,p){if(p?.food||/ice cream|snack/i.test(p?.category||'')||!/^diabet/i.test(sweet||''))return 0;return /^22\s*oz/i.test(size||'')?11:/^(12|16)\s*oz/i.test(size||'')?6:0;}
-function showSaltedVersion(p,key){const d=document.createElement('dialog');d.style.cssText='width:min(92vw,460px);border:0;border-radius:18px;padding:24px;color:#35271e';const h=document.createElement('h2');h.textContent='Choose your '+p.name;d.append(h);for(const kind of ['Salted','Regular']){const b=document.createElement('button');b.type='button';b.className='primary-button';b.style.cssText='display:block;width:100%;margin:10px 0';b.textContent=kind+' '+p.name;b.onclick=()=>{d.close();openItem(key,kind)};d.append(b)}const c=document.createElement('button');c.type='button';c.textContent='Cancel';c.onclick=()=>d.close();d.append(c);d.addEventListener('close',()=>d.remove());document.body.append(d);d.showModal();}
+function showSaltedVersion(p,key){const d=document.createElement('dialog');d.style.cssText='width:min(92vw,460px);border:0;border-radius:18px;padding:24px;color:#35271e';const h=document.createElement('h2');h.textContent='Choose your '+p.name;d.append(h);for(const kind of ['Salted','Regular']){const b=document.createElement('button');b.type='button';b.className='primary-button';b.style.cssText='display:block;width:100%;margin:10px 0';b.textContent=kind+' '+p.name;b.onclick=()=>{d.close();openItem(key,kind)};d.append(b)}const c=document.createElement('button');c.type='button';c.textContent='×';c.setAttribute('aria-label','Close');c.style.cssText='position:absolute;top:7px;right:12px;background:transparent;border:0;font-size:28px;cursor:pointer;color:#69432a;line-height:1';c.onclick=()=>d.close();d.append(c);d.addEventListener('close',()=>d.remove());document.body.append(d);d.showModal();}
 function refreshSweetnessPrices(){if(!selected)return;const size=document.querySelector('#sizeOptions input[name="itemSize"]:checked')?.value;document.querySelectorAll('.sweetness-option').forEach(btn=>{if(/^diabet/i.test(btn.dataset.sweetness||'')){btn.textContent='Diabetic (+'+money(diabeticFee(size,btn.dataset.sweetness,selected))+')';}});document.querySelectorAll('#sizeOptions [data-base-price]').forEach(el=>{el.textContent=money(Number(el.dataset.basePrice)+diabeticFee(el.dataset.size,selectedSweetness,selected));});}
 function openItem(key,version=''){
   selected=menu.find(x=>(x.productId||x.name)===key);
   if(!selected)return;
   if(saltedChoice(selected)&&!version){showSaltedVersion(selected,key);return;}
-  selectedCaramelVersion=version;
+  selectedCaramelVersion=version;selectedCustomerAddons={};
 
   $('itemImage').src=resolveImage(selected);
   $('itemImage').alt=selected.name||'';
@@ -317,6 +321,8 @@ function renderSizeOptions(){
   `).join(''):'<p class="empty-state">This size or variant is currently unavailable.</p>';
   const addButton=$('addToCartButton')||document.querySelector('#itemDialog button[type="submit"]');
   if(addButton)addButton.disabled=!variants.length||!hasAny;
+  const host=$('sizeOptions'),addon=customerAddon(selected);host.style.gridTemplateColumns='';host.style.display='';
+  if(addon&&variants.length){host.style.display='grid';host.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';host.querySelectorAll('.option-choice').forEach(el=>{el.style.cssText='min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;padding:8px 3px';});const b=document.createElement('button');b.type='button';b.className='option-choice';b.style.cssText='min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;padding:8px 3px';const paint=()=>{const active=!!selectedCustomerAddons[addon.key];b.setAttribute('aria-pressed',String(active));b.style.background=active?'#dcf1e1':'#fff';b.style.borderColor=active?'#46995c':'';b.innerHTML='<strong>'+addon.name+'</strong><span>+'+money(addon.price)+'</span>';};b.onclick=()=>{selectedCustomerAddons=selectedCustomerAddons[addon.key]?{}:{[addon.key]:1};paint();};paint();host.append(b);}
   renderSiomaiQuick(variants);
   $('sizeOptions').querySelectorAll('input[name="itemSize"]').forEach(el=>el.addEventListener('change',refreshSweetnessPrices));
   refreshSweetnessPrices();
@@ -370,14 +376,14 @@ function addSelected(){
   const size=sizeEl.value;
   const allowed=itemVariants(selected).find(v=>v.type===selectedType&&v.size===size);
   if(!allowed)return toast('This size is no longer available. Please choose an available size.');
-  const price=allowed.price+diabeticFee(size,selectedSweetness,selected);
+  const price=allowed.price+diabeticFee(size,selectedSweetness,selected)+customerAddonFee(selectedCustomerAddons,selected);
   const qty=Math.max(1,Math.min(20,Number($('qtyInput').value)||1));
   const sweetness=$('sweetnessField').classList.contains('hidden')?'':selectedSweetness;
   const flavor=saltedChoice(selected)?selectedCaramelVersion||'Regular':isFriesProduct(selected)
     ? selectedFriesFlavor()
     : ($('flavorField').classList.contains('hidden')?'':$('flavorInput').value.trim());
 
-  const key=[selected.productId||selected.name,selectedType,size,sweetness,flavor].join('|');
+  const key=[selected.productId||selected.name,selectedType,size,sweetness,flavor,JSON.stringify(selectedCustomerAddons)].join('|');
   const existing=cart.find(x=>x.key===key);
   if(existing)existing.qty=Math.min(20,existing.qty+qty);
   else cart.push({
@@ -389,6 +395,7 @@ function addSelected(){
     size,
     sweetness,
     flavor,
+    addons:structuredClone(selectedCustomerAddons),
     unitPrice:price,
     qty
   });
@@ -453,7 +460,7 @@ function renderCart(){
     <div class="cart-line">
       <div>
         <h4>${esc(item.name)}</h4>${item.unavailableSize?'<p style="color:#ad3030;font-weight:800">This size is unavailable. Please remove it and choose another size.</p>':''}
-        <p>${esc(item.type==='premium'?'Premium · ':'')}${esc(item.size)}${item.sweetness?` · ${esc(item.sweetness)}`:''}${item.flavor?` · ${esc(item.flavor)}`:''}</p>
+        <p>${esc(item.type==='premium'?'Premium · ':'')}${esc(item.size)}${item.sweetness?` · ${esc(item.sweetness)}`:''}${item.flavor?` · ${esc(item.flavor)}`:''}${customerAddonLabel(item.addons)?' · '+customerAddonLabel(item.addons):''}</p>
         <p>${item.paidByPoints
           ? `${Number(item.rewardPointsCost||0).toLocaleString('en-PH')} pts · Paid by Points`
           : `${money(item.unitPrice)} each`}</p>
@@ -1170,6 +1177,7 @@ async function placeOrder(){
         size:x.size,
         sweetness:x.sweetness,
         flavor:x.flavor,
+        addons:x.addons||{},
         qty:x.qty,
         paidByPoints:x.paidByPoints===true,
         rewardPointsCost:Number(x.rewardPointsCost||0)
@@ -1748,7 +1756,7 @@ function syncCartToSharedMenu(){
       continue;
     }
     if(entry.unavailableSize){delete entry.unavailableSize;changed=true;}
-    const newUnit=entry.paidByPoints?0:variant.price+diabeticFee(entry.size,entry.sweetness,product);
+    const newUnit=entry.paidByPoints?0:variant.price+diabeticFee(entry.size,entry.sweetness,product)+customerAddonFee(entry.addons,product);
     if(Number(entry.unitPrice)!==newUnit){entry.unitPrice=newUnit;changed=true;}
     if(entry.paidByPoints){
       const newPoints=currentRewardTier(variant.price,product,entry.size);
@@ -2113,7 +2121,7 @@ setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=102-salted-diabetic',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=103-customer-addons',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
