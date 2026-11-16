@@ -209,7 +209,7 @@ function renderMenu(){
       <img src="${attr(resolveImage(item))}" alt="${attr(item.name)}" loading="lazy"
            onerror="this.style.visibility='hidden'">
       <div class="menu-card-body">
-        <h3>${esc(item.name||'')}</h3>
+        <h3>${esc(item.name||'')}</h3>${saltedChoice(item)?'<small style="display:block;font-style:italic;font-size:12px">With Salted Version</small>':''}
       </div>
     </article>
   `).join('');
@@ -233,14 +233,21 @@ function selectedFriesFlavor(){
   return document.querySelector('input[name="friesFlavor"]:checked')?.value||'Cheese';
 }
 
-function openItem(key){
+let selectedCaramelVersion='';
+function saltedChoice(p){return /^(Caramel Macchiato|Caramel Latte)$/i.test(p?.name||'');}
+function diabeticFee(size,sweet,p){if(p?.food||/ice cream|snack/i.test(p?.category||'')||!/^diabet/i.test(sweet||''))return 0;return /^22\s*oz/i.test(size||'')?11:/^(12|16)\s*oz/i.test(size||'')?6:0;}
+function showSaltedVersion(p,key){const d=document.createElement('dialog');d.style.cssText='width:min(92vw,460px);border:0;border-radius:18px;padding:24px;color:#35271e';const h=document.createElement('h2');h.textContent='Choose your '+p.name;d.append(h);for(const kind of ['Salted','Regular']){const b=document.createElement('button');b.type='button';b.className='primary-button';b.style.cssText='display:block;width:100%;margin:10px 0';b.textContent=kind+' '+p.name;b.onclick=()=>{d.close();openItem(key,kind)};d.append(b)}const c=document.createElement('button');c.type='button';c.textContent='Cancel';c.onclick=()=>d.close();d.append(c);d.addEventListener('close',()=>d.remove());document.body.append(d);d.showModal();}
+function refreshSweetnessPrices(){if(!selected)return;const size=document.querySelector('#sizeOptions input[name="itemSize"]:checked')?.value;document.querySelectorAll('.sweetness-option').forEach(btn=>{if(/^diabet/i.test(btn.dataset.sweetness||'')){btn.textContent='Diabetic (+'+money(diabeticFee(size,btn.dataset.sweetness,selected))+')';}});document.querySelectorAll('#sizeOptions [data-base-price]').forEach(el=>{el.textContent=money(Number(el.dataset.basePrice)+diabeticFee(el.dataset.size,selectedSweetness,selected));});}
+function openItem(key,version=''){
   selected=menu.find(x=>(x.productId||x.name)===key);
   if(!selected)return;
+  if(saltedChoice(selected)&&!version){showSaltedVersion(selected,key);return;}
+  selectedCaramelVersion=version;
 
   $('itemImage').src=resolveImage(selected);
   $('itemImage').alt=selected.name||'';
   $('itemCategory').textContent=selected.category||'';
-  $('itemName').textContent=selected.name||'';
+  $('itemName').textContent=version?version+' '+selected.name:selected.name||'';
   $('qtyInput').value=1;
   $('flavorInput').value='';
   selectedSweetness='Normal Sugar';
@@ -305,12 +312,14 @@ function renderSizeOptions(){
   $('sizeOptions').innerHTML=variants.length?variants.map((variant,i)=>`
     <label class="option-choice">
       <span><input type="radio" name="itemSize" value="${attr(variant.size)}" ${i===0?'checked':''}> ${esc(variant.size)}</span>
-      <strong>${money(variant.price)}</strong>
+      <strong data-base-price="${variant.price}" data-size="${attr(variant.size)}">${money(variant.price+diabeticFee(variant.size,selectedSweetness,selected))}</strong>
     </label>
   `).join(''):'<p class="empty-state">This size or variant is currently unavailable.</p>';
   const addButton=$('addToCartButton')||document.querySelector('#itemDialog button[type="submit"]');
   if(addButton)addButton.disabled=!variants.length||!hasAny;
   renderSiomaiQuick(variants);
+  $('sizeOptions').querySelectorAll('input[name="itemSize"]').forEach(el=>el.addEventListener('change',refreshSweetnessPrices));
+  refreshSweetnessPrices();
 }
 
 
@@ -361,10 +370,10 @@ function addSelected(){
   const size=sizeEl.value;
   const allowed=itemVariants(selected).find(v=>v.type===selectedType&&v.size===size);
   if(!allowed)return toast('This size is no longer available. Please choose an available size.');
-  const price=allowed.price;
+  const price=allowed.price+diabeticFee(size,selectedSweetness,selected);
   const qty=Math.max(1,Math.min(20,Number($('qtyInput').value)||1));
   const sweetness=$('sweetnessField').classList.contains('hidden')?'':selectedSweetness;
-  const flavor=isFriesProduct(selected)
+  const flavor=saltedChoice(selected)?selectedCaramelVersion||'Regular':isFriesProduct(selected)
     ? selectedFriesFlavor()
     : ($('flavorField').classList.contains('hidden')?'':$('flavorInput').value.trim());
 
@@ -1739,7 +1748,7 @@ function syncCartToSharedMenu(){
       continue;
     }
     if(entry.unavailableSize){delete entry.unavailableSize;changed=true;}
-    const newUnit=entry.paidByPoints?0:variant.price;
+    const newUnit=entry.paidByPoints?0:variant.price+diabeticFee(entry.size,entry.sweetness,product);
     if(Number(entry.unitPrice)!==newUnit){entry.unitPrice=newUnit;changed=true;}
     if(entry.paidByPoints){
       const newPoints=currentRewardTier(variant.price,product,entry.size);
@@ -1809,6 +1818,7 @@ async function loadMenu(){
 document.querySelectorAll('.sweetness-option').forEach(btn=>{
   btn.addEventListener('click',()=>{
     selectedSweetness=btn.dataset.sweetness||'Normal Sugar';
+    refreshSweetnessPrices();
     document.querySelectorAll('.sweetness-option').forEach(x=>x.classList.toggle('active',x===btn));
   });
 });
