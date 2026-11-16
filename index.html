@@ -949,11 +949,12 @@ function availableStoreSizes(product,type){
     .filter(x=>!hidden.includes(x.size)&&Number.isFinite(Number(x.price)));
 }
 function isSiomaiOrderProduct(p){return String(p?.name||'').trim().toLowerCase()==='siomai';}
-function siomaiStoreQuick(price){const cents=Math.round(Number(price)*100);if(!Number.isFinite(cents)||cents<=0)return '';return '<div style="grid-column:1/-1;font-weight:800">Order by peso or pieces</div>'+[20,30,50,100].map(amount=>{const qty=amount*100/cents;return '<button type="button" class="opt" '+(!Number.isInteger(qty)||qty<1?'disabled':'onclick="setSiomaiStoreQty('+qty+')"')+'>'+peso(amount)+'<span>'+ (Number.isInteger(qty)?qty+' pcs':'Not exact')+'</span></button>';}).join('')+'<div style="grid-column:1/-1;text-align:center">Or adjust pieces using − / + above.<br><strong id="siomaiStoreTotal"></strong></div>';}
+function siomaiStoreQuick(price){const cents=Math.round(Number(price)*100);if(!Number.isFinite(cents)||cents<=0)return '';return '<div style="grid-column:1/-1;font-weight:800">Order by peso or pieces</div>'+[100,75,50,30,25,20].map(amount=>{const qty=amount*100/cents;return '<button type="button" class="opt" '+(!Number.isInteger(qty)||qty<1?'disabled':'onclick="setSiomaiStoreQty('+qty+')"')+'>'+peso(amount)+'<span>'+ (Number.isInteger(qty)?qty+' pcs':'Not exact')+'</span></button>';}).join('')+'<div style="grid-column:1/-1;text-align:center">Or adjust pieces using − / + above.<br><strong id="siomaiStoreTotal"></strong></div>';}
 function setSiomaiStoreQty(qty){selected.qty=Math.max(1,Math.floor(qty));selQty.textContent=selected.qty;updateSiomaiStoreTotal();}
 function updateSiomaiStoreTotal(){const el=document.getElementById('siomaiStoreTotal');if(el&&isSiomaiOrderProduct(selected?.p))el.textContent=selected.qty+' pcs · '+peso(selected.qty*Number(selected.p.prices[selected.sizeIndex]));}
 function renderSizes(){
   const product=selected.p;
+  sizeOptions.style.gridTemplateColumns='';
   const available=availableStoreSizes(product,selected.type);
   if(!available.length){
     sizeOptions.innerHTML='<p>This size or variant is currently unavailable.</p>';
@@ -963,7 +964,7 @@ function renderSizes(){
   if(!available.some(x=>x.index===selected.sizeIndex))selected.sizeIndex=available[0].index;
   sizeOptions.innerHTML=available.map(x=>`<button class="opt ${x.index===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${x.index};renderSizes()">${escapeHtml(x.size)}<span>${peso(x.price)}</span></button>`).join("");
   selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
-  if(isSiomaiOrderProduct(product)&&available.length===1&&/^1\s*pc$/i.test(available[0].size)){sizeOptions.innerHTML=siomaiStoreQuick(available[0].price);selType.textContent='Per piece · '+peso(available[0].price);updateSiomaiStoreTotal();}
+  if(isSiomaiOrderProduct(product)&&available.length===1&&/^1\s*pc$/i.test(available[0].size)){sizeOptions.style.gridTemplateColumns='repeat(2,minmax(0,1fr))';sizeOptions.innerHTML=siomaiStoreQuick(available[0].price);selType.textContent='Per piece · '+peso(available[0].price);updateSiomaiStoreTotal();}
 }
 function renderFlavor(){
   const flavors=productFlavors(selected.p);const show=flavors.length>0;
