@@ -2113,7 +2113,7 @@ setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=101-siomai-compact',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=102-salted-diabetic',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
