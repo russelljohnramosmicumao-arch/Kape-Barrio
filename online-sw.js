@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v97-frappe-macchiato-merge';
+const CACHE='kbr-online-customer-v98-siomai-quick';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=96-shop-hours-stage',
+  './online-orders.js?v=97-siomai-quick',
   './shop-hours-client.js?v=1',
   './online-manifest.webmanifest?v=71'
 ];
