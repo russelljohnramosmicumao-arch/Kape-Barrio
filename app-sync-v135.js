@@ -265,6 +265,41 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
   completePendingPayment
  };
  for(const [name,fn] of Object.entries(handlers))window[name]=(...args)=>mutate(fn,args);
+ // Prompt before payment, outside the mutation lock. Re-read the exact order
+ // after the rewards RPC, so a changed/paid order cannot be charged blindly.
+ let rewardsPaymentPrompt=false;
+ async function withRewardsReminder(order,proceed){
+  if(!order||rewardsPaymentPrompt||!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey))return;
+  const eligible=!order.paid&&!order.nonSale&&!order.onlineOrder&&order.source!=='online'&&(order.units||[]).some(u=>!u.cancelled&&!u.food&&!u.paidByPoints&&!/ice cream|snack/i.test(u.category||'')&&orderUnitTotal(u)>0);
+  if(!eligible||!window.KBRRewardsScanner?.remind){await proceed();return;}
+  rewardsPaymentPrompt=true;
+  try{
+   await window.KBRRewardOrderNames?.refresh(true);
+   if(window.KBRRewardOrderNames?.get(order.no)){await proceed();return;}
+   const id=order._cloudId;const no=String(order.no);const canon=x=>JSON.stringify(x,Array.from(new Set((JSON.stringify(x).match(/"[^"\\]*(?:\\.[^"\\]*)*"\s*:/g)||[]).map(k=>JSON.parse(k.slice(0,k.lastIndexOf(':')))))).sort());const initial=canon(order.units||[]);
+   window.KBRRewardsScanner.remind(no,async()=>{
+    if(busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Rewards choice saved. Press payment again to continue.');return;}
+    try{
+     const rows=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(id)+'&select=*');
+     const latest=rows?.[0];
+     if(!latest||latest.status!=='open'||latest.data?.paid||canon(latest.data?.units||[])!==initial){if(latest)applyRow(latest);display();showActionToast('Order changed. Review it before confirming payment.');return;}
+     if(String(getCurrentBaristaOrder()?.no)!==no){showActionToast('Select the original order again to confirm payment.');return;}
+     // Refresh the optimistic revision without resetting the entered cash.
+     remote.set(id,latest);
+     const current=getCurrentBaristaOrder();current._cloudRevision=latest.revision;
+     await proceed();
+    }catch(e){showActionToast(e.message||'Payment not confirmed. Try again.');}
+   });
+  }finally{rewardsPaymentPrompt=false;}
+ }
+ window.completePendingPayment=(method,authorization=null)=>{
+  const order=getCurrentBaristaOrder();
+  if(!order||order.paid||method==='barista-drink'||authorization)return mutate(handlers.completePendingPayment,[method,authorization]);
+  if(!['cash','gcash'].includes(method)&&baristaPaymentInfo(method)?.type!=='digital')return;
+  if(method==='cash'&&Number(cashReceived)<pendingOrderTotal(order))return mutate(handlers.completePendingPayment,[method,authorization]);
+  return withRewardsReminder(order,()=>mutate(handlers.completePendingPayment,[method,authorization]));
+ };
+
  window.authorizeCompPayment=async(kind,person='',drinkCode='')=>{
   if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Connecting or saving… please try again.');return;}
   const order=getCurrentBaristaOrder();if(!order?._cloudId)return;
