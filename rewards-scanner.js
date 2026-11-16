@@ -1,7 +1,7 @@
 'use strict';
 (()=>{
   // No background polling or camera use. Scanner is opened per selected order.
-  let camera=null,busy=false,selectedOrderNo='',scanLocked=false;
+  let camera=null,busy=false,selectedOrderNo='',scanLocked=false,paymentReminder=null;
   function el(tag,attrs={},children=[]){
     const node=document.createElement(tag);
     for(const [key,val] of Object.entries(attrs)){
@@ -93,7 +93,15 @@
   ]);
   const video=el('div',{id:'kbrQrVideo'});
   const status=el('p',{id:'kbrQrMessage',role:'status',text:'Choose Scan QR Code, Enter Customer Code, or Enter Phone Number.'});
-  sheet.append(header,receipt,phoneButton,phonePanel,scanButton,video,codeButton,manual,status);
+  const reminderText=el('p',{text:'Ask for the customer’s number for points!',style:'font-weight:800;font-size:1.1rem;color:#267449',hidden:''});
+  const laterButton=el('button',{type:'button',class:'kbr-qr-btn kbr-qr-alt',text:'Register Later — Continue Payment',hidden:''});
+  const nowButton=el('button',{type:'button',class:'kbr-qr-btn',text:'Register Now',hidden:''});
+  sheet.append(header,receipt,reminderText,phoneButton,phonePanel,nowButton,scanButton,video,codeButton,manual,status,laterButton);
+  function reminderUI(on){for(const node of [reminderText,nowButton,laterButton]){node.hidden=!on;node.style.display=on?'block':'none';}header.firstChild.textContent=on?'KBR Points Reminder':'🎟 KBR Rewards QR';}
+  reminderUI(false);
+  function continuePayment(){const callback=paymentReminder;paymentReminder=null;close();if(callback)callback();}
+  laterButton.onclick=()=>{if(!busy)continuePayment();};
+  nowButton.onclick=()=>{if(busy)return;phoneOpen(true);if(!/^(09\d{9}|(?:\+?63)9\d{9})$/.test(phoneInput.value.trim())){status.textContent='Enter the customer’s mobile number first, then Find Customer.';phoneInput.focus();return;}phoneFindButton.click();};
   overlay.append(sheet);document.body.append(overlay);
   // Hidden needs to work despite any global styles.
   function manualOpen(value){manual.hidden=!value;manual.style.display=value?'block':'none';codeButton.setAttribute('aria-expanded',String(value));}
@@ -122,13 +130,17 @@
     scanButton.textContent='📷 Scan QR Code';
   }
   function close(){
+    if(busy)return;
+    paymentReminder=null;reminderUI(false);
     overlay.classList.remove('open');
     stopCamera();
     manualOpen(false);
     phoneOpen(false);
     invalidatePhoneLookup();
   }
-  function openForOrder(orderNo){
+  function openForOrder(orderNo,onPayment=null){
+    if(busy)return;
+    paymentReminder=null;
     const value=String(orderNo||'').replace(/\D/g,'');
     if(!/^\d{1,12}$/.test(value)){alert('Select a valid order to scan rewards.');return;}
     selectedOrderNo=value;scanLocked=false;busy=false;
@@ -136,6 +148,8 @@
     codeInput.value='';manualOpen(false);
     phoneInput.value='';phoneOpen(false);invalidatePhoneLookup();registerName.value='';registerConsent.checked=false;
     status.textContent='Choose Scan QR Code, Enter Customer Code, or Enter Phone Number.';
+    paymentReminder=typeof onPayment==='function'?onPayment:null;reminderUI(!!paymentReminder);
+    if(paymentReminder){phoneOpen(true);status.textContent='Find the customer or register now. Choose Register Later to continue without points.';}
     overlay.classList.add('open');
   }
   header.lastChild.onclick=close;
@@ -173,7 +187,8 @@
       if(linkedName){
         window.KBRRewardOrderNames?.note(selectedOrderNo,linkedName);
       }
-      close();
+      busy=false;
+      if(paymentReminder)continuePayment();else close();
       codeInput.value='';
       return true;
     }catch(error){status.textContent=error?.message||'Could not link this customer. Please try again.';return false;}
@@ -296,8 +311,10 @@
     }catch(error){status.textContent=error?.message||'Could not register customer.';}
     finally{busy=false;registerSubmit.disabled=false;}
     if(!created)return;
+    const callback=paymentReminder;paymentReminder=null;
     const linked=await linkOrder(created.customerCode);
     showTempPassword(created.customerName,created.temporaryPassword,linked);
+    if(callback){if(linked){const done=tempSheet.lastChild;const previous=done.onclick;done.onclick=()=>{previous();callback();};}else{paymentReminder=callback;reminderUI(true);}}
   };
   phoneConfirmButton.onclick=async()=>{
     if(!pendingPhoneCustomer||busy)return;
@@ -355,5 +372,5 @@
     note:noteLinkedName,
     refresh:refreshLinkedNames
   };
-  window.KBRRewardsScanner={openForOrder,close};
+  window.KBRRewardsScanner={openForOrder,close,remind:openForOrder};
 })();
