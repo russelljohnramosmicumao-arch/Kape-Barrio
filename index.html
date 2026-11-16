@@ -825,7 +825,7 @@ function render(){
   const items=specialItems(category);
   products.innerHTML=items.map(p=>{
     const badge=isBestSeller(p)?'<span class="best-seller-badge">Best Seller</span>':'';
-    return `<div class="card">${badge}<button class="product-choice" data-index="${PRODUCTS.indexOf(p)}" ${p.availability==='not-available'?'disabled aria-label="Not Available"':p.pricePending?'disabled aria-label="Price not set"':''} style="border:0;background:none;width:100%;padding:0;color:inherit;cursor:pointer">${p.image?`<img class="product-img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">`: '<div class="product-img" style="display:grid;place-items:center;font-size:36px">☕</div>'}<h3>${escapeHtml(p.name)}</h3>${p.availability==='not-available'?'<small class="unavailable-label">Not Available</small>':p.pricePending?'<small>Price not set</small>':''}</button></div>`;
+    return `<div class="card">${badge}<button class="product-choice" data-index="${PRODUCTS.indexOf(p)}" ${p.availability==='not-available'?'disabled aria-label="Not Available"':p.pricePending?'disabled aria-label="Price not set"':''} style="border:0;background:none;width:100%;padding:0;color:inherit;cursor:pointer">${p.image?`<img class="product-img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">`: '<div class="product-img" style="display:grid;place-items:center;font-size:36px">☕</div>'}<h3>${escapeHtml(p.name)}</h3>${saltedChoice(p)?'<small style="display:block;font-style:italic;font-weight:400;font-size:12px;margin-top:3px">With Salted Version</small>':''}${p.availability==='not-available'?'<small class="unavailable-label">Not Available</small>':p.pricePending?'<small>Price not set</small>':''}</button></div>`;
   }).join("");
   products.querySelectorAll(".product-choice").forEach(btn=>btn.onclick=()=>chooseProduct(PRODUCTS[Number(btn.dataset.index)]));
   updateCartBar();
@@ -913,11 +913,15 @@ products.addEventListener('touchend',e=>{
 },{passive:true});
 
 function productFlavors(p){if(p.name==='Fries')return ['Plain','Cheese','Sour Cream'];if(p.category==='Ice Cream'&&/^creambar$/i.test(p.name))return ['Cookies and Cream','Rocky Road','Ube'];if(p.category==='Ice Cream'&&/^pinipig(?: ice cream)?$/i.test(p.name))return ['Strawberry','Rocky Road'];return [];}
-function chooseProduct(p){
+function saltedChoice(p){return /^(Caramel Macchiato|Caramel Latte)$/i.test(p?.name||'');}
+function diabeticFee(size,sweet,p){if(p?.food||/ice cream|snack/i.test(p?.category||'')||!/^diabet/i.test(sweet||''))return 0;return /^22\s*oz/i.test(size||'')?11:/^(12|16)\s*oz/i.test(size||'')?6:0;}
+function showSaltedVersion(p){const d=document.createElement('dialog');d.style.cssText='width:min(92vw,460px);border:0;border-radius:18px;padding:24px;color:#35271e';const h=document.createElement('h2');h.textContent='Choose your '+p.name;d.append(h);for(const kind of ['Salted','Regular']){const b=document.createElement('button');b.type='button';b.className='opt';b.style.cssText='display:block;width:100%;margin:10px 0;font-size:16px';b.textContent=kind+' '+p.name;b.onclick=()=>{d.close();chooseProduct(p,kind)};d.append(b)}const cancel=document.createElement('button');cancel.textContent='Cancel';cancel.type='button';cancel.onclick=()=>d.close();d.append(cancel);d.addEventListener('close',()=>d.remove());document.body.append(d);d.showModal();}
+function chooseProduct(p,version='') {
   if(['not-available','unavailable','out-of-stock'].includes(p.availability)){showActionToast('Not Available');return;}
   if(p.pricePending){showActionToast('Set this item’s price in Menu Manager first.');return;}
-  selected={p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1,sweetness:'Normal',flavor:productFlavors(p)[0]||''};
-  selName.textContent=p.name;
+  if(saltedChoice(p)&&!version){showSaltedVersion(p);return;}
+  selected={version,p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1,sweetness:'Normal',flavor:productFlavors(p)[0]||''};
+  selName.textContent=version?version+' '+p.name:p.name;
   selImage.src=p.image||"";
   selImage.alt=p.name;
   selImage.style.display=p.image?"block":"none";
@@ -933,11 +937,11 @@ function chooseProduct(p){
 function renderTypes(){
   const isMatcha=selected.p.category==='Matcha Series';
   typeOptions.innerHTML=`
-    <button class="opt type-option premium ${selected.type==='premium'?'selected':''}" onclick="selected.type='premium';renderTypes();renderSizes()">
+    <button class="opt type-option premium ${selected.type==='premium'?'selected':''}" onclick="selected.type='premium';renderTypes();renderSizes();renderSweetness()">
       🫘 Premium
       <small>${isMatcha?'Ceremonial grade':'Beans · ground & extracted'}</small>
     </button>
-    <button class="opt type-option ${selected.type==='budget'?'selected':''}" onclick="selected.type='budget';renderTypes();renderSizes()">
+    <button class="opt type-option ${selected.type==='budget'?'selected':''}" onclick="selected.type='budget';renderTypes();renderSizes();renderSweetness()">
       Budget
       <small>${isMatcha?'Milky Matcha':'Syrup-based'}</small>
     </button>`;
@@ -964,7 +968,7 @@ function renderSizes(){
     return;
   }
   if(!available.some(x=>x.index===selected.sizeIndex))selected.sizeIndex=available[0].index;
-  sizeOptions.innerHTML=available.map(x=>`<button class="opt ${x.index===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${x.index};renderSizes()">${escapeHtml(x.size)}<span>${peso(x.price)}</span></button>`).join("");
+  sizeOptions.innerHTML=available.map(x=>`<button class="opt ${x.index===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${x.index};renderSizes();renderSweetness()">${escapeHtml(x.size)}<span>${peso(Number(x.price)+diabeticFee(x.size,selected.sweetness,product))}</span></button>`).join("");
   selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
   if(isSiomaiOrderProduct(product)&&available.length===1&&/^1\s*pc$/i.test(available[0].size)){sizeOptions.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';sizeOptions.innerHTML=siomaiStoreQuick(available[0].price);selType.textContent='Per piece · '+peso(available[0].price);updateSiomaiStoreTotal();}
 }
@@ -978,8 +982,9 @@ function renderSweetness(){
   const show=!selected.p.food && selected.p.category!=='Soda' && selected.p.category!=='Floats';
   sweetnessWrap.style.display=show?'block':'none';
   if(!show){sweetnessOptions.innerHTML='';return}
-  const levels=['Less sugar','Normal','Diabeties'];
-  sweetnessOptions.innerHTML=levels.map(level=>`<button class="opt sweetness-option ${selected.sweetness===level?'selected':''}" onclick="selected.sweetness='${level}';renderSweetness()">${level}</button>`).join('');
+  const levels=['Less sugar','Normal','Diabetic'];
+  const size=(selected.type==='premium'?selected.p.premiumSizes:selected.p.sizes)?.[selected.sizeIndex];
+  sweetnessOptions.innerHTML=levels.map(level=>`<button class="opt sweetness-option ${selected.sweetness===level?'selected':''}" onclick="selected.sweetness='${level}';renderSweetness();renderSizes()">${level}${/^diabet/i.test(level)?'<small> +'+peso(diabeticFee(size,level,selected.p))+'</small>':''}</button>`).join('');
 }
 function changeQty(d){selected.qty=Math.max(1,selected.qty+d);selQty.textContent=selected.qty;updateSiomaiStoreTotal()}
 function addSelected(){
@@ -992,7 +997,7 @@ function addSelected(){
   if(selected.sizeIndex<0||!availableStoreSizes(current,selected.type).some(x=>x.index===selected.sizeIndex)){
     showActionToast('This size is no longer available.');refreshManagedMenu();return;
   }
-  const item={productId:p.productId||null,name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:prices[selected.sizeIndex],qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor:productFlavors(p).length?selected.flavor:''};
+  const item={productId:p.productId||null,name:p.name,category:p.category,type:selected.type,size:sizes[selected.sizeIndex],price:Number(prices[selected.sizeIndex])+diabeticFee(sizes[selected.sizeIndex],selected.sweetness,p),qty:selected.qty,food:!!p.food,sweetness:p.food?'':selected.sweetness,flavor: saltedChoice(p)?selected.version||'Regular':productFlavors(p).length?selected.flavor:''};
   const key=JSON.stringify([item.name,item.type,item.size,item.price,item.sweetness,item.flavor]);
   const old=cart.find(x=>x.key===key);
   if(old) old.qty+=item.qty; else {item.key=key;cart.push(item)}
