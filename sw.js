@@ -1,11 +1,11 @@
-const CACHE="kbr-ordering-v172-salted-diabetic";
+const CACHE="kbr-ordering-v173-customer-addons";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
  "./","./index.html","./manifest.json","./icons/icon-192.png",
  "./sync-config.js","./sync-core.js?v=usage-reads-v1",
  "./sync-ui.js","./menu-store.js","./menu-defaults.js",
- "./app-sync-v135.js?v=139-realtime-orders","./rewards-scanner.js?v=7-quick-registration",
+ "./app-sync-v135.js?v=140-customer-addons","./rewards-scanner.js?v=7-quick-registration",
  "./page-tools.js","./page-tools.css"
 ];
 const OPTIONAL_ASSETS=[
