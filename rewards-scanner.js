@@ -59,7 +59,7 @@
   const phoneFindButton=el('button',{type:'button',class:'kbr-qr-btn',text:'Find Customer'});
   const phoneConfirm=el('div',{class:'kbr-phone-confirm',hidden:''});
   const phoneConfirmButton=el('button',{type:'button',class:'kbr-qr-btn kbr-confirm-button',text:'Confirm & Link Order'});
-  const registerButton=el('button',{type:'button',class:'kbr-qr-btn kbr-register-open',text:'➕ Register New Customer',hidden:''});
+  const registerButton=el('button',{type:'button',class:'kbr-qr-btn kbr-register-open',text:'Register Now',hidden:''});
   const registerName=el('input',{id:'kbrRegisterCustomerName',type:'text',maxlength:'80',placeholder:'Customer full name',autocomplete:'off'});
   const registerConsent=el('input',{id:'kbrRegisterConsent',type:'checkbox'});
   const registerSubmit=el('button',{type:'button',class:'kbr-qr-btn',text:'Create Account & Link Order'});
@@ -97,7 +97,7 @@
   const laterButton=el('button',{type:'button',class:'kbr-qr-btn kbr-qr-alt',text:'Register Later — Continue Payment',hidden:''});
   const nowButton=el('button',{type:'button',class:'kbr-qr-btn',text:'Register Now',hidden:''});
   sheet.append(header,receipt,reminderText,phoneButton,phonePanel,nowButton,scanButton,video,codeButton,manual,status,laterButton);
-  function reminderUI(on){for(const node of [reminderText,nowButton,laterButton]){node.hidden=!on;node.style.display=on?'block':'none';}header.firstChild.textContent=on?'KBR Points Reminder':'🎟 KBR Rewards QR';}
+  function reminderUI(on){for(const node of [reminderText,laterButton]){node.hidden=!on;node.style.display=on?'block':'none';}nowButton.hidden=true;nowButton.style.display='none';for(const node of [phoneButton,scanButton,codeButton,video])node.style.display=on?'none':'';header.firstChild.textContent=on?'KBR Points Reminder':'🎟 KBR Rewards QR';}
   reminderUI(false);
   function continuePayment(){const callback=paymentReminder;paymentReminder=null;close();if(callback)callback();}
   laterButton.onclick=()=>{if(!busy)continuePayment();};
@@ -149,7 +149,7 @@
     phoneInput.value='';phoneOpen(false);invalidatePhoneLookup();registerName.value='';registerConsent.checked=false;
     status.textContent='Choose Scan QR Code, Enter Customer Code, or Enter Phone Number.';
     paymentReminder=typeof onPayment==='function'?onPayment:null;reminderUI(!!paymentReminder);
-    if(paymentReminder){phoneOpen(true);status.textContent='Find the customer or register now. Choose Register Later to continue without points.';}
+    if(paymentReminder){phoneOpen(true);status.textContent='Enter the customer’s mobile number, then Find Customer. If no account is found, Register Now will appear.';phoneInput.focus();}
     overlay.classList.add('open');
   }
   header.lastChild.onclick=close;
@@ -279,8 +279,9 @@
     tempSheet.replaceChildren(
       el('h2',{text:'✓ Customer Registered'}),
       el('p',{text:name+' has a new KBR Rewards account.'}),
-      el('p',{text:'Give this temporary password directly to the customer. It is shown only now; they must change it at first login.'}),
+      el('p',{text:'Give this temporary password directly to the customer. Ask them to sign in to the KBR website and change their password at first login.'}),
       el('strong',{class:'kbr-temp-password',text:password}),
+      el('a',{href:'https://russelljohnramosmicumao-arch.github.io/Kape-Barrio/online.html',target:'_blank',rel:'noopener noreferrer',text:'Open KBR Online Ordering website'}),
       el('p',{text:linked?'Order linked successfully. Points will be credited when the order qualifies.':'Account created, but the order was not linked. Please link the order using the customer phone number.'})
     );
     const done=el('button',{type:'button',class:'kbr-qr-btn',text:'Done — I gave the password to the customer'});
@@ -314,7 +315,7 @@
     const callback=paymentReminder;paymentReminder=null;
     const linked=await linkOrder(created.customerCode);
     showTempPassword(created.customerName,created.temporaryPassword,linked);
-    if(callback){if(linked){const done=tempSheet.lastChild;const previous=done.onclick;done.onclick=()=>{previous();callback();};}else{paymentReminder=callback;reminderUI(true);}}
+    if(callback){if(linked){const done=tempSheet.lastChild;const previous=done.onclick;done.onclick=()=>{previous();callback();};}else{paymentReminder=callback;reminderUI(true);phoneOpen(true);status.textContent='Account created. Find Customer again to link this order before proceeding.';}}
   };
   phoneConfirmButton.onclick=async()=>{
     if(!pendingPhoneCustomer||busy)return;
