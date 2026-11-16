@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5b3825">
-<meta name="kbr-deployment" content="2026-11-11-frappe-macchiato-merge">
+<meta name="kbr-deployment" content="2026-11-17-siomai-peso-pcs">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kape' Bar-Rio POS">
@@ -925,6 +925,7 @@ function chooseProduct(p){
   renderFlavor();
   renderSweetness();
   selQty.textContent=1;
+  updateSiomaiStoreTotal();
   selector.classList.add("open");
 }
 function renderTypes(){
@@ -947,6 +948,10 @@ function availableStoreSizes(product,type){
   return (names||[]).map((size,i)=>({size,price:prices?.[i],index:i}))
     .filter(x=>!hidden.includes(x.size)&&Number.isFinite(Number(x.price)));
 }
+function isSiomaiOrderProduct(p){return String(p?.name||'').trim().toLowerCase()==='siomai';}
+function siomaiStoreQuick(price){const cents=Math.round(Number(price)*100);if(!Number.isFinite(cents)||cents<=0)return '';return '<div style="grid-column:1/-1;font-weight:800">Order by peso or pieces</div>'+[20,30,50].map(amount=>{const qty=amount*100/cents;return '<button type="button" class="opt" '+(!Number.isInteger(qty)||qty<1?'disabled':'onclick="setSiomaiStoreQty('+qty+')"')+'>'+peso(amount)+'<span>'+ (Number.isInteger(qty)?qty+' pcs':'Not exact')+'</span></button>';}).join('')+'<div style="grid-column:1/-1;text-align:center">Or adjust pieces using − / + above.<br><strong id="siomaiStoreTotal"></strong></div>';}
+function setSiomaiStoreQty(qty){selected.qty=Math.max(1,Math.floor(qty));selQty.textContent=selected.qty;updateSiomaiStoreTotal();}
+function updateSiomaiStoreTotal(){const el=document.getElementById('siomaiStoreTotal');if(el&&isSiomaiOrderProduct(selected?.p))el.textContent=selected.qty+' pcs · '+peso(selected.qty*Number(selected.p.prices[selected.sizeIndex]));}
 function renderSizes(){
   const product=selected.p;
   const available=availableStoreSizes(product,selected.type);
@@ -958,6 +963,7 @@ function renderSizes(){
   if(!available.some(x=>x.index===selected.sizeIndex))selected.sizeIndex=available[0].index;
   sizeOptions.innerHTML=available.map(x=>`<button class="opt ${x.index===selected.sizeIndex?'selected':''}" onclick="selected.sizeIndex=${x.index};renderSizes()">${escapeHtml(x.size)}<span>${peso(x.price)}</span></button>`).join("");
   selType.textContent=selected.type==='premium'?'Premium':'Budget / Standard';
+  if(isSiomaiOrderProduct(product)&&available.length===1&&/^1\s*pc$/i.test(available[0].size)){sizeOptions.innerHTML=siomaiStoreQuick(available[0].price);selType.textContent='Per piece · '+peso(available[0].price);updateSiomaiStoreTotal();}
 }
 function renderFlavor(){
   const flavors=productFlavors(selected.p);const show=flavors.length>0;
@@ -972,7 +978,7 @@ function renderSweetness(){
   const levels=['Less sugar','Normal','Diabeties'];
   sweetnessOptions.innerHTML=levels.map(level=>`<button class="opt sweetness-option ${selected.sweetness===level?'selected':''}" onclick="selected.sweetness='${level}';renderSweetness()">${level}</button>`).join('');
 }
-function changeQty(d){selected.qty=Math.max(1,selected.qty+d);selQty.textContent=selected.qty}
+function changeQty(d){selected.qty=Math.max(1,selected.qty+d);selQty.textContent=selected.qty;updateSiomaiStoreTotal()}
 function addSelected(){
   if(!selected?.p)return;
   const current=MenuStore.load().find(p=>p.name===selected.p.name&&p.category===selected.p.category);
