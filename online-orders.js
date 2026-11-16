@@ -294,7 +294,7 @@ function renderSiomaiQuick(variants){
  const cents=Math.round(variant.price*100);
  if(!Number.isFinite(cents)||cents<=0)return;
  const panel=document.createElement('div');
- panel.innerHTML='<strong>Order by peso or pieces</strong><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0">'+[100,75,50,30,25,20].map(amount=>{const qty=amount*100/cents;return '<button type="button" style="background:#187943;color:white;border:0;border-radius:10px;padding:10px;font-weight:800" '+(!Number.isInteger(qty)||qty<1||qty>20?'disabled':'data-siomai-qty="'+qty+'"')+'>'+money(amount)+'<br><small>'+(Number.isInteger(qty)&&qty<=20?qty+' pcs':'Unavailable')+'</small></button>';}).join('')+'</div><small>Or enter the number of pieces below.</small>';
+ panel.innerHTML='<strong>Order by peso or pieces</strong><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0">'+[100,75,50,30,25,20].map(amount=>{const qty=amount*100/cents;return '<button type="button" style="background:#187943;color:white;border:0;border-radius:10px;padding:8px 3px;font-weight:800;font-size:14px;line-height:1.25;min-width:0" '+(!Number.isInteger(qty)||qty<1||qty>20?'disabled':'data-siomai-qty="'+qty+'"')+'>'+money(amount)+'<br><small style="font-size:11px">'+(Number.isInteger(qty)&&qty<=20?qty+' pcs':'Unavailable')+'</small></button>';}).join('')+'</div><small>Or enter the number of pieces below.</small>';
  host.append(panel);
  panel.querySelectorAll('[data-siomai-qty]').forEach(btn=>btn.addEventListener('click',()=>{$('qtyInput').value=btn.dataset.siomaiQty;}));
 }
@@ -2103,7 +2103,7 @@ setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=100-siomai-six',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=101-siomai-compact',{scope:'./online.html'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
