@@ -2124,7 +2124,7 @@ setInterval(()=>{if(!document.hidden)refreshSharedMenuIfNeeded();},60000);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./online-sw.js?v=103-customer-addons',{scope:'./online.html'})
+    navigator.serviceWorker.register('./online-sw.js?v=104-install',{scope:'./online'})
       .catch(error=>console.warn('Online PWA worker registration failed',error));
   });
 }
