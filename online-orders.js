@@ -132,6 +132,7 @@ function categories(){
     'Milk Tea Series',
     'Soda',
     'Floats',
+    'Specials',
     'Snackies',
     'Ice Cream'
   ];
@@ -147,7 +148,7 @@ function categoryLabel(name){
 
 function renderCategories(){
   $('categoryBar').innerHTML=categories().map(name=>`
-    <button type="button" class="category-button ${name===category?'active':''}" data-category="${attr(name)}">${esc(categoryLabel(name))}</button>
+    <button type="button" class="category-button ${name===category?'active':''}" data-category="${attr(name)}">${esc(({"Frappe & Smoothies":"Frappe &\nSmoothies","Coffee Series":"Coffee\nSeries","Matcha Series":"Matcha\nSeries","Milk Tea Series":"Milktea\nSeries","Soda":"Soda","Fruit Soda":"Soda","Floats":"Floats","Specials":"Specials","Snackies":"Snackies","Ice Cream":"Ice\nCream","Ice Creams":"Ice\nCream"})[name]||categoryLabel(name))}</button>
   `).join('');
   $('categoryBar').querySelectorAll('[data-category]').forEach(btn=>{
     btn.addEventListener('click',()=>{
