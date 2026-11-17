@@ -337,6 +337,15 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
 .header-barista.kbr-quiet-staff-entry,.start-barista-btn.kbr-quiet-staff-entry{background:transparent;border:0;border-radius:0;box-shadow:none;color:#8a7666;font:500 12px/1.2 system-ui,-apple-system,sans-serif;letter-spacing:.02em;min-width:44px;min-height:44px;width:auto;height:auto;padding:0 6px;cursor:default;transform:none;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .header-barista.kbr-quiet-staff-entry:active,.start-barista-btn.kbr-quiet-staff-entry:active{background:transparent;transform:none;box-shadow:none}
 .kbr-quiet-staff-entry:focus-visible{outline:2px solid #ad967f;outline-offset:2px}
+
+/* Category labels scroll independently from the always-visible cart. */
+.category-cart-row{display:flex;align-items:center;gap:12px;max-width:1500px;margin:0 auto;padding:6px 0 5px;min-width:0}
+.category-cart-row .tabs{flex:1 1 0;min-width:0;max-width:none;margin:0;padding:2px 0;overflow-x:auto;overflow-y:hidden;align-items:stretch;overscroll-behavior-x:contain}
+.category-cart-row .tabs button{white-space:pre-line;flex:0 0 auto;min-height:52px;min-width:65px;text-align:center;line-height:1.14;padding:7px 13px;border-radius:14px;font-size:14px}
+.category-cart-row .floating-cart{position:relative;top:auto;right:auto;bottom:auto;left:auto;flex:0 0 56px;width:56px;height:56px;margin:0 3px 0 0;z-index:auto;box-shadow:0 5px 14px rgba(42,57,34,.32),0 2px 4px rgba(42,57,34,.15);touch-action:manipulation}
+.brand{padding-right:0}
+.header-barista.kbr-quiet-staff-entry,.start-barista-btn.kbr-quiet-staff-entry{font-size:17px;min-width:44px;min-height:44px;cursor:pointer;touch-action:manipulation}
+@media(max-width:699px){.category-cart-row{gap:9px}.category-cart-row .tabs button{min-width:58px;min-height:48px;font-size:12px;padding:6px 10px}.category-cart-row .floating-cart{flex-basis:49px;width:49px;height:49px}}
 </style><link rel="stylesheet" href="sync.css">
 
 <link rel="stylesheet" href="page-tools.css">
@@ -593,18 +602,21 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
     <div class="brand-main" onclick="goToServiceStart()" role="button" tabindex="0" aria-label="Back to Dine In / Take Out">
       <span class="bean-logo" aria-hidden="true">🫘</span>
       <div><h1>Kape' Bar-Rio</h1><small>Shop & Cafe · POS</small></div>
-<button type="button" class="header-barista kbr-quiet-staff-entry" aria-label="Barista access — press and hold">Barista</button>
+<button type="button" class="header-barista kbr-quiet-staff-entry" aria-label="Open barista page" onclick="event.stopPropagation();openBaristaPage()">☕</button>
     </div>
     <div id="headerCategory" class="header-category">Frappe &amp; Smoothies</div>
   </div>
-  <div id="tabs" class="tabs"></div>
+  <div class="category-cart-row"><div id="tabs" class="tabs"></div><button class="floating-cart" aria-label="Open cart" onclick="openOrder()">
+  <span class="cart-icon" aria-hidden="true">🛒</span>
+  <span id="cartBadge" class="cart-badge">0</span>
+</button></div>
 </header>
 <div id="serviceStart" class="start-screen">
   <div class="start-card">
     <div style="font-size:42px;margin-bottom:8px">🫘</div>
     <h2>Welcome to Kape' Bar-Rio</h2>
     <p>Will this order be for dine-in or take-out?</p>
-    <button type="button" class="start-barista-btn kbr-quiet-staff-entry" aria-label="Barista access — press and hold">Barista</button>
+    <button type="button" class="start-barista-btn kbr-quiet-staff-entry" aria-label="Open barista page" onclick="event.stopPropagation();openBaristaPage()">☕</button>
     <div class="service-options">
       <button class="service-choice" onclick="startCustomerOrder('dine-in')"><span>🍽️</span>Dine In</button>
       <button class="service-choice takeout" onclick="startCustomerOrder('take-out')"><span>🥤</span>Take Out</button>
@@ -629,10 +641,7 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
 <div id="menuToast" class="menu-toast" aria-live="polite"></div>
 </main>
 
-<button class="floating-cart" aria-label="Open cart" onclick="openOrder()">
-  <span class="cart-icon" aria-hidden="true">🛒</span>
-  <span id="cartBadge" class="cart-badge">0</span>
-</button>
+
 
 <div id="baristaDrawer" class="drawer barista-drawer" onclick="if(event.target===this)closeBaristaPage()">
   <div class="panel">
@@ -833,7 +842,7 @@ function setCategory(name){
   activeTab?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
 }
 function renderTabs(){
-  tabs.innerHTML=cats.map(c=>`<button type="button" class="${c===category?'active':''}" data-category="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
+  tabs.innerHTML=cats.map(c=>`<button type="button" class="${c===category?'active':''}" data-category="${escapeHtml(c)}">${escapeHtml(({"Frappe & Smoothies":"Frappe &\nSmoothies","Coffee Series":"Coffee\nSeries","Matcha Series":"Matcha\nSeries","Milk Tea Series":"Milktea\nSeries","Soda":"Soda","Floats":"Floats","Specials":"Specials","Snackies":"Snackies","Ice Cream":"Ice\nCream","Ice Creams":"Ice\nCream","Fruit Soda":"Soda"})[c]||c)}</button>`).join("");
   tabs.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>setCategory(btn.dataset.category)));
 }
 function render(){
@@ -2469,25 +2478,5 @@ if(customerServiceType){const start=document.getElementById('serviceStart');if(s
 })();
 </script>
 
-<script>
-(function(){
- for(const entry of document.querySelectorAll('.kbr-quiet-staff-entry')){
-  let timer=null,active=null,x=0,y=0;
-  const cancel=()=>{clearTimeout(timer);timer=null;active=null;};
-  entry.addEventListener('pointerdown',e=>{
-   e.stopPropagation();
-   if(!e.isPrimary||e.button!==0)return;
-   cancel();active=e.pointerId;x=e.clientX;y=e.clientY;
-   try{entry.setPointerCapture(e.pointerId);}catch{}
-   timer=setTimeout(()=>{if(active!==null){cancel();openBaristaPage();}},1200);
-  });
-  entry.addEventListener('pointermove',e=>{if(active===e.pointerId&&Math.hypot(e.clientX-x,e.clientY-y)>12)cancel();});
-  for(const type of ['pointerup','pointercancel','lostpointercapture'])entry.addEventListener(type,e=>{e.stopPropagation();cancel();});
-  entry.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();});
-  entry.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(e.detail===0)openBaristaPage();});
-  entry.addEventListener('blur',cancel);
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancel();});
- }
-})();
-</script>
+
 </body></html>
