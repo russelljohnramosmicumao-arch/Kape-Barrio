@@ -1,5 +1,5 @@
 
-const CACHE='kbr-online-customer-v103-customer-addons-assets-phase2';
+const CACHE='kbr-online-customer-v103-customer-addons-assets-phase2-customer-security-v1';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=82-near-goal',
