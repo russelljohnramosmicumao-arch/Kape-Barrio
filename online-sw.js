@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v103-customer-addons-customer-security-v1';
+const CACHE='kbr-online-customer-v103-customer-addons-customer-security-v1-compact-categories-v1';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=82-near-goal',
-  './online-orders.js?v=102-customer-addons',
+  './online-orders.css?v=83-compact-categories',
+  './online-orders.js?v=103-compact-categories',
   './shop-hours-client.js?v=1',
   './online-manifest.webmanifest?v=71'
 ];
