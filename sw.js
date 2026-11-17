@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v174-payment-phone-first-navfix2-assets-phase2";
+const CACHE="kbr-ordering-v174-payment-phone-first-navfix2-assets-phase2-addon-summary-v1";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
