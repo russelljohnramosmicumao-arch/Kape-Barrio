@@ -332,6 +332,11 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
 .drawer{padding-top:max( var(--kbr-safe-top), 0px);padding-bottom:var(--kbr-safe-bottom)}
 @media(min-width:700px){.drawer{padding-top:calc(20px + var(--kbr-safe-top));padding-bottom:calc(20px + var(--kbr-safe-bottom))}}
 
+
+/* Staff entry is visually quiet; ordinary customer taps do not activate it. */
+.header-barista.kbr-quiet-staff-entry,.start-barista-btn.kbr-quiet-staff-entry{background:transparent;border:0;border-radius:0;box-shadow:none;color:#8a7666;font:500 12px/1.2 system-ui,-apple-system,sans-serif;letter-spacing:.02em;min-width:44px;min-height:44px;width:auto;height:auto;padding:0 6px;cursor:default;transform:none;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.header-barista.kbr-quiet-staff-entry:active,.start-barista-btn.kbr-quiet-staff-entry:active{background:transparent;transform:none;box-shadow:none}
+.kbr-quiet-staff-entry:focus-visible{outline:2px solid #ad967f;outline-offset:2px}
 </style><link rel="stylesheet" href="sync.css">
 
 <link rel="stylesheet" href="page-tools.css">
@@ -588,7 +593,7 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
     <div class="brand-main" onclick="goToServiceStart()" role="button" tabindex="0" aria-label="Back to Dine In / Take Out">
       <span class="bean-logo" aria-hidden="true">🫘</span>
       <div><h1>Kape' Bar-Rio</h1><small>Shop & Cafe · POS</small></div>
-<button class="header-barista" aria-label="Open barista page" onclick="event.stopPropagation();openBaristaPage()">☕<span>Barista</span></button>
+<button type="button" class="header-barista kbr-quiet-staff-entry" aria-label="Barista access — press and hold">Barista</button>
     </div>
     <div id="headerCategory" class="header-category">Frappe &amp; Smoothies</div>
   </div>
@@ -599,7 +604,7 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
     <div style="font-size:42px;margin-bottom:8px">🫘</div>
     <h2>Welcome to Kape' Bar-Rio</h2>
     <p>Will this order be for dine-in or take-out?</p>
-    <button class="start-barista-btn" aria-label="Open Barista Page" title="Barista Page" onclick="openBaristaPage()">☕</button>
+    <button type="button" class="start-barista-btn kbr-quiet-staff-entry" aria-label="Barista access — press and hold">Barista</button>
     <div class="service-options">
       <button class="service-choice" onclick="startCustomerOrder('dine-in')"><span>🍽️</span>Dine In</button>
       <button class="service-choice takeout" onclick="startCustomerOrder('take-out')"><span>🥤</span>Take Out</button>
@@ -2464,4 +2469,25 @@ if(customerServiceType){const start=document.getElementById('serviceStart');if(s
 })();
 </script>
 
+<script>
+(function(){
+ for(const entry of document.querySelectorAll('.kbr-quiet-staff-entry')){
+  let timer=null,active=null,x=0,y=0;
+  const cancel=()=>{clearTimeout(timer);timer=null;active=null;};
+  entry.addEventListener('pointerdown',e=>{
+   e.stopPropagation();
+   if(!e.isPrimary||e.button!==0)return;
+   cancel();active=e.pointerId;x=e.clientX;y=e.clientY;
+   try{entry.setPointerCapture(e.pointerId);}catch{}
+   timer=setTimeout(()=>{if(active!==null){cancel();openBaristaPage();}},1200);
+  });
+  entry.addEventListener('pointermove',e=>{if(active===e.pointerId&&Math.hypot(e.clientX-x,e.clientY-y)>12)cancel();});
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])entry.addEventListener(type,e=>{e.stopPropagation();cancel();});
+  entry.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();});
+  entry.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(e.detail===0)openBaristaPage();});
+  entry.addEventListener('blur',cancel);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancel();});
+ }
+})();
+</script>
 </body></html>
