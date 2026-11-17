@@ -1425,3 +1425,8 @@ button{cursor:pointer}
 .kbr-progress-points .kbr-progress-scale{margin-top:10px}
 .kbr-progress-points .kbr-progress-scale strong{font-size:.9rem}
 .kbr-progress-points .kbr-progress-goal-label{color:#895326!important}
+
+/* Compact phone-friendly category tabs: preserve explicit line breaks. */
+.category-bar{gap:6px;padding:10px 0 6px;align-items:stretch}
+.category-bar .category-button{flex:0 0 auto;white-space:pre-line;line-height:1.15;text-align:center;border-radius:12px;min-height:44px;padding:6px 10px;font-size:12px}
+@media(max-width:600px){.category-bar{gap:4px;padding:8px 0 6px}.category-bar .category-button{font-size:10px;padding:5px 7px;min-height:44px;border-radius:10px}}
