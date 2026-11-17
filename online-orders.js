@@ -176,7 +176,7 @@ function minimumPrice(item){
 }
 
 function resolveImage(item){
-  const raw=String(item.image||'').trim();
+  const raw=String(item.image||'').trim().replace(/^https:\/\/russelljohnramosmicumao-arch\.github\.io\/Kape-Barrio\/images\//i,'https://kape-barrio.pages.dev/images/');
   if(!raw)return '';
   if(/^https?:\/\//i.test(raw)||raw.startsWith('data:'))return raw;
   if(raw.startsWith('./'))return raw;
