@@ -346,7 +346,9 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
 .brand{padding-right:0}
 .header-barista.kbr-quiet-staff-entry,.start-barista-btn.kbr-quiet-staff-entry{font-size:17px;min-width:44px;min-height:44px;cursor:pointer;touch-action:manipulation}
 @media(max-width:699px){.category-cart-row{gap:9px}.category-cart-row .tabs button{min-width:58px;min-height:48px;font-size:12px;padding:6px 10px}.category-cart-row .floating-cart{flex-basis:49px;width:49px;height:49px}}
-.start-barista-btn.kbr-quiet-staff-entry{font-size:26px;min-width:52px;min-height:52px}
+.start-barista-btn.kbr-quiet-staff-entry{font-size:36px;min-width:64px;min-height:64px}
+.header-barista.kbr-quiet-staff-entry{margin-left:0;font-size:20px;flex:0 0 44px;padding:0}
+@media(max-width:699px){.brand{gap:8px}.header-category{min-width:0;flex-shrink:1}.header-barista.kbr-quiet-staff-entry{flex-basis:44px}}
 </style><link rel="stylesheet" href="sync.css">
 
 <link rel="stylesheet" href="page-tools.css">
@@ -603,9 +605,9 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
     <div class="brand-main" onclick="goToServiceStart()" role="button" tabindex="0" aria-label="Back to Dine In / Take Out">
       <span class="bean-logo" aria-hidden="true">🫘</span>
       <div><h1>Kape' Bar-Rio</h1><small>Shop & Cafe · POS</small></div>
-<button type="button" class="header-barista kbr-quiet-staff-entry" aria-label="Open barista page" onclick="event.stopPropagation();openBaristaPage()">☕</button>
     </div>
     <div id="headerCategory" class="header-category">Frappe &amp; Smoothies</div>
+    <button type="button" class="header-barista kbr-quiet-staff-entry" aria-label="Open barista page" onclick="event.stopPropagation();openBaristaPage()">☕</button>
   </div>
   <div class="category-cart-row"><div id="tabs" class="tabs"></div><button class="floating-cart" aria-label="Open cart" onclick="openOrder()">
   <span class="cart-icon" aria-hidden="true">🛒</span>
