@@ -320,6 +320,18 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .barista-actions button.refresh-orders-green:active{background:#0d4d29!important}
 
 #sizeOptions .siomai-peso-quick{font-size:15px!important;padding:8px 4px!important;min-width:0;line-height:1.25}#sizeOptions .siomai-peso-quick span{font-size:11px!important;line-height:1.2}
+
+/* Keep POS controls below the iOS standalone status bar. */
+:root{--kbr-safe-top:env(safe-area-inset-top,0px);--kbr-safe-right:env(safe-area-inset-right,0px);--kbr-safe-left:env(safe-area-inset-left,0px);--kbr-safe-bottom:env(safe-area-inset-bottom,0px)}
+@supports (-webkit-touch-callout:none){@media (display-mode:standalone){:root{--kbr-safe-top:max(24px,env(safe-area-inset-top,0px))}}}
+header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var(--kbr-safe-left));padding-right:calc(18px + var(--kbr-safe-right))}
+.floating-cart{top:calc(10px + var(--kbr-safe-top));right:calc(18px + var(--kbr-safe-right));touch-action:manipulation}
+.header-barista{min-height:44px;touch-action:manipulation;flex-shrink:0}
+.brand{min-height:58px}
+@media(max-width:699px){.floating-cart{top:calc(10px + var(--kbr-safe-top));right:calc(14px + var(--kbr-safe-right));width:48px;height:48px}.brand{min-height:48px;padding-right:56px}.header-barista{min-height:44px}}
+.drawer{padding-top:max( var(--kbr-safe-top), 0px);padding-bottom:var(--kbr-safe-bottom)}
+@media(min-width:700px){.drawer{padding-top:calc(20px + var(--kbr-safe-top));padding-bottom:calc(20px + var(--kbr-safe-bottom))}}
+
 </style><link rel="stylesheet" href="sync.css">
 
 <link rel="stylesheet" href="page-tools.css">
