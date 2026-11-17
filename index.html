@@ -709,6 +709,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 <script src="menu-defaults.js"></script>
 <script src="menu-store.js"></script>
 <script>
+const kbrAssetUrl=raw=>String(raw||'').replace(/^https:\/\/russelljohnramosmicumao-arch\.github\.io\/Kape-Barrio\/images\//i,'https://kape-barrio.pages.dev/images/');
 const PRODUCTS = MenuStore.load();
 let category = "Frappe & Smoothies"
 // Always ask Dine In / Take Out for a new app session.
@@ -825,7 +826,7 @@ function render(){
   const items=specialItems(category);
   products.innerHTML=items.map(p=>{
     const badge=isBestSeller(p)?'<span class="best-seller-badge">Best Seller</span>':'';
-    return `<div class="card">${badge}<button class="product-choice" data-index="${PRODUCTS.indexOf(p)}" ${p.availability==='not-available'?'disabled aria-label="Not Available"':p.pricePending?'disabled aria-label="Price not set"':''} style="border:0;background:none;width:100%;padding:0;color:inherit;cursor:pointer">${p.image?`<img class="product-img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">`: '<div class="product-img" style="display:grid;place-items:center;font-size:36px">☕</div>'}<h3>${escapeHtml(p.name)}</h3>${saltedChoice(p)?'<small style="display:block;font-style:italic;font-weight:400;font-size:12px;margin-top:3px">With Salted Version</small>':''}${p.availability==='not-available'?'<small class="unavailable-label">Not Available</small>':p.pricePending?'<small>Price not set</small>':''}</button></div>`;
+    return `<div class="card">${badge}<button class="product-choice" data-index="${PRODUCTS.indexOf(p)}" ${p.availability==='not-available'?'disabled aria-label="Not Available"':p.pricePending?'disabled aria-label="Price not set"':''} style="border:0;background:none;width:100%;padding:0;color:inherit;cursor:pointer">${p.image?`<img class="product-img" src="${escapeHtml(kbrAssetUrl(p.image))}" alt="${escapeHtml(p.name)}" loading="lazy">`: '<div class="product-img" style="display:grid;place-items:center;font-size:36px">☕</div>'}<h3>${escapeHtml(p.name)}</h3>${saltedChoice(p)?'<small style="display:block;font-style:italic;font-weight:400;font-size:12px;margin-top:3px">With Salted Version</small>':''}${p.availability==='not-available'?'<small class="unavailable-label">Not Available</small>':p.pricePending?'<small>Price not set</small>':''}</button></div>`;
   }).join("");
   products.querySelectorAll(".product-choice").forEach(btn=>btn.onclick=()=>chooseProduct(PRODUCTS[Number(btn.dataset.index)]));
   updateCartBar();
@@ -922,7 +923,7 @@ function chooseProduct(p,version='') {
   if(saltedChoice(p)&&!version){showSaltedVersion(p);return;}
   selected={version,addons:{},p,type:p.premium?'premium':'standard',sizeIndex:0,qty:1,sweetness:'Normal',flavor:productFlavors(p)[0]||''};
   selName.textContent=version?version+' '+p.name:p.name;
-  selImage.src=p.image||"";
+  selImage.src=kbrAssetUrl(p.image);
   selImage.alt=p.name;
   selImage.style.display=p.image?"block":"none";
   premiumWrap.style.display=p.premium?'block':'none';
@@ -1005,7 +1006,7 @@ function addSelected(){
   const old=cart.find(x=>x.key===key);
   if(old) old.qty+=item.qty; else {item.key=key;cart.push(item)}
   persist();closeSelector();render();
-  animateToCart(p.image);
+  animateToCart(kbrAssetUrl(p.image));
 }
 function animateToCart(src){
   if(!src) return;
