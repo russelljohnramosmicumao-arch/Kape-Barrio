@@ -1061,11 +1061,12 @@ function finishClosedPreorder(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function savePendingGuestClaim(orderId,phone){
+function savePendingGuestClaim(orderId,phone,claimToken){
   try{
     localStorage.setItem(GUEST_CLAIM_KEY,JSON.stringify({
       orderId,
       phone,
+      claimToken:claimToken||null,
       savedAt:Date.now()
     }));
   }catch(_){}
@@ -1095,7 +1096,8 @@ async function tryClaimPendingGuestOrder(){
   try{
     const result=await rpc('kbr_claim_guest_order',{
       p_order_id:pending.orderId,
-      p_phone:pending.phone
+      p_phone:pending.phone,
+      ...(pending.claimToken?{p_claim_token:pending.claimToken}:{})
     });
     localStorage.removeItem(GUEST_CLAIM_KEY);
     await loadCustomerProfile();
@@ -1214,7 +1216,7 @@ async function placeOrder(){
     const guestOrder=!customerSession?.user;
     $('guestClaimOffer')?.classList.toggle('hidden',!guestOrder);
     if(guestOrder){
-      savePendingGuestClaim(result.id,contact);
+      savePendingGuestClaim(result.id,contact,result.claimToken);
       try{
         const previous=JSON.parse(localStorage.getItem(KBR_GUEST_SENT_KEY)||'[]');
         const list=Array.isArray(previous)?previous:[];
