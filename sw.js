@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v174-payment-phone-first-addon-summary-v2-update-guard-v3-ipad-safe-area-v1";
+const CACHE="kbr-ordering-v174-payment-phone-first-addon-summary-v2-update-guard-v3-ipad-safe-area-v1-quiet-staff-v1";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
