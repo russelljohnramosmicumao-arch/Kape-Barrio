@@ -367,15 +367,7 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
    }
    const managerLink=document.getElementById('managerLink');
    if(managerLink)managerLink.hidden=role!=='owner';
-   const actions=document.querySelector('.barista-actions');
-   if(actions&&!document.getElementById('kbr-shift-records-action')){
-    const button=document.createElement('button');
-    button.id='kbr-shift-records-action';
-    button.className='secondary';
-    button.textContent='Shift Records';
-    button.onclick=()=>location.href='shift-records.html';
-    actions.insertBefore(button,document.getElementById('baristaUpdateTools'));
-   }
+   document.getElementById('kbr-shift-records-action')?.remove();
   }catch(e){
    // Keep the cart and cached menu in place on a failed connection.
    cloud.status('Offline / reconnecting · checkout unavailable',true);
