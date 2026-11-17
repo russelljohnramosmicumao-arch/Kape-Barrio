@@ -281,7 +281,7 @@
       el('p',{text:name+' has a new KBR Rewards account.'}),
       el('p',{text:'Give this temporary password directly to the customer. Ask them to sign in to the KBR website and change their password at first login.'}),
       el('strong',{class:'kbr-temp-password',text:password}),
-      el('a',{href:'https://russelljohnramosmicumao-arch.github.io/Kape-Barrio/online.html',target:'_blank',rel:'noopener noreferrer',text:'Open KBR Online Ordering website'}),
+      el('a',{href:'https://kape-barrio.pages.dev/online.html',target:'_blank',rel:'noopener noreferrer',text:'Open KBR Online Ordering website'}),
       el('p',{text:linked?'Order linked successfully. Points will be credited when the order qualifies.':'Account created, but the order was not linked. Please link the order using the customer phone number.'})
     );
     const done=el('button',{type:'button',class:'kbr-qr-btn',text:'Done — I gave the password to the customer'});
