@@ -737,7 +737,7 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
 
 <script src="receipt-lines.js"></script><script src="comp-payments.js?v=payment-labels-v3"></script>
 <script src="menu-defaults.js"></script>
-<script src="menu-store.js"></script>
+<script src="menu-store.js?v=flavor-stock-v2"></script>
 <script>
 const PRODUCTS = MenuStore.load();
 let category = "Frappe & Smoothies"
@@ -1023,6 +1023,7 @@ function changeQty(d){selected.qty=Math.max(1,selected.qty+d);selQty.textContent
 function addSelected(){
   if(!selected?.p)return;
   const current=MenuStore.load().find(p=>p.name===selected.p.name&&p.category===selected.p.category);
+  if(current&&(current.flavorUnavailable||[]).includes(selected.flavor)){selected.p=current;selected.flavor=productFlavors(current)[0]||'';renderFlavor();showActionToast('This flavour is no longer available.');return;}
   if(!current||['not-available','unavailable','out-of-stock'].includes(current.availability)||current.pricePending){selector.classList.remove('open');refreshManagedMenu();showActionToast('Not Available');return;}
 
   const p=selected.p, sizes=selected.type==='premium'&&p.premiumSizes?p.premiumSizes:(p.sizes||SIZE_DEFAULT);

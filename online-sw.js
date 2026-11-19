@@ -1,5 +1,5 @@
 
-const CACHE='kbr-online-customer-v103-customer-addons-customer-security-v1-compact-categories-v1-install-v1-food-status-v1';
+const CACHE='kbr-online-customer-v103-customer-addons-customer-security-v1-compact-categories-v1-install-v1-food-status-v1-flavor-stock-v2';
 const ASSETS=[
   './online.html',
   './online-orders.css?v=84-food-status',

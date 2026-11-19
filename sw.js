@@ -1,10 +1,10 @@
-const CACHE="kbr-ordering-v174-payment-phone-first-addon-summary-v2-update-guard-v3-ipad-safe-area-v1-quiet-staff-v1-category-cart-v1-barista-controls-v1-compact-categories-v1-online-install-v1-staff-icon-position-v2-stock-menu-v1-food-status-v1";
+const CACHE="kbr-ordering-v174-payment-phone-first-addon-summary-v2-update-guard-v3-ipad-safe-area-v1-quiet-staff-v1-category-cart-v1-barista-controls-v1-compact-categories-v1-online-install-v1-staff-icon-position-v2-stock-menu-v1-food-status-v1-flavor-stock-v2";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
  "./","./index.html","./manifest.json","./icons/icon-192.png",
  "./sync-config.js","./sync-core.js?v=usage-reads-v1",
- "./sync-ui.js","./menu-store.js","./menu-defaults.js",
+ "./sync-ui.js","./menu-store.js?v=flavor-stock-v2","./menu-defaults.js",
  "./app-sync-v135.js?v=141-payment-phone-first","./rewards-scanner.js?v=8-payment-phone-first",
  "./page-tools.js","./page-tools.css"
 ];
@@ -15,7 +15,7 @@ const OPTIONAL_ASSETS=[
  "./icons/icon-512.png","./manager-access.js","./worker-clock.js",
  "./app-links.js","./comp-payments.js?v=payment-labels-v3","./manager.html","./menu.js",
  "./pay-later.js?v=30-day-settled-v1","./reset-password.html","./reset-password.js",
- "./shifts.js","./sync-login.html","./sync.css","./menu-store.js",
+ "./shifts.js","./sync-login.html","./sync.css","./menu-store.js?v=flavor-stock-v2",
  "./online.html","./rewards.html"
 ];
 const IMAGE_CACHE='kbr-pos-images-v1';
