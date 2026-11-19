@@ -1,9 +1,9 @@
 
-const CACHE='kbr-online-customer-v103-customer-addons-assets-phase2-customer-security-v1-compact-categories-v1-install-v1';
+const CACHE='kbr-online-customer-v103-customer-addons-assets-phase2-customer-security-v1-compact-categories-v1-install-v1-flavor-stock-v2';
 const ASSETS=[
   './online.html',
-  './online-orders.css?v=83-compact-categories',
-  './online-orders.js?v=104-install',
+  './online-orders.css?v=84-food-status',
+  './online-orders.js?v=105-food-status',
   './shop-hours-client.js?v=1',
   './online-manifest.webmanifest?v=72-install', './icons/icon-192.png', './icons/icon-512.png'
 ];

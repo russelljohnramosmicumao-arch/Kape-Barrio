@@ -115,6 +115,7 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
    liveHeartbeat=setInterval(()=>{
     if(liveSocket!==socket||socket.readyState!==WebSocket.OPEN)return;
     liveSend('phoenix','heartbeat',{});
+    if(!document.hidden&&Date.now()-lastMenuCheck>=MENU_POLL_MS)poll();
     const token=cloud.session()?.access_token;
     if(token&&token!==liveToken){liveToken=token;liveSend(channel,'access_token',{access_token:token},liveJoinRef);}
    },25000);
