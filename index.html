@@ -349,6 +349,7 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
 .start-barista-btn.kbr-quiet-staff-entry{font-size:36px;min-width:64px;min-height:64px}
 .header-barista.kbr-quiet-staff-entry{margin-left:0;font-size:20px;flex:0 0 44px;padding:0}
 @media(max-width:699px){.brand{gap:8px}.header-category{min-width:0;flex-shrink:1}.header-barista.kbr-quiet-staff-entry{flex-basis:44px}}
+.kbr-product-photo{position:relative;overflow:hidden;border-radius:12px}.kbr-unavailable-ribbon{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);background:#a52c27e8;color:white;font-size:clamp(10px,1.4vw,16px);font-weight:900;text-align:center;padding:9px 2px;letter-spacing:.02em;pointer-events:none}.product-choice:disabled .product-img{opacity:.65}
 </style><link rel="stylesheet" href="sync.css">
 
 <link rel="stylesheet" href="page-tools.css">
@@ -767,7 +768,7 @@ function orderBestSellersFirst(items){
   });
 }
 function specialItems(name){
-  return orderBestSellersFirst(PRODUCTS.filter(p=>p.category===name&&p.availability!=='out-of-stock'));
+  return orderBestSellersFirst(PRODUCTS.filter(p=>p.category===name));
 }
 function isBestSeller(p){return BEST_SELLER_KEYS.has(`${p.category}||${p.name}`)}
 function getOrderServiceModes(order){
@@ -854,7 +855,7 @@ function render(){
   const items=specialItems(category);
   products.innerHTML=items.map(p=>{
     const badge=isBestSeller(p)?'<span class="best-seller-badge">Best Seller</span>':'';
-    return `<div class="card">${badge}<button class="product-choice" data-index="${PRODUCTS.indexOf(p)}" ${p.availability==='not-available'?'disabled aria-label="Not Available"':p.pricePending?'disabled aria-label="Price not set"':''} style="border:0;background:none;width:100%;padding:0;color:inherit;cursor:pointer">${p.image?`<img class="product-img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">`: '<div class="product-img" style="display:grid;place-items:center;font-size:36px">☕</div>'}<h3>${escapeHtml(p.name)}</h3>${saltedChoice(p)?'<small style="display:block;font-style:italic;font-weight:400;font-size:12px;margin-top:3px">With Salted Version</small>':''}${p.availability==='not-available'?'<small class="unavailable-label">Not Available</small>':p.pricePending?'<small>Price not set</small>':''}</button></div>`;
+    return `<div class="card">${badge}<button class="product-choice" data-index="${PRODUCTS.indexOf(p)}" ${['not-available','unavailable','out-of-stock'].includes(p.availability)?'disabled aria-label="Not Available"':p.pricePending?'disabled aria-label="Price not set"':''} style="border:0;background:none;width:100%;padding:0;color:inherit;cursor:pointer"><div class="kbr-product-photo">${p.image?`<img class="product-img" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">`: '<div class="product-img" style="display:grid;place-items:center;font-size:36px">☕</div>'}${['not-available','unavailable','out-of-stock'].includes(p.availability)?'<span class="kbr-unavailable-ribbon">NOT AVAILABLE</span>':''}</div><h3>${escapeHtml(p.name)}</h3>${saltedChoice(p)?'<small style="display:block;font-style:italic;font-weight:400;font-size:12px;margin-top:3px">With Salted Version</small>':''}${p.pricePending?'<small>Price not set</small>':''}</button></div>`;
   }).join("");
   products.querySelectorAll(".product-choice").forEach(btn=>btn.onclick=()=>chooseProduct(PRODUCTS[Number(btn.dataset.index)]));
   updateCartBar();
@@ -941,7 +942,7 @@ products.addEventListener('touchend',e=>{
   goToCategory(dx<0?1:-1);
 },{passive:true});
 
-function productFlavors(p){if(p.name==='Fries')return ['Plain','Cheese','Sour Cream'];if(p.category==='Ice Cream'&&/^creambar$/i.test(p.name))return ['Cookies and Cream','Rocky Road','Ube'];if(p.category==='Ice Cream'&&/^pinipig(?: ice cream)?$/i.test(p.name))return ['Strawberry','Rocky Road'];return [];}
+function productFlavors(p){if(p.name==='Fries')return ['Plain','Cheese','Sour Cream'].filter(f=>!(p.flavorUnavailable||[]).includes(f));if(p.category==='Ice Cream'&&/^creambar$/i.test(p.name))return ['Cookies and Cream','Rocky Road','Ube'];if(p.category==='Ice Cream'&&/^pinipig(?: ice cream)?$/i.test(p.name))return ['Strawberry','Rocky Road'];return [];}
 function saltedChoice(p){return /^(Caramel Macchiato|Caramel Latte)$/i.test(p?.name||'');}
 function diabeticFee(size,sweet,p){if(p?.food||/ice cream|snack/i.test(p?.category||'')||!/^diabet/i.test(sweet||''))return 0;return /^22\s*oz/i.test(size||'')?11:/^(12|16)\s*oz/i.test(size||'')?6:0;}
 function showSaltedVersion(p){const d=document.createElement('dialog');d.style.cssText='width:min(92vw,460px);border:0;border-radius:18px;padding:24px;color:#35271e';const h=document.createElement('h2');h.textContent='Choose your '+p.name;d.append(h);for(const kind of ['Salted','Regular']){const b=document.createElement('button');b.type='button';b.className='opt';b.style.cssText='display:block;width:100%;margin:10px 0;font-size:16px';b.textContent=kind+' '+p.name;b.onclick=()=>{d.close();chooseProduct(p,kind)};d.append(b)}const cancel=document.createElement('button');cancel.textContent='×';cancel.type='button';cancel.setAttribute('aria-label','Close');cancel.style.cssText='position:absolute;top:7px;right:12px;background:transparent;border:0;font-size:28px;cursor:pointer;color:#69432a;line-height:1';cancel.onclick=()=>d.close();d.append(cancel);d.addEventListener('close',()=>d.remove());document.body.append(d);d.showModal();}
