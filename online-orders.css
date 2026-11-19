@@ -1430,3 +1430,5 @@ button{cursor:pointer}
 .category-bar{gap:6px;padding:10px 0 6px;align-items:stretch}
 .category-bar .category-button{flex:0 0 auto;white-space:pre-line;line-height:1.15;text-align:center;border-radius:12px;min-height:44px;padding:6px 10px;font-size:12px}
 @media(max-width:600px){.category-bar{gap:4px;padding:8px 0 6px}.category-bar .category-button{font-size:10px;padding:5px 7px;min-height:44px;border-radius:10px}}
+
+.kbr-product-photo{position:relative;overflow:hidden}.kbr-product-photo img{display:block;width:100%}.kbr-unavailable-ribbon{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);background:#a52c27e8;color:white;text-align:center;padding:8px 2px;font-size:clamp(10px,2.6vw,15px);font-weight:900;pointer-events:none}.menu-unavailable img{opacity:.6}
