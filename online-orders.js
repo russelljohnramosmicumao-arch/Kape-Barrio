@@ -160,6 +160,7 @@ function renderCategories(){
 }
 
 function itemVariants(item){
+  if(['unavailable','not-available','out-of-stock'].includes(item.availability))return [];
   const hidden=item.sizeUnavailable||{};
   const standard=(Array.isArray(item.sizes)?item.sizes:[]).map((size,i)=>({
     type:'standard',size,price:Number(item.prices?.[i]||0)
@@ -189,7 +190,7 @@ function resolveImage(item){
 function renderMenu(){
   const indexed=menu.map((item,index)=>({item,index}));
   const filtered=indexed
-    .filter(({item})=>item.category===category&&itemVariants(item).length>0)
+    .filter(({item})=>item.category===category)
     .sort((a,b)=>{
       if(category==='Frappe & Smoothies'){
         const aMax=Math.max(...itemVariants(a.item).map(x=>x.price),0);
@@ -205,10 +206,10 @@ function renderMenu(){
   $('emptyState').classList.toggle('hidden',filtered.length>0);
 
   $('menuGrid').innerHTML=filtered.map(item=>`
-    <article class="menu-card" data-product="${attr(item.productId||item.name)}"
+    <article class="menu-card ${itemVariants(item).length?'':'menu-unavailable'}" aria-disabled="${!itemVariants(item).length}" data-product="${attr(item.productId||item.name)}"
              tabindex="0" role="button" aria-label="Choose ${attr(item.name||'item')}">
-      <img src="${attr(resolveImage(item))}" alt="${attr(item.name)}" loading="lazy"
-           onerror="this.style.visibility='hidden'">
+      <div class="kbr-product-photo"><img src="${attr(resolveImage(item))}" alt="${attr(item.name)}" loading="lazy"
+           onerror="this.style.visibility='hidden'">${itemVariants(item).length?'':'<span class="kbr-unavailable-ribbon">NOT AVAILABLE</span>'}</div>
       <div class="menu-card-body">
         <h3>${esc(item.name||'')}</h3>${saltedChoice(item)?'<small style="display:block;font-style:italic;font-size:12px">With Salted Version</small>':''}
       </div>
@@ -227,11 +228,12 @@ function renderMenu(){
 }
 
 function isFriesProduct(item){
-  return String(item?.name||'').toLowerCase().includes('fries');
+  return String(item?.name||'').trim().toLowerCase()==='fries';
 }
 
+function refreshFriesFlavors(){const inputs=[...document.querySelectorAll('input[name="friesFlavor"]')];for(const input of inputs){input.disabled=(selected?.flavorUnavailable||[]).includes(input.value);input.closest('label')?.classList.toggle('hidden',input.disabled);if(input.disabled)input.checked=false;}if(!inputs.some(i=>i.checked&&!i.disabled)){const first=inputs.find(i=>!i.disabled);if(first)first.checked=true;}}
 function selectedFriesFlavor(){
-  return document.querySelector('input[name="friesFlavor"]:checked')?.value||'Cheese';
+  return document.querySelector('input[name="friesFlavor"]:checked')?.value||'Plain';
 }
 
 let selectedCaramelVersion='';
@@ -246,6 +248,7 @@ function refreshSweetnessPrices(){if(!selected)return;const size=document.queryS
 function openItem(key,version=''){
   selected=menu.find(x=>(x.productId||x.name)===key);
   if(!selected)return;
+  if(!itemVariants(selected).length){selected=null;toast('Not Available');return;}
   if(saltedChoice(selected)&&!version){showSaltedVersion(selected,key);return;}
   selectedCaramelVersion=version;selectedCustomerAddons={};
 
@@ -289,10 +292,7 @@ function openItem(key,version=''){
   $('flavorField').classList.toggle('hidden',!hasFlavor);
   $('friesFlavorField')?.classList.toggle('hidden',!fries);
 
-  if(fries){
-    const cheese=document.querySelector('input[name="friesFlavor"][value="Cheese"]');
-    if(cheese)cheese.checked=true;
-  }
+  if(fries)refreshFriesFlavors();
 
   renderSizeOptions();
   $('itemDialog').showModal();
@@ -1753,7 +1753,7 @@ function syncCartToSharedMenu(){
       ||menu.find(item=>item.name===entry.name&&item.category===entry.category);
     if(!product)continue;
     const variant=itemVariants(product).find(v=>v.type===(entry.type||'standard')&&v.size===entry.size);
-    if(!variant){
+    if(!variant||(product.flavorUnavailable||[]).includes(entry.flavor)){
       if(!entry.unavailableSize)changed=true;
       entry.unavailableSize=true;
       continue;
@@ -1778,6 +1778,7 @@ async function loadMenu(){
       const latest=menu.find(p=>p.productId===selected.productId);
       if(latest&&itemVariants(latest).length){
         selected=latest;
+        if(isFriesProduct(selected))refreshFriesFlavors();
         if(!itemVariants(latest).some(v=>v.type===selectedType)){
           selectedType=itemVariants(latest)[0].type;
           $('typeOptions').querySelectorAll('input[name="itemType"]').forEach(input=>{
