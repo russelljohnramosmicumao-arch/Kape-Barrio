@@ -4,7 +4,7 @@
  const cloud=KBRCloud,ui=KBRSyncUI,queueKey='kbr_order_write_v1',draftKey='kbr_order_draft_v1';
  let role='',ready=false,busy=false,polling=false,connecting=false,menuRevision=0,lastFinalized=null;const remote=new Map();
  let rosterNames=[],claimDay='',claimedNames=null,claimRequest=null;
- let lastMenuCheck=0,lastClaimsPoll=0,lastDeferredPoll=0;
+ let stockMenuSignature='';let lastMenuCheck=0,lastClaimsPoll=0,lastDeferredPoll=0;
  const MENU_POLL_MS=60000,CLAIMS_POLL_MS=180000,DEFERRED_POLL_MS=90000;
  // Coordinate event-triggered reads across tabs; a WebSocket message (not a timer) triggers refresh.
  // This lease never guards writes, so saving orders still works in any tab.
@@ -66,8 +66,8 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
   let changedUI=false;
   // Read only in response to live database changes or explicit reconnect/focus events.
   const checkMenu=Date.now()-lastMenuCheck>=MENU_POLL_MS;
-  const [menus,rows]=await Promise.all([checkMenu?cloud.request('/rest/v1/kbr_menu?id=eq.1&select=id,revision'):Promise.resolve(null),cloud.rows('/rest/v1/kbr_orders?select=id,revision,status&status=eq.open&order=order_number.desc')]);
-  if(checkMenu){lastMenuCheck=Date.now();if(menus[0]&&menus[0].revision!==menuRevision){const latest=await cloud.request('/rest/v1/kbr_menu?id=eq.1&select=*');ui.applyMenu(latest[0]);menuRevision=latest[0].revision;refreshManagedMenu();changedUI=true;}}
+  const [menus,rows]=await Promise.all([checkMenu?cloud.rpc('kbr_staff_stock_menu_snapshot',{}):Promise.resolve(null),cloud.rows('/rest/v1/kbr_orders?select=id,revision,status&status=eq.open&order=order_number.desc')]);
+  if(checkMenu){lastMenuCheck=Date.now();if(menus&&JSON.stringify(menus.items)!==stockMenuSignature){ui.applyMenu(menus);menuRevision=menus.revision;stockMenuSignature=JSON.stringify(menus.items);refreshManagedMenu();changedUI=true;}}
   const ids=new Set(rows.map(r=>r.id));for(const row of rows){if(remote.get(row.id)?.revision!==row.revision){const changed=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(row.id)+'&select=*');if(changed[0]){applyRow(changed[0]);changedUI=true;}}}
   // Fetch individual tombstones so cancelled or completed orders never resurrect.
   for(const [id,row] of [...remote])if(row.status==='open'&&!ids.has(id)){const changed=await cloud.request('/rest/v1/kbr_orders?id=eq.'+encodeURIComponent(id)+'&select=*');if(changed[0]){applyRow(changed[0]);changedUI=true;}}
@@ -343,7 +343,7 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
    ui.rememberBackup();
    role=await cloud.role();
    if(['owner','operator'].includes(role))await cloud.rpc('kbr_barista_duty',{p_on:true});
-   const menuRow=await ui.menuReady(role);
+   await ui.menuReady(role);const menuRow=await cloud.rpc('kbr_staff_stock_menu_snapshot',{});stockMenuSignature=JSON.stringify(menuRow.items);
    const cachedMenu=JSON.stringify(MenuStore.load());
    ui.applyMenu(menuRow);
    menuRevision=menuRow.revision;
