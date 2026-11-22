@@ -1,11 +1,11 @@
-const CACHE="kbr-ordering-pin-7digit-v175";
+const CACHE="kbr-ordering-head-barista-cancel-v176";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
  "./","./index.html","./manifest.json","./icons/icon-192.png",
  "./sync-config.js","./sync-core.js?v=usage-reads-v1",
  "./sync-ui.js","./menu-store.js?v=flavor-stock-v2","./menu-defaults.js",
- "./app-sync-v135.js?v=pin-7digit-v175","./rewards-scanner.js?v=8-payment-phone-first",
+ "./app-sync-v135.js?v=head-barista-cancel-v176","./rewards-scanner.js?v=8-payment-phone-first",
  "./page-tools.js","./page-tools.css"
 ];
 const OPTIONAL_ASSETS=[
