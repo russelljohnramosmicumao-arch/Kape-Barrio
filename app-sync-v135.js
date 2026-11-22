@@ -306,7 +306,7 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
   catch(e){ui.screen('Payment not authorized',e.message,[['Back to payment',()=>ui.close()]]);return;}finally{busy=false;}
   await mutate(handlers.completePendingPayment,[kind,authorization]);
  };
- window.chooseBaristaDrink=person=>{ui.screen('Barista Drink — '+person,'Enter this barista’s own drink passcode.',[['Back',()=>ui.close()]]);const form=document.createElement('form');form.innerHTML='<label>Drink passcode<input name="code" type="password" inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" autocomplete="off" required></label><button type="submit">Redeem drink</button>';document.querySelector('#cloudScreen .cloud-box').append(form);form.onsubmit=e=>{e.preventDefault();const code=form.elements.code.value;form.elements.code.value='';window.authorizeCompPayment('barista-drink',person,code);};};
+ window.chooseBaristaDrink=person=>{ui.screen('Barista Drink — '+person,'Enter this barista’s own drink passcode.',[['Back',()=>ui.close()]]);const form=document.createElement('form');form.innerHTML='<label>Drink passcode<input name="code" type="password" inputmode="numeric" pattern="[0-9]{4,10}" maxlength="10" autocomplete="off" required></label><button type="submit">Redeem drink</button>';document.querySelector('#cloudScreen .cloud-box').append(form);form.onsubmit=e=>{e.preventDefault();const code=form.elements.code.value;form.elements.code.value='';window.authorizeCompPayment('barista-drink',person,code);};};
  window.savePaymentArrangement=async(rpcName,args)=>{
   if(!['kbr_arrange_payment','kbr_collect_payment'].includes(rpcName))return;
   if(!ready||busy||polling||cloud.read(queueKey)||cloud.read(draftKey)){showActionToast('Connecting or saving… please try again.');return;}
@@ -320,7 +320,7 @@ window.KBRBaristaDrinks={available:()=>claimDay===shopDay()&&claimedNames!==null
   const row=remote.get(id);if(!row||row.status!=='completed')return;
   ui.screen('Cancel completed transaction','Manager approval required. This restores deducted inventory and releases any barista drink allowance.',[['Keep transaction',()=>ui.close()]]);
   const box=document.querySelector('#cloudScreen .cloud-box'),form=document.createElement('form');
-  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
+  form.innerHTML='<label>Reason for cancellation<textarea name="reason" required minlength="3" maxlength="500" placeholder="Example: test transaction"></textarea></label><label>Manager PIN<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,10}" minlength="4" maxlength="10" autocomplete="off" required></label><button type="submit">Approve cancellation</button>';
   box.append(form);
   form.onsubmit=async event=>{
    event.preventDefault();if(busy)return;const pin=form.elements.pin.value,reason=form.elements.reason.value;form.elements.pin.value='';busy=true;
