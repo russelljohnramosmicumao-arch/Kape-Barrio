@@ -1,16 +1,16 @@
-const CACHE="kbr-ordering-v174-payment-phone-first-addon-summary-v2-update-guard-v3-ipad-safe-area-v1-quiet-staff-v1-category-cart-v1-barista-controls-v1-compact-categories-v1-online-install-v1-staff-icon-position-v2-stock-menu-v1-food-status-v1-flavor-stock-v2";
+const CACHE="kbr-ordering-pin-7digit-v175";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
  "./","./index.html","./manifest.json","./icons/icon-192.png",
  "./sync-config.js","./sync-core.js?v=usage-reads-v1",
  "./sync-ui.js","./menu-store.js?v=flavor-stock-v2","./menu-defaults.js",
- "./app-sync-v135.js?v=141-payment-phone-first","./rewards-scanner.js?v=8-payment-phone-first",
+ "./app-sync-v135.js?v=pin-7digit-v175","./rewards-scanner.js?v=8-payment-phone-first",
  "./page-tools.js","./page-tools.css"
 ];
 const OPTIONAL_ASSETS=[
  "./turnover-shift.js?v=turnover-v3","./open-end-shift.html","./shift-records.html",
- "./shifts.js?v=kitchen-first-v7","./sync.css?v=turnover-v3","./receipt-lines.js",
+ "./shifts.js?v=pin-7digit-v175","./sync.css?v=turnover-v3","./receipt-lines.js",
  "./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png",
  "./icons/icon-512.png","./manager-access.js","./worker-clock.js",
  "./app-links.js","./comp-payments.js?v=payment-labels-v3","./manager.html","./menu.js",
