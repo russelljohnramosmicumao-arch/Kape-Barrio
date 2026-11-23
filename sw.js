@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-head-barista-cancel-v176";
+const CACHE="kbr-ordering-pay-later-grouped-v177";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
@@ -14,7 +14,7 @@ const OPTIONAL_ASSETS=[
  "./images/mango-strawberry-smoothie-v2.png","./images/mango-strawberry-smoothie.png",
  "./icons/icon-512.png","./manager-access.js","./worker-clock.js",
  "./app-links.js","./comp-payments.js?v=payment-labels-v3","./manager.html","./menu.js",
- "./pay-later.js?v=30-day-settled-v1","./reset-password.html","./reset-password.js",
+ "./pay-later.js?v=group-identical-items-v2","./reset-password.html","./reset-password.js",
  "./shifts.js","./sync-login.html","./sync.css","./menu-store.js?v=flavor-stock-v2",
  "./online.html","./rewards.html"
 ];
