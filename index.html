@@ -80,7 +80,7 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .qty button{width:44px;height:44px;border-radius:50%;border:1px solid #d7c6b5;background:#fff;font-size:22px}
 .order-list{display:flex;flex-direction:column;gap:10px;margin:10px 0 18px}
 
-.cart-duty{border-top:1px solid #e7d7c8;margin-top:16px;padding-top:11px}.cart-duty-title{font-size:12px;font-weight:750;color:#7a5840;margin:0 0 8px}.cart-duty-roster{display:flex;gap:11px;align-items:flex-start;flex-wrap:wrap}.cart-duty-person{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;width:64px;min-width:0}.cart-duty-avatar{width:43px;height:43px;border-radius:50%;border:2px solid #967154;object-fit:cover;background:#f4e9db;color:#674731;display:grid;place-items:center;font-weight:700;font-size:16px}.cart-duty-person span{display:block;font-size:11px;line-height:1.25;font-weight:650;max-width:64px;overflow-wrap:anywhere}.cart-duty-message{font-size:11px;color:#887767}.cart-duty-support{width:100%;border-top:1px dashed #e6d6c9;margin-top:6px;padding-top:9px}.cart-duty-support>.cart-duty-message{display:block;margin-bottom:7px}.cart-duty-role{font-size:10px;line-height:1.2;color:#80644b;font-weight:650;white-space:nowrap}
+.cart-duty{border-top:1px solid #e7d7c8;margin-top:16px;padding-top:11px}.cart-duty-title{font-size:12px;font-weight:750;color:#7a5840;margin:0 0 8px}.cart-duty-roster{display:flex;gap:11px;align-items:flex-start;flex-wrap:wrap}.cart-duty-person{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;width:64px;min-width:0}.cart-duty-avatar{width:43px;height:43px;border-radius:50%;border:2px solid #967154;object-fit:cover;background:#f4e9db;color:#674731;display:grid;place-items:center;font-weight:700;font-size:16px}.cart-duty-person span{display:block;font-size:11px;line-height:1.25;font-weight:650;max-width:64px;overflow-wrap:anywhere}.cart-duty-message{font-size:11px;color:#887767}
 .order-item{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center}
 .order-item .desc{flex:1}.order-item strong{color:var(--brown)}.cart-drawer-total{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;padding-top:14px;border-top:1px solid #eadfd4}.cart-drawer-total b:last-child{font-size:22px;color:var(--brown)}.order-qty{display:flex;align-items:center;gap:7px;margin-top:8px}.order-qty button{width:30px;height:30px;border-radius:9px;border:1px solid #d9c7b5;background:#fff;font-weight:800}
 
@@ -1997,18 +1997,14 @@ function cartDutyPhoto(url){
 function showCartDuty(people){
   const root=document.getElementById('cartDutyRoster');
   if(!root)return;
-  const roster=Array.isArray(people)?people:[];
-  const onDuty=roster.filter(p=>p.kind==='on-duty');
-  const support=roster.filter(p=>p.kind==='support');
-  function profile(person){
-    const name=String(person.name||'Team member');
+  const roster=Array.isArray(people)?people.filter(person=>person.kind==='on-duty'||!person.kind):[];
+  if(!roster.length){root.innerHTML='<span class="cart-duty-message">No baristas currently clocked in.</span>';return}
+  root.innerHTML=roster.map(person=>{
+    const name=String(person.name||'Barista');
     const photo=cartDutyPhoto(person.photo_url);
     const avatar=photo?`<img class="cart-duty-avatar" src="${escapeHtml(photo)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:`<div class="cart-duty-avatar" aria-hidden="true">${escapeHtml(name.charAt(0).toUpperCase())}</div>`;
-    const role=person.kind==='support'?'<small class="cart-duty-role">IT &amp; R&amp;D</small>':'';
-    return `<div class="cart-duty-person">${avatar}<span>${escapeHtml(name)}</span>${role}</div>`;
-  }
-  const dutyMarkup=onDuty.length?onDuty.map(profile).join(''):'<span class="cart-duty-message">No baristas currently clocked in.</span>';
-  root.innerHTML=dutyMarkup+(support.length?`<div class="cart-duty-support"><span class="cart-duty-message">Our Support Team</span><div class="cart-duty-roster">${support.map(profile).join('')}</div></div>`:'');
+    return `<div class="cart-duty-person">${avatar}<span>${escapeHtml(name)}</span></div>`;
+  }).join('');
 }
 async function refreshCartDuty(){
   if(document.hidden||!orderDrawer.classList.contains('open'))return;
