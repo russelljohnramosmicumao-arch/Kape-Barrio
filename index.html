@@ -79,6 +79,8 @@ main{max-width:1500px;margin:auto;padding:16px 18px 150px}
 .qty{display:flex;align-items:center;justify-content:center;gap:15px}
 .qty button{width:44px;height:44px;border-radius:50%;border:1px solid #d7c6b5;background:#fff;font-size:22px}
 .order-list{display:flex;flex-direction:column;gap:10px;margin:10px 0 18px}
+
+.cart-duty{border-top:1px solid #e7d7c8;margin-top:16px;padding-top:11px}.cart-duty-title{font-size:12px;font-weight:750;color:#7a5840;margin:0 0 8px}.cart-duty-roster{display:flex;gap:11px;align-items:flex-start;flex-wrap:wrap}.cart-duty-person{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;width:64px;min-width:0}.cart-duty-avatar{width:43px;height:43px;border-radius:50%;border:2px solid #967154;object-fit:cover;background:#f4e9db;color:#674731;display:grid;place-items:center;font-weight:700;font-size:16px}.cart-duty-person span{display:block;font-size:11px;line-height:1.25;font-weight:650;max-width:64px;overflow-wrap:anywhere}.cart-duty-message{font-size:11px;color:#887767}
 .order-item{background:#fff;border:1px solid #eadfd4;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center}
 .order-item .desc{flex:1}.order-item strong{color:var(--brown)}.cart-drawer-total{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;padding-top:14px;border-top:1px solid #eadfd4}.cart-drawer-total b:last-child{font-size:22px;color:var(--brown)}.order-qty{display:flex;align-items:center;gap:7px;margin-top:8px}.order-qty button{width:30px;height:30px;border-radius:9px;border:1px solid #d9c7b5;background:#fff;font-weight:800}
 
@@ -725,6 +727,7 @@ header{padding-top:calc(10px + var(--kbr-safe-top));padding-left:calc(18px + var
     <div id="cartDrawerTotal" class="cart-drawer-total"><span>Total</span><b>₱0</b></div>
     <div class="row"><button id="clearOrderBtn" class="secondary clear-order-btn" onclick="clearOrder()">Clear</button><button class="primary" onclick="makeReceipt()">Send order</button></div>
     <button class="secondary" style="width:100%;margin-top:10px" onclick="closeOrder()">Continue ordering</button>
+    <section class="cart-duty" aria-label="Baristas on duty"><div class="cart-duty-title">☕ Baristas on Duty</div><div id="cartDutyRoster" class="cart-duty-roster" aria-live="polite"><span class="cart-duty-message">Checking who’s on duty…</span></div></section>
   </div>
 </div>
 
@@ -1986,7 +1989,42 @@ async function saveHistoryReceipt(index){
 }
 
 function changeCartQty(i,d){cart[i].qty=Math.max(0,cart[i].qty+d);if(cart[i].qty===0)cart.splice(i,1);persist();render();renderOrder()}
-function openOrder(){renderOrder();orderDrawer.classList.add("open")}
+let cartDutyLastCheck=0;
+let cartDutyPending=null;
+function cartDutyPhoto(url){
+  try{const link=new URL(String(url||''));return link.protocol==='https:'?link.href:''}catch{return ''}
+}
+function showCartDuty(people){
+  const root=document.getElementById('cartDutyRoster');
+  if(!root)return;
+  if(!Array.isArray(people)||!people.length){root.innerHTML='<span class="cart-duty-message">No baristas currently clocked in.</span>';return}
+  root.innerHTML=people.map(person=>{
+    const name=String(person.name||'Barista');
+    const safeName=escapeHtml(name);
+    const photo=cartDutyPhoto(person.photo_url);
+    const avatar=photo?`<img class="cart-duty-avatar" src="${escapeHtml(photo)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:`<div class="cart-duty-avatar" aria-hidden="true">${escapeHtml(name.charAt(0).toUpperCase())}</div>`;
+    return `<div class="cart-duty-person">${avatar}<span>${safeName}</span></div>`;
+  }).join('');
+}
+async function refreshCartDuty(){
+  if(document.hidden||!orderDrawer.classList.contains('open'))return;
+  if(cartDutyPending)return cartDutyPending;
+  if(Date.now()-cartDutyLastCheck<30000)return;
+  const root=document.getElementById('cartDutyRoster');
+  if(root)root.innerHTML='<span class="cart-duty-message">Checking who’s on duty…</span>';
+  cartDutyPending=(async()=>{
+    try{
+      const roster=await KBRCloud.rpc('kbr_cart_on_duty_baristas',{});
+      if(!Array.isArray(roster))throw Error('Invalid roster');
+      cartDutyLastCheck=Date.now();
+      if(orderDrawer.classList.contains('open'))showCartDuty(roster);
+    }catch(_){
+      if(root&&orderDrawer.classList.contains('open'))root.innerHTML='<span class="cart-duty-message">On-duty team unavailable.</span>';
+    }finally{cartDutyPending=null;}
+  })();
+  return cartDutyPending;
+}
+function openOrder(){renderOrder();orderDrawer.classList.add("open");void refreshCartDuty()}
 function closeOrder(){orderDrawer.classList.remove("open")}
 function renderOrder(){
   const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
