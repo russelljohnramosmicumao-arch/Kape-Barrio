@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-pay-later-grouped-v177";
+const CACHE="kbr-ordering-pay-later-network-refresh-v178";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
@@ -48,7 +48,8 @@ self.addEventListener('fetch',e=>{
  if(e.request.destination==='image'||IMAGE_REVISIONS['./'+u.pathname.slice(new URL(self.registration.scope).pathname.length)]){
   e.respondWith(imageResponse(e.request));return;
  }
- const critical=e.request.mode==='navigate'||u.pathname.endsWith('/index.html')||u.pathname.endsWith('/app-sync-v135.js')||u.pathname.endsWith('/sw.js');
+ // Load payment UI logic from the network first; an installed PWA must not stay on an older Pay Later renderer.
+ const critical=e.request.mode==='navigate'||u.pathname.endsWith('/index.html')||u.pathname.endsWith('/app-sync-v135.js')||u.pathname.endsWith('/pay-later.js')||u.pathname.endsWith('/sw.js');
  if(critical){
   e.respondWith(caches.open(CACHE).then(async c=>{
    try{
