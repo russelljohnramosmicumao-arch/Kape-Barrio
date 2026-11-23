@@ -1,4 +1,4 @@
-const CACHE="kbr-ordering-v174-payment-phone-first-navfix2-assets-phase2-addon-summary-v2-update-guard-v3-ipad-safe-area-v1-quiet-staff-v1-category-cart-v1-barista-controls-v1-compact-categories-v1-online-install-v1-staff-icon-position-v2-stock-menu-v1-flavor-stock-v2";
+const CACHE="kbr-ordering-cloudflare-cart-duty-v175";
 // Only the shell is required for installation; optional pages are cached individually
 // so one temporary network failure cannot cancel an entire app update.
 const CORE_ASSETS=[
