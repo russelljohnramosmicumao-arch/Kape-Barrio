@@ -31,7 +31,34 @@ async function refresh(){
 }
 function dateTime(value){const date=new Date(value);return Number.isNaN(date.getTime())?'Date not recorded':date.toLocaleString('en-PH',{timeZone:'Asia/Manila'});}
 function billOrder(a){return [...pendingOrders,...servedUnpaidOrders,...unservedPaidOrders].find(o=>o._cloudId===a.order_id)||history.find(r=>r._cloudId===a.order_id);}
-function orderLines(order){return (order?.items||[]).map(x=>`${Number(x.qty)||1}× ${escapeHtml(x.name)}${x.size?' · '+escapeHtml(x.size):''}${x.flavor?' · '+escapeHtml(x.flavor):''}`).join('<br>')||'Order details not available';}
+function orderLines(order){
+ const items=Array.isArray(order?.items)?order.items:[];
+ const grouped=new Map();
+ // Keep differently priced, discounted, customized, or flavored items on separate lines.
+ // The view is grouped only; no order, receipt, or payment amount is changed.
+ for(const item of items){
+  const x=item||{};
+  const qty=Number(x.qty);
+  const amount=Number.isFinite(qty)&&qty>0?qty:1;
+  const details={
+   name:x.name||'',size:x.size||'',flavor:x.flavor||'',sweetness:x.sweetness||'',
+   price:x.price??null,originalPrice:x.originalPrice??null,
+   discountPercent:x.discountPercent??null,discountAmount:x.discountAmount??null,
+   discountedPrice:x.discountedPrice??null,addons:x.addons??null,
+   notes:x.notes??x.note??'',paidByPoints:!!x.paidByPoints,
+   type:x.type||'',serviceType:x.serviceType||''
+  };
+  const key=JSON.stringify(details);
+  if(!grouped.has(key))grouped.set(key,{...details,qty:0});
+  grouped.get(key).qty+=amount;
+ }
+ return [...grouped.values()].map(x=>{
+  const quantity=Number.isInteger(x.qty)?x.qty:String(Math.round(x.qty*100)/100);
+  const modifiers=[x.size,x.flavor,x.sweetness].filter(Boolean);
+  const label=quantity+'× '+escapeHtml(x.name||'Item')+(modifiers.length?' · '+modifiers.map(escapeHtml).join(' · '):'');
+  return label;
+ }).join('<br>')||'Order details not available';
+}
 function billDetails(a){const order=billOrder(a),payments=entries.filter(e=>e.order_id===a.order_id).sort((x,y)=>new Date(x.recorded_at)-new Date(y.recorded_at)),paid=Number(a.balance)===0;
  return `<section class="barista-order-card" style="margin:12px 0 0"><b>Order #${escapeHtml(String(order?.no||''))}</b><p>Ordered: ${escapeHtml(order?.date&&order?.time?order.date+' · '+order.time:dateTime(a.created_at))}<br>Pay Later recorded: ${escapeHtml(dateTime(a.created_at))}</p><div>${orderLines(order)}</div><p>Bill: ${money(a.total)} · Cash paid: ${money(a.cash_paid)} · GCash paid: ${money(a.gcash_paid)}<br><b>${paid?'Fully paid':'Remaining: '+money(a.balance)}</b></p><b>Payments</b>${payments.map(e=>`<div class="history-thumb-item" style="font-size:14px;margin-top:8px"><span>${escapeHtml(dateTime(e.recorded_at))} · ${e.method==='cash'?'Cash':'GCash'}</span><span>${money(e.amount)}</span></div>`).join('')||'<p>No payments yet.</p>'}${paid?`<p><b>Fully paid on:</b> ${escapeHtml(dateTime(payments.at(-1)?.recorded_at||a.created_at))}</p>`:`<button class="secondary" style="margin-top:12px" onclick="KBRDeferred.collect('${a.order_id}')">Record partial / full payment</button>`}</section>`;
 }
